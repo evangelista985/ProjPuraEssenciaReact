@@ -1,0 +1,12 @@
+SENHAS:
+
+Cliente
+
+fabio@fabio.com
+123456
+
+
+Admin
+
+admin@puraessencia.com
+admin123
