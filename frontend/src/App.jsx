@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import Vitrine from './pages/Vitrine';
 import DetalhesProduto from './pages/DetalhesProduto';
 import Carrinho from './pages/Carrinho';
@@ -15,10 +16,13 @@ import { AdminUsuarios, AdminCupons } from './pages/AdminUsuariosECupons';
 
 function LayoutPublico({ children }) {
   return (
-    <>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar />
-      {children}
-    </>
+      <div style={{ flex: 1 }}>
+        {children}
+      </div>
+      <Footer />
+    </div>
   );
 }
 
