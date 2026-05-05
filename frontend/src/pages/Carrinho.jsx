@@ -2,18 +2,41 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useViaCep } from '../hooks/useViaCep';
+import { useFrete } from '../hooks/useFrete';
 import api from '../services/api';
 
 export default function Carrinho() {
   const { itens, remover, atualizarQtd, limpar, total } = useCart();
   const { cliente } = useAuth();
   const nav = useNavigate();
-  const [cupom,    setCupom]    = useState('');
-  const [desconto, setDesconto] = useState(null);
-  const [pagamento,setPagamento]= useState('pix');
-  const [msg,      setMsg]      = useState('');
-  const [erro,     setErro]     = useState('');
-  const [loading,  setLoading]  = useState(false);
+
+  const [cupom,     setCupom]     = useState('');
+  const [desconto,  setDesconto]  = useState(null);
+  const [pagamento, setPagamento] = useState('pix');
+  const [msg,       setMsg]       = useState('');
+  const [erro,      setErro]      = useState('');
+  const [loading,   setLoading]   = useState(false);
+
+  const [endereco, setEndereco] = useState({
+    cep: '', logradouro: '', numero: '', complemento: '',
+    bairro: '', cidade: '', estado: '',
+  });
+
+  const { buscarCep, buscandoCep, erroCep, formatarCep } = useViaCep();
+  const { fretes, freteSelecionado, calculando, erroFrete, calcularFrete, selecionarFrete } = useFrete();
+
+  // Preenche endereço via ViaCEP e calcula frete automaticamente
+  function handleCep(e) {
+    const cepFormatado = formatarCep(e.target.value);
+    setEndereco(en => ({ ...en, cep: cepFormatado }));
+    if (cepFormatado.length === 9) {
+      buscarCep(cepFormatado, (end) => {
+        setEndereco(en => ({ ...en, ...end }));
+        calcularFrete(cepFormatado, itens);
+      });
+    }
+  }
 
   async function verificarCupom() {
     try {
@@ -24,22 +47,37 @@ export default function Carrinho() {
     }
   }
 
-  const valorDesconto = desconto ? (total * desconto.desconto) / 100 : 0;
-  const totalFinal    = total - valorDesconto;
+  const valorDesconto  = desconto        ? (total * desconto.desconto) / 100 : 0;
+  const valorFrete     = freteSelecionado ? freteSelecionado.valor            : 0;
+  const totalFinal     = total - valorDesconto + valorFrete;
 
   async function finalizar() {
     if (!cliente) return nav('/login');
     if (itens.length === 0) return;
-    setLoading(true);
+    if (!endereco.cep || !endereco.logradouro || !endereco.numero || !endereco.cidade) {
+      return setErro('Preencha o endereço de entrega completo.');
+    }
+    if (!freteSelecionado) {
+      return setErro('Selecione uma opção de frete para continuar.');
+    }
+    setLoading(true); setErro('');
     try {
       const payload = {
         itens: itens.map(i => ({ produto_id: i.produto_id, quantidade: i.quantidade })),
         forma_pagamento: pagamento,
         cupom_codigo: cupom || undefined,
+        endereco,
+        frete: {
+          servico: freteSelecionado.nome,
+          valor:   freteSelecionado.valor,
+          prazo:   freteSelecionado.prazo,
+        },
       };
       const { data } = await api.post('/pedidos', payload);
       limpar();
-      nav('/meus-pedidos', { state: { sucesso: `Pedido #${data.pedido_id} realizado! Total: R$ ${Number(data.total_final).toFixed(2).replace('.', ',')}` } });
+      nav('/meus-pedidos', {
+        state: { sucesso: `Pedido #${data.pedido_id} realizado! Total: R$ ${Number(data.total_final).toFixed(2).replace('.', ',')}` }
+      });
     } catch (err) {
       setErro(err.response?.data?.erro || 'Erro ao finalizar pedido.');
     } finally {
@@ -62,12 +100,17 @@ export default function Carrinho() {
 
       <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap' }}>
 
-        {/* Itens */}
+        {/* ── Coluna esquerda ── */}
         <div style={{ flex: 2, minWidth: 300 }}>
+
+          {/* Itens */}
           {itens.map(item => (
             <div key={item.produto_id} className="card" style={{ marginBottom: 16, display: 'flex', gap: 16, alignItems: 'center' }}>
-              <img src={item.imagem || 'https://via.placeholder.com/80x80/f5f7f2/3A5D3E?text=+'} style={{ width: 80, height: 80, objectFit: 'cover', background: '#f5f7f2', borderRadius: 8 }}
-                onError={e => { e.target.src = 'https://via.placeholder.com/80x80/f5f7f2/3A5D3E?text=+'; }} />
+              <img
+                src={item.imagem || 'https://via.placeholder.com/80x80/f5f7f2/3A5D3E?text=+'}
+                style={{ width: 80, height: 80, objectFit: 'cover', background: '#f5f7f2', borderRadius: 8 }}
+                onError={e => { e.target.src = 'https://via.placeholder.com/80x80/f5f7f2/3A5D3E?text=+'; }}
+              />
               <div style={{ flex: 1 }}>
                 <p style={{ fontWeight: 700, marginBottom: 6 }}>{item.nome}</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -84,9 +127,148 @@ export default function Carrinho() {
               <button className="btn-perigo btn-sm" onClick={() => remover(item.produto_id)}>✕</button>
             </div>
           ))}
+
+          {/* Endereço */}
+          <div className="card">
+            <h2 style={{ fontSize: 20, marginBottom: 20 }}>📍 Endereço de Entrega</h2>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={st.label}>CEP *</label>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input value={endereco.cep} onChange={handleCep}
+                  placeholder="00000-000" maxLength={9} style={{ flex: 1 }} />
+                <button type="button" className="btn-azul btn-sm" style={{ whiteSpace: 'nowrap' }}
+                  onClick={() => {
+                    buscarCep(endereco.cep, (end) => {
+                      setEndereco(en => ({ ...en, ...end }));
+                      calcularFrete(endereco.cep, itens);
+                    });
+                  }}
+                  disabled={buscandoCep}>
+                  {buscandoCep ? '⏳' : '🔍 Buscar'}
+                </button>
+              </div>
+              {buscandoCep && <p style={st.info}>🌿 Buscando endereço...</p>}
+              {erroCep     && <p style={{ ...st.info, color: '#dc3545' }}>{erroCep}</p>}
+              {endereco.cidade && !buscandoCep && (
+                <p style={{ ...st.info, color: '#3A5D3E' }}>
+                  ✅ {endereco.logradouro}, {endereco.bairro} — {endereco.cidade}/{endereco.estado}
+                </p>
+              )}
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12, marginBottom: 16 }}>
+              <div>
+                <label style={st.label}>Rua / Logradouro *</label>
+                <input value={endereco.logradouro} onChange={e => setEndereco({ ...endereco, logradouro: e.target.value })} placeholder="Preenchido pelo CEP" />
+              </div>
+              <div>
+                <label style={st.label}>Número *</label>
+                <input value={endereco.numero} onChange={e => setEndereco({ ...endereco, numero: e.target.value })} placeholder="123" />
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+              <div>
+                <label style={st.label}>Complemento</label>
+                <input value={endereco.complemento} onChange={e => setEndereco({ ...endereco, complemento: e.target.value })} placeholder="Apto, bloco..." />
+              </div>
+              <div>
+                <label style={st.label}>Bairro *</label>
+                <input value={endereco.bairro} onChange={e => setEndereco({ ...endereco, bairro: e.target.value })} placeholder="Preenchido pelo CEP" />
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
+              <div>
+                <label style={st.label}>Cidade *</label>
+                <input value={endereco.cidade} onChange={e => setEndereco({ ...endereco, cidade: e.target.value })} placeholder="Preenchido pelo CEP" />
+              </div>
+              <div>
+                <label style={st.label}>Estado *</label>
+                <input value={endereco.estado} maxLength={2} onChange={e => setEndereco({ ...endereco, estado: e.target.value.toUpperCase() })} placeholder="SP" />
+              </div>
+            </div>
+          </div>
+
+          {/* Opções de Frete */}
+          <div className="card" style={{ marginTop: 16 }}>
+            <h2 style={{ fontSize: 20, marginBottom: 16 }}>🚚 Opções de Frete</h2>
+
+            {!endereco.cep && (
+              <p style={{ color: '#888', fontSize: 14 }}>
+                Digite o CEP acima para calcular o frete automaticamente.
+              </p>
+            )}
+
+            {calculando && (
+              <div style={st.freteCalculando}>
+                <span style={{ fontSize: 24 }}>⏳</span>
+                <p>Calculando frete com os Correios...</p>
+              </div>
+            )}
+
+            {erroFrete && !calculando && (
+              <div style={st.freteErro}>
+                <p>⚠️ {erroFrete}</p>
+                <button
+                  className="btn-azul btn-sm"
+                  style={{ marginTop: 10 }}
+                  onClick={() => calcularFrete(endereco.cep, itens)}
+                >
+                  Tentar novamente
+                </button>
+              </div>
+            )}
+
+            {fretes.length > 0 && !calculando && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {fretes.map(f => (
+                  f.erro ? (
+                    <div key={f.codigo} style={st.freteOpcaoIndisponivel}>
+                      <span>{f.icone} {f.nome}</span>
+                      <span style={{ fontSize: 12, color: '#dc3545' }}>Indisponível</span>
+                    </div>
+                  ) : (
+                    <div
+                      key={f.codigo}
+                      style={{
+                        ...st.freteOpcao,
+                        border: freteSelecionado?.codigo === f.codigo
+                          ? '2px solid #3A5D3E'
+                          : '2px solid #e0e7db',
+                        background: freteSelecionado?.codigo === f.codigo
+                          ? '#f0f7f1'
+                          : '#fff',
+                      }}
+                      onClick={() => selecionarFrete(f)}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{
+                          width: 20, height: 20, borderRadius: '50%',
+                          border: `2px solid ${freteSelecionado?.codigo === f.codigo ? '#3A5D3E' : '#ccc'}`,
+                          background: freteSelecionado?.codigo === f.codigo ? '#3A5D3E' : '#fff',
+                          flexShrink: 0,
+                        }} />
+                        <div>
+                          <p style={{ fontWeight: 700, fontSize: 15 }}>{f.icone} {f.nome}</p>
+                          <p style={{ fontSize: 12, color: '#888', marginTop: 2 }}>
+                            Prazo: {f.prazo} {f.prazo === 1 ? 'dia útil' : 'dias úteis'}
+                          </p>
+                        </div>
+                      </div>
+                      <p style={{ fontWeight: 800, fontSize: 17, color: '#3A5D3E' }}>
+                        R$ {f.valor.toFixed(2).replace('.', ',')}
+                      </p>
+                    </div>
+                  )
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Resumo */}
+        {/* ── Coluna direita: resumo ── */}
         <div style={{ flex: 1, minWidth: 280 }}>
           <div className="card">
             <h2 style={{ fontSize: 22, marginBottom: 20 }}>Resumo do Pedido</h2>
@@ -94,11 +276,13 @@ export default function Carrinho() {
             {/* Cupom */}
             <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 8 }}>Cupom de desconto</p>
             <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-              <input placeholder="Digite o cupom" value={cupom} onChange={e => setCupom(e.target.value.toUpperCase())} />
-              <button className="btn-azul btn-sm" style={{ whiteSpace: 'nowrap' }} onClick={verificarCupom}>Aplicar</button>
+              <input placeholder="Digite o cupom" value={cupom}
+                onChange={e => setCupom(e.target.value.toUpperCase())} />
+              <button className="btn-azul btn-sm" style={{ whiteSpace: 'nowrap' }} onClick={verificarCupom}>
+                Aplicar
+              </button>
             </div>
-            {msg  && <p className="sucesso" style={{ marginBottom: 12 }}>{msg}</p>}
-            {erro && <p className="erro"    style={{ marginBottom: 12 }}>{erro}</p>}
+            {msg && <p className="sucesso" style={{ marginBottom: 12 }}>{msg}</p>}
 
             {/* Pagamento */}
             <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 8 }}>Forma de pagamento</p>
@@ -110,11 +294,26 @@ export default function Carrinho() {
 
             {/* Totais */}
             <div style={{ borderTop: '1px solid #eee', paddingTop: 16 }}>
-              <div style={st.linha}><span>Subtotal</span><span>R$ {total.toFixed(2).replace('.', ',')}</span></div>
+              <div style={st.linha}>
+                <span>Subtotal</span>
+                <span>R$ {total.toFixed(2).replace('.', ',')}</span>
+              </div>
               {desconto && (
                 <div style={{ ...st.linha, color: '#3A5D3E' }}>
                   <span>Desconto ({desconto.desconto}%)</span>
                   <span>- R$ {valorDesconto.toFixed(2).replace('.', ',')}</span>
+                </div>
+              )}
+              <div style={st.linha}>
+                <span>Frete ({freteSelecionado ? freteSelecionado.nome : '—'})</span>
+                <span style={{ color: valorFrete > 0 ? '#333' : '#aaa' }}>
+                  {freteSelecionado ? `R$ ${valorFrete.toFixed(2).replace('.', ',')}` : 'Selecione'}
+                </span>
+              </div>
+              {freteSelecionado && (
+                <div style={{ ...st.linha, fontSize: 12, color: '#888', marginTop: -4 }}>
+                  <span>Prazo estimado</span>
+                  <span>{freteSelecionado.prazo} {freteSelecionado.prazo === 1 ? 'dia útil' : 'dias úteis'}</span>
                 </div>
               )}
               <div style={{ ...st.linha, fontWeight: 800, fontSize: 20, marginTop: 12 }}>
@@ -123,21 +322,42 @@ export default function Carrinho() {
               </div>
             </div>
 
+            {erro && <p className="erro" style={{ marginTop: 12 }}>{erro}</p>}
+
             <button className="btn-verde" style={{ width: '100%', marginTop: 20, fontSize: 16 }}
               onClick={finalizar} disabled={loading}>
               {loading ? 'Processando...' : '✅ Finalizar Compra'}
             </button>
-            {!cliente && <p className="erro" style={{ textAlign: 'center', marginTop: 8 }}>Faça login para finalizar.</p>}
+
+            {!cliente && (
+              <p className="erro" style={{ textAlign: 'center', marginTop: 8 }}>
+                Faça login para finalizar.
+              </p>
+            )}
+
+            {/* Selos de segurança */}
+            <div style={st.selos}>
+              <span>🔒 Compra segura</span>
+              <span>📦 Envio pelos Correios</span>
+            </div>
           </div>
         </div>
+
       </div>
     </div>
   );
 }
 
 const st = {
+  label:   { display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 6, color: '#3A5D3E' },
   linha:   { display: 'flex', justifyContent: 'space-between', fontSize: 15, marginBottom: 8 },
   qtdCtrl: { display: 'flex', alignItems: 'center', border: '1.5px solid #d0d7c4', borderRadius: 6, overflow: 'hidden' },
   qtdBtn:  { background: '#f5f7f2', border: 'none', width: 30, height: 30, fontSize: 16, cursor: 'pointer', fontWeight: 700, color: '#3A5D3E' },
   qtdNum:  { width: 34, textAlign: 'center', fontWeight: 700, fontSize: 14 },
+  info:    { fontSize: 12, marginTop: 6, fontStyle: 'italic', color: '#888' },
+  freteCalculando: { display: 'flex', alignItems: 'center', gap: 12, color: '#3A5D3E', padding: '14px 0', fontSize: 14 },
+  freteErro:       { background: '#fff3cd', border: '1px solid #ffc107', borderRadius: 8, padding: 14, fontSize: 14 },
+  freteOpcao:      { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderRadius: 10, cursor: 'pointer', transition: 'all 0.2s' },
+  freteOpcaoIndisponivel: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderRadius: 10, background: '#f8f9fa', border: '1.5px solid #eee', opacity: 0.6 },
+  selos: { display: 'flex', justifyContent: 'center', gap: 16, marginTop: 16, fontSize: 12, color: '#888', flexWrap: 'wrap' },
 };

@@ -5,9 +5,10 @@ const { authCliente, authAdmin } = require('../middleware/auth');
 
 // POST /api/pedidos - cliente faz pedido
 router.post('/', authCliente, async (req, res) => {
-  const { itens, forma_pagamento, cupom_codigo } = req.body;
+  const { itens, forma_pagamento, cupom_codigo, endereco } = req.body;
   if (!itens || itens.length === 0) return res.status(400).json({ erro: 'Carrinho vazio' });
   if (!forma_pagamento) return res.status(400).json({ erro: 'Forma de pagamento obrigatória' });
+  if (!endereco?.cep) return res.status(400).json({ erro: 'Endereço de entrega obrigatório' });
 
   const conn = await db.getConnection();
   try {
@@ -36,8 +37,13 @@ router.post('/', authCliente, async (req, res) => {
     const total_final   = total - valorDesconto;
 
     const [pedido] = await conn.query(
-      'INSERT INTO pedidos (cliente_id, total, desconto, total_final, forma_pagamento, cupom_id) VALUES (?,?,?,?,?,?)',
-      [req.cliente.id, total, valorDesconto, total_final, forma_pagamento, cupom_id]
+      `INSERT INTO pedidos
+        (cliente_id, total, desconto, total_final, forma_pagamento, cupom_id,
+         cep_entrega, logradouro_entrega, numero_entrega, complemento_entrega, bairro_entrega, cidade_entrega, estado_entrega)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      [req.cliente.id, total, valorDesconto, total_final, forma_pagamento, cupom_id,
+       endereco.cep, endereco.logradouro, endereco.numero,
+       endereco.complemento || null, endereco.bairro, endereco.cidade, endereco.estado]
     );
 
     for (const item of itens) {

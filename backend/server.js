@@ -10,6 +10,7 @@ app.use('/api/clientes', require('./routes/clientes'));
 app.use('/api/produtos',  require('./routes/produtos'));
 app.use('/api/pedidos',   require('./routes/pedidos'));
 app.use('/api/admin',     require('./routes/admin'));
+app.use('/api/correios',  require('./routes/correios'));
 
 // Verificar cupom (público)
 const db = require('./config/db');
