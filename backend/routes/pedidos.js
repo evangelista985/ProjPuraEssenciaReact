@@ -36,12 +36,14 @@ router.post('/', authCliente, async (req, res) => {
     const valorDesconto = (total * desconto) / 100;
     const total_final   = total - valorDesconto;
 
+    const statusInicial = forma_pagamento === 'mercadopago' ? 'pago' : 'pendente';
+
     const [pedido] = await conn.query(
       `INSERT INTO pedidos
-        (cliente_id, total, desconto, total_final, forma_pagamento, cupom_id,
+        (cliente_id, total, desconto, total_final, forma_pagamento, status, cupom_id,
          cep_entrega, logradouro_entrega, numero_entrega, complemento_entrega, bairro_entrega, cidade_entrega, estado_entrega)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-      [req.cliente.id, total, valorDesconto, total_final, forma_pagamento, cupom_id,
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      [req.cliente.id, total, valorDesconto, total_final, forma_pagamento, statusInicial, cupom_id,
        endereco.cep, endereco.logradouro, endereco.numero,
        endereco.complemento || null, endereco.bairro, endereco.cidade, endereco.estado]
     );

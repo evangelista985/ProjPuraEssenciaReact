@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useViaCep } from '../hooks/useViaCep';
 import { useFrete } from '../hooks/useFrete';
 import api from '../services/api';
+import CheckoutSimulado from '../components/CheckoutSimulado';
 
 export default function Carrinho() {
   const { itens, remover, atualizarQtd, limpar, total } = useCart();
@@ -13,7 +14,7 @@ export default function Carrinho() {
 
   const [cupom,     setCupom]     = useState('');
   const [desconto,  setDesconto]  = useState(null);
-  const [pagamento, setPagamento] = useState('pix');
+  const [pagamento, setPagamento] = useState('mercadopago');
   const [msg,       setMsg]       = useState('');
   const [erro,      setErro]      = useState('');
   const [loading,   setLoading]   = useState(false);
@@ -26,7 +27,6 @@ export default function Carrinho() {
   const { buscarCep, buscandoCep, erroCep, formatarCep } = useViaCep();
   const { fretes, freteSelecionado, calculando, erroFrete, calcularFrete, selecionarFrete } = useFrete();
 
-  // Preenche endereço via ViaCEP e calcula frete automaticamente
   function handleCep(e) {
     const cepFormatado = formatarCep(e.target.value);
     setEndereco(en => ({ ...en, cep: cepFormatado }));
@@ -51,7 +51,7 @@ export default function Carrinho() {
   const valorFrete     = freteSelecionado ? freteSelecionado.valor            : 0;
   const totalFinal     = total - valorDesconto + valorFrete;
 
-  async function finalizar() {
+  async function finalizar(dadosCartao = null) {
     if (!cliente) return nav('/login');
     if (itens.length === 0) return;
     if (!endereco.cep || !endereco.logradouro || !endereco.numero || !endereco.cidade) {
@@ -60,10 +60,11 @@ export default function Carrinho() {
     if (!freteSelecionado) {
       return setErro('Selecione uma opção de frete para continuar.');
     }
+    
     setLoading(true); setErro('');
     try {
       const payload = {
-        itens: itens.map(i => ({ produto_id: i.produto_id, quantidade: i.quantidade })),
+        itens: itens.map(i => ({ produto_id: i.produto_id, quantidade: i.quantidade, nome: i.nome, preco: i.preco })),
         forma_pagamento: pagamento,
         cupom_codigo: cupom || undefined,
         endereco,
@@ -72,11 +73,16 @@ export default function Carrinho() {
           valor:   freteSelecionado.valor,
           prazo:   freteSelecionado.prazo,
         },
+        dados_pagamento: dadosCartao
       };
-      const { data } = await api.post('/pedidos', payload);
+      
+      const { data: pedidoData } = await api.post('/pedidos', payload);
+      
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
       limpar();
       nav('/meus-pedidos', {
-        state: { sucesso: `Pedido #${data.pedido_id} realizado! Total: R$ ${Number(data.total_final).toFixed(2).replace('.', ',')}` }
+        state: { sucesso: `Pedido #${pedidoData.pedido_id} realizado com sucesso! Pagamento aprovado.` }
       });
     } catch (err) {
       setErro(err.response?.data?.erro || 'Erro ao finalizar pedido.');
@@ -99,11 +105,7 @@ export default function Carrinho() {
       <h1 style={{ marginBottom: 24 }}>Meu Carrinho</h1>
 
       <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap' }}>
-
-        {/* ── Coluna esquerda ── */}
         <div style={{ flex: 2, minWidth: 300 }}>
-
-          {/* Itens */}
           {itens.map(item => (
             <div key={item.produto_id} className="card" style={{ marginBottom: 16, display: 'flex', gap: 16, alignItems: 'center' }}>
               <img
@@ -128,15 +130,12 @@ export default function Carrinho() {
             </div>
           ))}
 
-          {/* Endereço */}
           <div className="card">
             <h2 style={{ fontSize: 20, marginBottom: 20 }}>📍 Endereço de Entrega</h2>
-
             <div style={{ marginBottom: 16 }}>
               <label style={st.label}>CEP *</label>
               <div style={{ display: 'flex', gap: 8 }}>
-                <input value={endereco.cep} onChange={handleCep}
-                  placeholder="00000-000" maxLength={9} style={{ flex: 1 }} />
+                <input value={endereco.cep} onChange={handleCep} placeholder="00000-000" maxLength={9} style={{ flex: 1 }} />
                 <button type="button" className="btn-azul btn-sm" style={{ whiteSpace: 'nowrap' }}
                   onClick={() => {
                     buscarCep(endereco.cep, (end) => {
@@ -191,158 +190,70 @@ export default function Carrinho() {
             </div>
           </div>
 
-          {/* Opções de Frete */}
           <div className="card" style={{ marginTop: 16 }}>
             <h2 style={{ fontSize: 20, marginBottom: 16 }}>🚚 Opções de Frete</h2>
-
-            {!endereco.cep && (
-              <p style={{ color: '#888', fontSize: 14 }}>
-                Digite o CEP acima para calcular o frete automaticamente.
-              </p>
-            )}
-
-            {calculando && (
-              <div style={st.freteCalculando}>
-                <span style={{ fontSize: 24 }}>⏳</span>
-                <p>Calculando frete com os Correios...</p>
-              </div>
-            )}
-
-            {erroFrete && !calculando && (
-              <div style={st.freteErro}>
-                <p>⚠️ {erroFrete}</p>
-                <button
-                  className="btn-azul btn-sm"
-                  style={{ marginTop: 10 }}
-                  onClick={() => calcularFrete(endereco.cep, itens)}
-                >
-                  Tentar novamente
-                </button>
-              </div>
-            )}
-
+            {!endereco.cep && <p style={{ color: '#888', fontSize: 14 }}>Digite o CEP acima para calcular o frete automaticamente.</p>}
+            {calculando && <div style={st.freteCalculando}><span style={{ fontSize: 24 }}>⏳</span><p>Calculando frete...</p></div>}
             {fretes.length > 0 && !calculando && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {fretes.map(f => (
-                  f.erro ? (
-                    <div key={f.codigo} style={st.freteOpcaoIndisponivel}>
-                      <span>{f.icone} {f.nome}</span>
-                      <span style={{ fontSize: 12, color: '#dc3545' }}>Indisponível</span>
-                    </div>
-                  ) : (
-                    <div
-                      key={f.codigo}
-                      style={{
-                        ...st.freteOpcao,
-                        border: freteSelecionado?.codigo === f.codigo
-                          ? '2px solid #3A5D3E'
-                          : '2px solid #e0e7db',
-                        background: freteSelecionado?.codigo === f.codigo
-                          ? '#f0f7f1'
-                          : '#fff',
-                      }}
-                      onClick={() => selecionarFrete(f)}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{
-                          width: 20, height: 20, borderRadius: '50%',
-                          border: `2px solid ${freteSelecionado?.codigo === f.codigo ? '#3A5D3E' : '#ccc'}`,
-                          background: freteSelecionado?.codigo === f.codigo ? '#3A5D3E' : '#fff',
-                          flexShrink: 0,
-                        }} />
-                        <div>
-                          <p style={{ fontWeight: 700, fontSize: 15 }}>{f.icone} {f.nome}</p>
-                          <p style={{ fontSize: 12, color: '#888', marginTop: 2 }}>
-                            Prazo: {f.prazo} {f.prazo === 1 ? 'dia útil' : 'dias úteis'}
-                          </p>
-                        </div>
+                  <div key={f.codigo} style={{ ...st.freteOpcao, border: freteSelecionado?.codigo === f.codigo ? '2px solid #3A5D3E' : '2px solid #e0e7db', background: freteSelecionado?.codigo === f.codigo ? '#f0f7f1' : '#fff' }} onClick={() => selecionarFrete(f)}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 20, height: 20, borderRadius: '50%', border: `2px solid ${freteSelecionado?.codigo === f.codigo ? '#3A5D3E' : '#ccc'}`, background: freteSelecionado?.codigo === f.codigo ? '#3A5D3E' : '#fff', flexShrink: 0 }} />
+                      <div>
+                        <p style={{ fontWeight: 700, fontSize: 15 }}>{f.icone} {f.nome}</p>
+                        <p style={{ fontSize: 12, color: '#888', marginTop: 2 }}>Prazo: {f.prazo} {f.prazo === 1 ? 'dia útil' : 'dias úteis'}</p>
                       </div>
-                      <p style={{ fontWeight: 800, fontSize: 17, color: '#3A5D3E' }}>
-                        R$ {f.valor.toFixed(2).replace('.', ',')}
-                      </p>
                     </div>
-                  )
+                    <p style={{ fontWeight: 800, fontSize: 17, color: '#3A5D3E' }}>R$ {f.valor.toFixed(2).replace('.', ',')}</p>
+                  </div>
                 ))}
               </div>
             )}
           </div>
         </div>
 
-        {/* ── Coluna direita: resumo ── */}
         <div style={{ flex: 1, minWidth: 280 }}>
           <div className="card">
             <h2 style={{ fontSize: 22, marginBottom: 20 }}>Resumo do Pedido</h2>
-
-            {/* Cupom */}
             <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 8 }}>Cupom de desconto</p>
             <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-              <input placeholder="Digite o cupom" value={cupom}
-                onChange={e => setCupom(e.target.value.toUpperCase())} />
-              <button className="btn-azul btn-sm" style={{ whiteSpace: 'nowrap' }} onClick={verificarCupom}>
-                Aplicar
-              </button>
+              <input placeholder="Digite o cupom" value={cupom} onChange={e => setCupom(e.target.value.toUpperCase())} />
+              <button className="btn-azul btn-sm" onClick={verificarCupom}>Aplicar</button>
             </div>
             {msg && <p className="sucesso" style={{ marginBottom: 12 }}>{msg}</p>}
 
-            {/* Pagamento */}
             <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 8 }}>Forma de pagamento</p>
             <select value={pagamento} onChange={e => setPagamento(e.target.value)} style={{ marginBottom: 20 }}>
-              <option value="pix">PIX</option>
-              <option value="cartao">Cartão de Crédito/Débito</option>
-              <option value="boleto">Boleto Bancário</option>
+              <option value="mercadopago">Mercado Pago (Cartão Simulado)</option>
+              <option value="pix">PIX Direto</option>
+              <option value="cartao">Cartão de Crédito (Manual)</option>
             </select>
 
-            {/* Totais */}
             <div style={{ borderTop: '1px solid #eee', paddingTop: 16 }}>
-              <div style={st.linha}>
-                <span>Subtotal</span>
-                <span>R$ {total.toFixed(2).replace('.', ',')}</span>
-              </div>
-              {desconto && (
-                <div style={{ ...st.linha, color: '#3A5D3E' }}>
-                  <span>Desconto ({desconto.desconto}%)</span>
-                  <span>- R$ {valorDesconto.toFixed(2).replace('.', ',')}</span>
-                </div>
-              )}
-              <div style={st.linha}>
-                <span>Frete ({freteSelecionado ? freteSelecionado.nome : '—'})</span>
-                <span style={{ color: valorFrete > 0 ? '#333' : '#aaa' }}>
-                  {freteSelecionado ? `R$ ${valorFrete.toFixed(2).replace('.', ',')}` : 'Selecione'}
-                </span>
-              </div>
-              {freteSelecionado && (
-                <div style={{ ...st.linha, fontSize: 12, color: '#888', marginTop: -4 }}>
-                  <span>Prazo estimado</span>
-                  <span>{freteSelecionado.prazo} {freteSelecionado.prazo === 1 ? 'dia útil' : 'dias úteis'}</span>
-                </div>
-              )}
-              <div style={{ ...st.linha, fontWeight: 800, fontSize: 20, marginTop: 12 }}>
-                <span>Total</span>
-                <span style={{ color: '#3A5D3E' }}>R$ {totalFinal.toFixed(2).replace('.', ',')}</span>
-              </div>
+              <div style={st.linha}><span>Subtotal</span><span>R$ {total.toFixed(2).replace('.', ',')}</span></div>
+              {desconto && <div style={{ ...st.linha, color: '#3A5D3E' }}><span>Desconto ({desconto.desconto}%)</span><span>- R$ {valorDesconto.toFixed(2).replace('.', ',')}</span></div>}
+              <div style={st.linha}><span>Frete</span><span>{freteSelecionado ? `R$ ${valorFrete.toFixed(2).replace('.', ',')}` : 'Selecione'}</span></div>
+              <div style={{ ...st.linha, fontWeight: 800, fontSize: 20, marginTop: 12 }}><span>Total</span><span style={{ color: '#3A5D3E' }}>R$ {totalFinal.toFixed(2).replace('.', ',')}</span></div>
             </div>
 
             {erro && <p className="erro" style={{ marginTop: 12 }}>{erro}</p>}
 
-            <button className="btn-verde" style={{ width: '100%', marginTop: 20, fontSize: 16 }}
-              onClick={finalizar} disabled={loading}>
-              {loading ? 'Processando...' : '✅ Finalizar Compra'}
-            </button>
-
-            {!cliente && (
-              <p className="erro" style={{ textAlign: 'center', marginTop: 8 }}>
-                Faça login para finalizar.
-              </p>
+            {pagamento !== 'mercadopago' && (
+              <button className="btn-verde" style={{ width: '100%', marginTop: 20, fontSize: 16 }} onClick={() => finalizar()} disabled={loading}>
+                {loading ? 'Processando...' : '✅ Finalizar Compra'}
+              </button>
             )}
 
-            {/* Selos de segurança */}
-            <div style={st.selos}>
-              <span>🔒 Compra segura</span>
-              <span>📦 Envio pelos Correios</span>
-            </div>
+            {pagamento === 'mercadopago' && (
+              <CheckoutSimulado onFinalizar={finalizar} loading={loading} />
+            )}
+
+            {!cliente && <p className="erro" style={{ textAlign: 'center', marginTop: 8 }}>Faça login para finalizar.</p>}
+
+            <div style={st.selos}><span>🔒 Compra segura</span><span>📦 Envio pelos Correios</span></div>
           </div>
         </div>
-
       </div>
     </div>
   );
@@ -356,8 +267,6 @@ const st = {
   qtdNum:  { width: 34, textAlign: 'center', fontWeight: 700, fontSize: 14 },
   info:    { fontSize: 12, marginTop: 6, fontStyle: 'italic', color: '#888' },
   freteCalculando: { display: 'flex', alignItems: 'center', gap: 12, color: '#3A5D3E', padding: '14px 0', fontSize: 14 },
-  freteErro:       { background: '#fff3cd', border: '1px solid #ffc107', borderRadius: 8, padding: 14, fontSize: 14 },
   freteOpcao:      { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderRadius: 10, cursor: 'pointer', transition: 'all 0.2s' },
-  freteOpcaoIndisponivel: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderRadius: 10, background: '#f8f9fa', border: '1.5px solid #eee', opacity: 0.6 },
   selos: { display: 'flex', justifyContent: 'center', gap: 16, marginTop: 16, fontSize: 12, color: '#888', flexWrap: 'wrap' },
 };

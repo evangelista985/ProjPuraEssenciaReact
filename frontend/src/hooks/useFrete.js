@@ -24,7 +24,7 @@ export function useFrete() {
     setFreteSelecionado(null);
 
     try {
-      const { data } = await api.post('/correios/frete', {
+      const { data } = await api.post('/frete/calcular', {
         cep_destino: cepLimpo,
         peso:        estimarPeso(itens),
         comprimento: '20',
@@ -44,7 +44,7 @@ export function useFrete() {
     } catch (err) {
       setErroFrete(
         err.response?.data?.erro ||
-        'Não foi possível calcular o frete. O serviço dos Correios pode estar instável.'
+        'Não foi possível calcular o frete. Tente novamente em alguns instantes.'
       );
     } finally {
       setCalculando(false);

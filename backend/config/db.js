@@ -3,8 +3,8 @@ require('dotenv').config();
 
 const pool = mysql.createPool({
   host:     process.env.DB_HOST || 'localhost',
-  user:     process.env.DB_USER || 'admin',
-  password: process.env.DB_PASS || '123456',
+  user:     process.env.DB_USER || 'root',
+  password: process.env.DB_PASS || '',
   database: process.env.DB_NAME || 'loja_pura_essencia',
   waitForConnections: true,
   connectionLimit: 10,
