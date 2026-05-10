@@ -53,6 +53,9 @@ export function Login() {
           </div>
           {erro && <p className="erro">{erro}</p>}
           <button type="submit" className="btn-verde" style={{ width: '100%', marginTop: 20 }}>Entrar</button>
+        <Link to="/esqueci-senha" style={{ color: '#3A5D3E', fontSize: 13 }}>
+  Esqueci minha senha
+</Link>
         </form>
         <p style={{ textAlign: 'center', marginTop: 16, fontSize: 14, color: '#888' }}>
           Não tem conta? <Link to="/cadastro" style={{ color: '#3A5D3E', fontWeight: 700 }}>Cadastre-se</Link>

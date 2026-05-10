@@ -13,6 +13,8 @@ import Dashboard from './pages/AdminDashboard';
 import AdminProdutos from './pages/AdminProdutos';
 import AdminPedidos from './pages/AdminPedidos';
 import { AdminUsuarios, AdminCupons } from './pages/AdminUsuariosECupons';
+import EsqueciSenha from './pages/EsqueciSenha';
+
 
 function LayoutPublico({ children }) {
   return (
@@ -39,7 +41,7 @@ export default function App() {
             <Route path="/login"      element={<LayoutPublico><Login /></LayoutPublico>} />
             <Route path="/cadastro"   element={<LayoutPublico><Cadastro /></LayoutPublico>} />
             <Route path="/meus-pedidos" element={<LayoutPublico><MeusPedidos /></LayoutPublico>} />
-
+            <Route path="/esqueci-senha" element={<LayoutPublico><EsqueciSenha /></LayoutPublico>} />
             {/* Admin */}
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLayout />}>
