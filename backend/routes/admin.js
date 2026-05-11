@@ -1,0 +1,118 @@
+const express = require('express');
+const router  = express.Router();
+const bcrypt  = require('bcryptjs');
+const jwt     = require('jsonwebtoken');
+const db      = require('../config/db');
+const { authAdmin, nivelMinimo } = require('../middleware/auth');
+
+// POST /api/admin/login
+router.post('/login', async (req, res) => {
+  const { email, senha } = req.body;
+  if (!email || !senha) return res.status(400).json({ erro: 'Campos obrigatórios' });
+  try {
+    const [rows] = await db.query('SELECT * FROM admin_usuarios WHERE email = ?', [email]);
+    if (rows.length === 0) return res.status(401).json({ erro: 'Credenciais inválidas' });
+    const ok = await bcrypt.compare(senha, rows[0].senha);
+    if (!ok) return res.status(401).json({ erro: 'Credenciais inválidas' });
+    const token = jwt.sign(
+      { id: rows[0].id, nome: rows[0].nome, email: rows[0].email, nivel: rows[0].nivel, tipo: 'admin' },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES }
+    );
+    res.json({ token, usuario: { id: rows[0].id, nome: rows[0].nome, nivel: rows[0].nivel } });
+  } catch {
+    res.status(500).json({ erro: 'Erro no servidor' });
+  }
+});
+
+// ===== USUÁRIOS =====
+router.get('/usuarios', authAdmin, nivelMinimo('gerente'), async (req, res) => {
+  const [rows] = await db.query('SELECT id, nome, email, nivel, criado_em FROM admin_usuarios ORDER BY criado_em DESC');
+  res.json(rows);
+});
+
+router.post('/usuarios', authAdmin, async (req, res) => {
+  const { nome, email, senha, nivel } = req.body;
+  const permitidos = { admin: ['admin','gerente','vendedor'], gerente: ['vendedor'], vendedor: [] };
+  if (!permitidos[req.admin.nivel]?.includes(nivel))
+    return res.status(403).json({ erro: 'Sem permissão para criar este nível' });
+  try {
+    const [existe] = await db.query('SELECT id FROM admin_usuarios WHERE email = ?', [email]);
+    if (existe.length > 0) return res.status(400).json({ erro: 'E-mail já cadastrado' });
+    const hash = await bcrypt.hash(senha, 10);
+    await db.query('INSERT INTO admin_usuarios (nome, email, senha, nivel) VALUES (?,?,?,?)', [nome, email, hash, nivel]);
+    res.status(201).json({ mensagem: 'Usuário criado!' });
+  } catch {
+    res.status(500).json({ erro: 'Erro ao criar usuário' });
+  }
+});
+
+router.delete('/usuarios/:id', authAdmin, nivelMinimo('admin'), async (req, res) => {
+  await db.query('DELETE FROM admin_usuarios WHERE id = ?', [req.params.id]);
+  res.json({ mensagem: 'Usuário removido!' });
+});
+
+// ===== CUPONS =====
+router.get('/cupons', authAdmin, nivelMinimo('gerente'), async (req, res) => {
+  const [rows] = await db.query('SELECT * FROM cupons ORDER BY criado_em DESC');
+  res.json(rows);
+});
+
+router.post('/cupons', authAdmin, nivelMinimo('gerente'), async (req, res) => {
+  const { codigo, desconto_percent, validade } = req.body;
+  try {
+    await db.query('INSERT INTO cupons (codigo, desconto_percent, validade) VALUES (?,?,?)',
+      [codigo, desconto_percent, validade || null]);
+    res.status(201).json({ mensagem: 'Cupom criado!' });
+  } catch {
+    res.status(400).json({ erro: 'Erro ao criar cupom (código duplicado?)' });
+  }
+});
+
+router.put('/cupons/:id', authAdmin, nivelMinimo('gerente'), async (req, res) => {
+  const { ativo } = req.body;
+  await db.query('UPDATE cupons SET ativo = ? WHERE id = ?', [ativo, req.params.id]);
+  res.json({ mensagem: 'Cupom atualizado!' });
+});
+
+// ===== DASHBOARD =====
+router.get('/dashboard', authAdmin, async (req, res) => {
+  const { periodo } = req.query;
+  const filtros = {
+    dia:    'DATE(p.criado_em) = CURDATE()',
+    semana: 'YEARWEEK(p.criado_em,1) = YEARWEEK(CURDATE(),1)',
+    mes:    'MONTH(p.criado_em) = MONTH(CURDATE()) AND YEAR(p.criado_em) = YEAR(CURDATE())',
+    ano:    'YEAR(p.criado_em) = YEAR(CURDATE())',
+  };
+  const w = filtros[periodo] || filtros['mes'];
+  try {
+    const [[totais]] = await db.query(`
+      SELECT COUNT(*) AS total_pedidos,
+        COALESCE(SUM(p.total_final),0) AS receita_total,
+        COALESCE(AVG(p.total_final),0) AS ticket_medio
+      FROM pedidos p WHERE ${w} AND p.status != 'cancelado'
+    `);
+    const [porStatus] = await db.query(`
+      SELECT p.status, COUNT(*) AS qtd FROM pedidos p WHERE ${w} GROUP BY p.status
+    `);
+    const [topProdutos] = await db.query(`
+      SELECT pr.nome, SUM(pi.quantidade) AS total_vendido, SUM(pi.quantidade*pi.preco_unit) AS receita
+      FROM pedido_itens pi
+      JOIN pedidos  p  ON p.id  = pi.pedido_id
+      JOIN produtos pr ON pr.id = pi.produto_id
+      WHERE ${w} AND p.status != 'cancelado'
+      GROUP BY pr.id ORDER BY total_vendido DESC LIMIT 5
+    `);
+    const [vendasDia] = await db.query(`
+      SELECT DATE(p.criado_em) AS dia, COUNT(*) AS pedidos, COALESCE(SUM(p.total_final),0) AS receita
+      FROM pedidos p
+      WHERE p.criado_em >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND p.status != 'cancelado'
+      GROUP BY DATE(p.criado_em) ORDER BY dia
+    `);
+    res.json({ totais, porStatus, topProdutos, vendasDia });
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao carregar dashboard' });
+  }
+});
+
+module.exports = router;
