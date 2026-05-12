@@ -3,31 +3,28 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 const SLIDES = [
-  { src: '/img/organicoCafe_1.jpg',    alt: 'Café Orgânico'      },
+  { src: '/img/organicoCafe.jpg',    alt: 'Café Orgânico'      },
   { src: '/img/chaCamomila4.png',      alt: 'Chás Naturais'      },
   { src: '/img/temperoOregano_1.jpg',  alt: 'Temperos Naturais'  },
 ];
 
 export default function Vitrine() {
-  const [produtos,    setProdutos]   = useState([]);
-  const [categorias,  setCategorias] = useState([]);
-  const [filtros,     setFiltros]    = useState({ nome: '', categoria_id: '' });
-  const [loading,     setLoading]    = useState(true);
-  const [slide,       setSlide]      = useState(0);
+  const [produtos, setProdutos] = useState([]);
+  const [filtros,  setFiltros]  = useState({ nome: '' });
+  const [loading,  setLoading]  = useState(true);
+  const [slide,    setSlide]    = useState(0);
   const nav = useNavigate();
 
   async function buscar() {
     setLoading(true);
     const params = {};
-    if (filtros.nome)         params.nome         = filtros.nome;
-    if (filtros.categoria_id) params.categoria_id = filtros.categoria_id;
+    if (filtros.nome) params.nome = filtros.nome;
     const { data } = await api.get('/produtos', { params });
     setProdutos(data);
     setLoading(false);
   }
 
   useEffect(() => {
-    api.get('/produtos/categorias').then(r => setCategorias(r.data));
     buscar();
   }, []);
 
@@ -62,7 +59,7 @@ export default function Vitrine() {
 
       {/* Banner Promoção */}
       <div style={st.promoBanner}>
-        🌿 Nas compras acima de R$ 60,00 ganhe um brinde sustentável
+         Nas compras acima de R$ 60,00 ganhe um brinde sustentável
       </div>
 
       {/* Filtros */}
@@ -72,15 +69,8 @@ export default function Vitrine() {
           <input placeholder="Ex: Camomila, Alecrim..." value={filtros.nome}
             onChange={e => setFiltros({ ...filtros, nome: e.target.value })} />
         </div>
-        <div style={{ minWidth: 180 }}>
-          <label style={st.label}>Categoria</label>
-          <select value={filtros.categoria_id} onChange={e => setFiltros({ ...filtros, categoria_id: e.target.value })}>
-            <option value="">Todas</option>
-            {categorias.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
-          </select>
-        </div>
         <button className="btn-verde" onClick={buscar}>🔍 Buscar</button>
-        <button onClick={() => { setFiltros({ nome: '', categoria_id: '' }); setTimeout(buscar, 100); }}
+        <button onClick={() => { setFiltros({ nome: '' }); setTimeout(buscar, 100); }}
           style={{ background: '#eee', color: '#333', padding: '12px 18px', borderRadius: 8 }}>Limpar</button>
       </div>
 

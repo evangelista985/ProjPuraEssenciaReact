@@ -1,6 +1,6 @@
-require('dotenv').config();
 const express = require('express');
 const cors    = require('cors');
+require('dotenv').config();
 
 const app = express();
 app.use(cors());
@@ -10,8 +10,6 @@ app.use('/api/clientes', require('./routes/clientes'));
 app.use('/api/produtos',  require('./routes/produtos'));
 app.use('/api/pedidos',   require('./routes/pedidos'));
 app.use('/api/admin',     require('./routes/admin'));
-app.use('/api/frete',     require('./routes/frete'));
-app.use('/api/pagamentos', require('./routes/pagamentos'));
 
 // Verificar cupom (público)
 const db = require('./config/db');

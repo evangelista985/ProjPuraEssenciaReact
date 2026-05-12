@@ -8,7 +8,7 @@ export default function Footer() {
 
           {/* Coluna 1 — Logo e descrição */}
           <div style={s.col}>
-            <h3 style={s.logoText}>🌿 Pura Essência</h3>
+            <h3 style={s.logoText}> Pura Essência</h3>
             <p style={s.desc}>
               Produtos naturais e orgânicos selecionados com cuidado para
               levar saúde, sabor e bem-estar à sua mesa.

@@ -2,6 +2,7 @@
 -- PURA ESSÊNCIA - Schema MySQL
 -- =============================================
 
+
 CREATE DATABASE IF NOT EXISTS loja_pura_essencia CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE loja_pura_essencia;
 
@@ -95,7 +96,7 @@ CREATE TABLE pedido_itens (
 
 -- Admin padrão (senha: admin123)
 INSERT INTO admin_usuarios (nome, email, senha, nivel) VALUES
-('Administrador', 'admin@puraessencia.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
+('Administrador', 'admin@puraessencia.com', '$2b$10$OmsQsG90XP67Yv4SaOWFBuft2lT8XeFCbb90aXlQppyK9NgGdtUKa', 'admin');
 
 -- Categorias
 INSERT INTO categorias (nome) VALUES ('Chás'), ('Temperos'), ('Orgânicos');
