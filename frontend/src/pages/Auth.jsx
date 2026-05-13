@@ -44,7 +44,10 @@ export function Login() {
           {erro && <p className="erro">{erro}</p>}
           <button type="submit" className="btn-verde" style={{ width: '100%', marginTop: 20 }}>Entrar</button>
         </form>
-        <p style={{ textAlign: 'center', marginTop: 16, fontSize: 14, color: '#888' }}>
+        <p style={{ textAlign: 'center', marginTop: 12, fontSize: 13 }}>
+          <Link to="/esqueci-senha" style={{ color: '#3A5D3E', fontWeight: 700 }}>Esqueci minha senha</Link>
+        </p>
+        <p style={{ textAlign: 'center', marginTop: 8, fontSize: 14, color: '#888' }}>
           Não tem conta? <Link to="/cadastro" style={{ color: '#3A5D3E', fontWeight: 700 }}>Cadastre-se</Link>
         </p>
       </div>

@@ -2,10 +2,11 @@ const express = require('express');
 const router  = express.Router();
 const db      = require('../config/db');
 const { authCliente, authAdmin } = require('../middleware/auth');
+const { enviarEmailConfirmacaoPedido } = require('../config/email');
 
 // POST /api/pedidos - cliente faz pedido
 router.post('/', authCliente, async (req, res) => {
-  const { itens, forma_pagamento, cupom_codigo } = req.body;
+  const { itens, forma_pagamento, cupom_codigo, frete } = req.body;
   if (!itens || itens.length === 0) return res.status(400).json({ erro: 'Carrinho vazio' });
   if (!forma_pagamento) return res.status(400).json({ erro: 'Forma de pagamento obrigatória' });
 
@@ -33,27 +34,60 @@ router.post('/', authCliente, async (req, res) => {
     }
 
     const valorDesconto = (total * desconto) / 100;
-    const total_final   = total - valorDesconto;
+    const frete_valor   = frete?.valor   || 0;
+    const frete_servico = frete?.nome    || null;
+    const total_final   = total - valorDesconto + frete_valor;
 
     const [pedido] = await conn.query(
-      'INSERT INTO pedidos (cliente_id, total, desconto, total_final, forma_pagamento, cupom_id) VALUES (?,?,?,?,?,?)',
-      [req.cliente.id, total, valorDesconto, total_final, forma_pagamento, cupom_id]
+      'INSERT INTO pedidos (cliente_id, total, desconto, total_final, forma_pagamento, cupom_id, status) VALUES (?,?,?,?,?,?,?)',
+      [req.cliente.id, total, valorDesconto, total_final, forma_pagamento, cupom_id, 'pago']
     );
 
+    const pedido_id = pedido.insertId;
+    const itensSalvos = [];
+
     for (const item of itens) {
-      const [produto] = await conn.query('SELECT preco FROM produtos WHERE id = ?', [item.produto_id]);
+      const [produto] = await conn.query('SELECT preco, nome FROM produtos WHERE id = ?', [item.produto_id]);
       await conn.query(
         'INSERT INTO pedido_itens (pedido_id, produto_id, quantidade, preco_unit) VALUES (?,?,?,?)',
-        [pedido.insertId, item.produto_id, item.quantidade, produto[0].preco]
+        [pedido_id, item.produto_id, item.quantidade, produto[0].preco]
       );
       await conn.query(
         'UPDATE estoque SET quantidade = quantidade - ? WHERE produto_id = ?',
         [item.quantidade, item.produto_id]
       );
+      itensSalvos.push({
+        nome:      produto[0].nome,
+        quantidade: item.quantidade,
+        preco_unit: produto[0].preco,
+      });
     }
 
     await conn.commit();
-    res.status(201).json({ mensagem: 'Pedido realizado!', pedido_id: pedido.insertId, total_final });
+
+    // ── Buscar dados do cliente para o e-mail ──
+    const [clienteRows] = await db.query(
+      'SELECT id, nome, email FROM clientes WHERE id = ?',
+      [req.cliente.id]
+    );
+
+    // ── Enviar e-mail de confirmação (não bloqueia a resposta) ──
+    enviarEmailConfirmacaoPedido({
+      cliente: clienteRows[0],
+      pedido: {
+        id:            pedido_id,
+        status:        'pago',
+        forma_pagamento,
+        total,
+        desconto:      valorDesconto,
+        frete_valor,
+        frete_servico,
+        total_final,
+      },
+      itens: itensSalvos,
+    });
+
+    res.status(201).json({ mensagem: 'Pedido realizado!', pedido_id, total_final });
   } catch (err) {
     await conn.rollback();
     res.status(400).json({ erro: err.message || 'Erro ao criar pedido' });

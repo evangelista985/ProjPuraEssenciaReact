@@ -13,6 +13,7 @@ import Dashboard from './pages/AdminDashboard';
 import AdminProdutos from './pages/AdminProdutos';
 import AdminPedidos from './pages/AdminPedidos';
 import { AdminUsuarios, AdminCupons } from './pages/AdminUsuariosECupons';
+import EsqueciSenha from './pages/EsqueciSenha';
 
 // ✅ Novas páginas de categoria
 import Chas from './pages/Chas';
@@ -43,6 +44,7 @@ export default function App() {
             <Route path="/carrinho"     element={<LayoutPublico><Carrinho /></LayoutPublico>} />
             <Route path="/login"        element={<LayoutPublico><Login /></LayoutPublico>} />
             <Route path="/cadastro"     element={<LayoutPublico><Cadastro /></LayoutPublico>} />
+            <Route path="/esqueci-senha" element={<LayoutPublico><EsqueciSenha /></LayoutPublico>} />
             <Route path="/meus-pedidos" element={<LayoutPublico><MeusPedidos /></LayoutPublico>} />
 
             {/* ✅ Páginas de Categoria */}
