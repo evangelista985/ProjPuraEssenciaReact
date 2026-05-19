@@ -15,6 +15,10 @@ import AdminPedidos from './pages/AdminPedidos';
 import { AdminUsuarios, AdminCupons } from './pages/AdminUsuariosECupons';
 import EsqueciSenha from './pages/EsqueciSenha';
 
+// ✅ Novas páginas de categoria
+import Chas from './pages/Chas';
+import Organicos from './pages/Organicos';
+import Temperos from './pages/Temperos';
 
 function LayoutPublico({ children }) {
   return (
@@ -35,13 +39,19 @@ export default function App() {
         <CartProvider>
           <Routes>
             {/* Público */}
-            <Route path="/"           element={<LayoutPublico><Vitrine /></LayoutPublico>} />
-            <Route path="/produto/:id" element={<LayoutPublico><DetalhesProduto /></LayoutPublico>} />
-            <Route path="/carrinho"   element={<LayoutPublico><Carrinho /></LayoutPublico>} />
-            <Route path="/login"      element={<LayoutPublico><Login /></LayoutPublico>} />
-            <Route path="/cadastro"   element={<LayoutPublico><Cadastro /></LayoutPublico>} />
-            <Route path="/meus-pedidos" element={<LayoutPublico><MeusPedidos /></LayoutPublico>} />
+            <Route path="/"             element={<LayoutPublico><Vitrine /></LayoutPublico>} />
+            <Route path="/produto/:id"  element={<LayoutPublico><DetalhesProduto /></LayoutPublico>} />
+            <Route path="/carrinho"     element={<LayoutPublico><Carrinho /></LayoutPublico>} />
+            <Route path="/login"        element={<LayoutPublico><Login /></LayoutPublico>} />
+            <Route path="/cadastro"     element={<LayoutPublico><Cadastro /></LayoutPublico>} />
             <Route path="/esqueci-senha" element={<LayoutPublico><EsqueciSenha /></LayoutPublico>} />
+            <Route path="/meus-pedidos" element={<LayoutPublico><MeusPedidos /></LayoutPublico>} />
+
+            {/* ✅ Páginas de Categoria */}
+            <Route path="/chas"       element={<LayoutPublico><Chas /></LayoutPublico>} />
+            <Route path="/organicos"  element={<LayoutPublico><Organicos /></LayoutPublico>} />
+            <Route path="/temperos"   element={<LayoutPublico><Temperos /></LayoutPublico>} />
+
             {/* Admin */}
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLayout />}>
