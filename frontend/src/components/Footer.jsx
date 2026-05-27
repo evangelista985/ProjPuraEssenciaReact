@@ -3,84 +3,64 @@ import { Link } from 'react-router-dom';
 export default function Footer() {
   return (
     <footer style={s.footer}>
-      <div className="container">
-        <div style={s.grid}>
+      <div style={s.footerGrid}>
 
-          {/* Coluna 1 — Logo e descrição */}
-          <div style={s.col}>
-            <h3 style={s.logoText}> Pura Essência</h3>
-            <p style={s.desc}>
-              Produtos naturais e orgânicos selecionados com cuidado para
-              levar saúde, sabor e bem-estar à sua mesa.
-            </p>
+        {/* Col 1 — Logo */}
+        <div>
+          <div style={s.footerLogo}>Pura <span style={s.logoSpan}>Essência</span></div>
+          <p style={s.footerDesc}>
+            Produtos naturais, orgânicos e sustentáveis para uma vida mais saudável e consciente.
+            Da natureza para sua mesa e sua vida.
+          </p>
+          <div style={{ display: 'flex', gap: '0.8rem', marginTop: '1.5rem' }}>
+            {['📱','📸','💬','𝕏'].map((icon, i) => (
+              <div key={i} style={s.socialIcon}>{icon}</div>
+            ))}
           </div>
-
-          {/* Coluna 2 — Navegação */}
-          <div style={s.col}>
-            <h4 style={s.colTitulo}>Navegação</h4>
-            <ul style={s.lista}>
-              <li><Link to="/"             style={s.link}>Vitrine</Link></li>
-              <li><Link to="/carrinho"     style={s.link}>Carrinho</Link></li>
-              <li><Link to="/meus-pedidos" style={s.link}>Meus Pedidos</Link></li>
-              <li><Link to="/login"        style={s.link}>Entrar</Link></li>
-              <li><Link to="/cadastro"     style={s.link}>Cadastrar</Link></li>
-            </ul>
-          </div>
-
-          {/* Coluna 3 — Contato */}
-          <div style={s.col}>
-            <h4 style={s.colTitulo}>Contato</h4>
-            <ul style={s.lista}>
-              <li style={s.contatoItem}>📍 R. Guiapá, 678 – Vila Leopoldina</li>
-              <li style={s.contatoItem}>📍 CEP 05089-001 – São Paulo, SP</li>
-              <li style={s.contatoItem}>📞 (11) 3456-7890</li>
-              <li style={s.contatoItem}>✉️ puraessencia@puraessencia.com.br</li>
-            </ul>
-          </div>
-
-          {/* Coluna 4 — Redes Sociais */}
-          <div style={s.col}>
-            <h4 style={s.colTitulo}>Redes Sociais</h4>
-            <div style={s.redesWrap}>
-              <a href="https://www.facebook.com" target="_blank" rel="noreferrer" style={s.redesLink}>
-                <div style={s.icone}>f</div>
-                <span>Facebook</span>
-              </a>
-              <a href="https://www.instagram.com" target="_blank" rel="noreferrer" style={s.redesLink}>
-                <div style={s.icone}>📷</div>
-                <span>Instagram</span>
-              </a>
-              <a href="https://wa.me/5511981992048" target="_blank" rel="noreferrer" style={s.redesLink}>
-                <div style={s.icone}>💬</div>
-                <span>WhatsApp</span>
-              </a>
-              <a href="https://x.com" target="_blank" rel="noreferrer" style={s.redesLink}>
-                <div style={s.icone}>𝕏</div>
-                <span>Twitter/X</span>
-              </a>
-            </div>
-
-            <div style={s.pagamentos}>
-              <h4 style={{ ...s.colTitulo, marginTop: 20 }}>Pagamentos</h4>
-              <div style={s.pagRow}>
-                <span style={s.pagBadge}>PIX</span>
-                <span style={s.pagBadge}>Cartão</span>
-                <span style={s.pagBadge}>Boleto</span>
-              </div>
-            </div>
-          </div>
-
         </div>
 
-        {/* Linha divisória */}
-        <div style={s.divider} />
+        {/* Col 2 — Produtos */}
+        <div style={s.footerCol}>
+          <h4 style={s.footerColTitle}>Produtos</h4>
+          <ul style={s.footerLinks}>
+            <li><Link to="/chas"     style={s.footerLink}>Chás & Ervas</Link></li>
+            <li><Link to="/organicos" style={s.footerLink}>Orgânicos</Link></li>
+            <li><Link to="/temperos" style={s.footerLink}>Temperos</Link></li>
+            <li><Link to="/"         style={s.footerLink}>Vitrine</Link></li>
+          </ul>
+        </div>
 
-        {/* Rodapé final */}
-        <div style={s.bottom}>
-          <p>© {new Date().getFullYear()} Pura Essência — Todos os direitos reservados.</p>
-          <p style={{ marginTop: 4, fontSize: 12, color: '#8aab8c' }}>
-            Desenvolvido com 🌿 e cuidado
-          </p>
+        {/* Col 3 — Navegação */}
+        <div style={s.footerCol}>
+          <h4 style={s.footerColTitle}>Navegação</h4>
+          <ul style={s.footerLinks}>
+            <li><Link to="/carrinho"     style={s.footerLink}>Carrinho</Link></li>
+            <li><Link to="/meus-pedidos" style={s.footerLink}>Meus Pedidos</Link></li>
+            <li><Link to="/login"        style={s.footerLink}>Entrar</Link></li>
+            <li><Link to="/cadastro"     style={s.footerLink}>Cadastrar</Link></li>
+          </ul>
+        </div>
+
+        {/* Col 4 — Atendimento */}
+        <div style={s.footerCol}>
+          <h4 style={s.footerColTitle}>Atendimento</h4>
+          <div style={s.footerContact}>
+            <div>📧 puraessencia@puraessencia.com.br</div>
+            <div>📞 (11) 3456-7890</div>
+            <div>💬 WhatsApp disponível</div>
+            <div style={{ marginTop: '0.8rem', fontSize: '0.78rem', color: 'rgba(245,240,232,0.4)' }}>
+              Seg–Sex: 9h às 18h<br />Sáb: 9h às 13h
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style={s.footerBottom}>
+        <span>© {new Date().getFullYear()} Pura Essência — Todos os direitos reservados.</span>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          {['PIX','VISA','MASTER','BOLETO'].map(m => (
+            <div key={m} style={s.payIcon}>{m}</div>
+          ))}
         </div>
       </div>
     </footer>
@@ -89,110 +69,92 @@ export default function Footer() {
 
 const s = {
   footer: {
-    background: '#2E4D37',
-    color: '#c8d8c9',
-    marginTop: 60,
-    paddingTop: 48,
-    paddingBottom: 24,
-    fontFamily: "'Lato', sans-serif",
+    background: '#1C3A2A',
+    color: 'rgba(245,240,232,0.75)',
+    marginTop: 0,
+    padding: '4rem 4rem 0',
+    fontFamily: "'Jost', sans-serif",
+    fontSize: '0.88rem',
   },
-  grid: {
+  footerGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: 36,
-    paddingBottom: 32,
+    gap: '3rem',
+    paddingBottom: '3rem',
+    borderBottom: '1px solid rgba(200,169,110,0.15)',
   },
-  col: {
-    display: 'flex',
-    flexDirection: 'column',
+  footerLogo: {
+    fontFamily: "'Cormorant Garamond', serif",
+    fontSize: '1.5rem',
+    fontWeight: 600,
+    color: '#F5F0E8',
+    marginBottom: '1rem',
+    letterSpacing: '0.04em',
   },
-  logoText: {
-    fontFamily: "'Playfair Display', serif",
-    fontSize: 22,
-    color: '#D4AF37',
-    marginBottom: 12,
-  },
-  desc: {
-    fontSize: 14,
-    lineHeight: 1.7,
-    color: '#a8c4aa',
-  },
-  colTitulo: {
-    fontSize: 13,
-    fontWeight: 700,
-    color: '#D4AF37',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 14,
-    borderBottom: '1px solid #3A5D3E',
-    paddingBottom: 8,
-  },
-  lista: {
-    listStyle: 'none',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 8,
-  },
-  link: {
-    color: '#c8d8c9',
-    textDecoration: 'none',
-    fontSize: 14,
-    transition: 'color 0.2s',
-  },
-  contatoItem: {
-    fontSize: 13,
-    color: '#a8c4aa',
+  logoSpan: { color: '#C8A96E' },
+  footerDesc: {
+    fontSize: '0.82rem',
     lineHeight: 1.8,
+    color: 'rgba(245,240,232,0.55)',
   },
-  redesWrap: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 10,
-  },
-  redesLink: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-    color: '#c8d8c9',
-    textDecoration: 'none',
-    fontSize: 14,
-    transition: 'color 0.2s',
-  },
-  icone: {
-    width: 30,
-    height: 30,
-    background: '#3A5D3E',
+  socialIcon: {
+    width: 36,
+    height: 36,
+    background: 'rgba(200,169,110,0.15)',
     borderRadius: '50%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: 13,
-    fontWeight: 700,
-    color: '#D4AF37',
-    flexShrink: 0,
+    fontSize: '1rem',
+    cursor: 'pointer',
   },
-  pagamentos: {},
-  pagRow: {
+  footerCol: { display: 'flex', flexDirection: 'column' },
+  footerColTitle: {
+    fontSize: '0.7rem',
+    fontWeight: 600,
+    color: '#C8A96E',
+    textTransform: 'uppercase',
+    letterSpacing: '0.15em',
+    marginBottom: '1.2rem',
+    fontFamily: "'Jost', sans-serif",
+  },
+  footerLinks: {
+    listStyle: 'none',
     display: 'flex',
-    gap: 8,
+    flexDirection: 'column',
+    gap: '0.7rem',
+  },
+  footerLink: {
+    color: 'rgba(245,240,232,0.6)',
+    textDecoration: 'none',
+    fontSize: '0.85rem',
+    transition: 'color 0.2s',
+  },
+  footerContact: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.6rem',
+    color: 'rgba(245,240,232,0.6)',
+    fontSize: '0.82rem',
+    lineHeight: 1.6,
+  },
+  footerBottom: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     flexWrap: 'wrap',
+    gap: '1rem',
+    padding: '1.5rem 0',
+    fontSize: '0.75rem',
+    color: 'rgba(245,240,232,0.35)',
+    letterSpacing: '0.04em',
   },
-  pagBadge: {
-    background: '#3A5D3E',
-    color: '#D4AF37',
-    padding: '4px 12px',
-    borderRadius: 4,
-    fontSize: 12,
-    fontWeight: 700,
-    letterSpacing: 0.5,
-  },
-  divider: {
-    borderTop: '1px solid #3A5D3E',
-    margin: '0 0 20px 0',
-  },
-  bottom: {
-    textAlign: 'center',
-    fontSize: 13,
-    color: '#8aab8c',
+  payIcon: {
+    background: 'rgba(200,169,110,0.12)',
+    color: 'rgba(245,240,232,0.5)',
+    padding: '4px 10px',
+    fontSize: '0.65rem',
+    fontWeight: 600,
+    letterSpacing: '0.08em',
   },
 };

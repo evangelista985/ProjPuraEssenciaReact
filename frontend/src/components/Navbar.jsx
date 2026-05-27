@@ -9,54 +9,57 @@ export default function Navbar() {
   const location = useLocation();
 
   function handleLogout() { logout(); nav('/'); }
-
   const isActive = (path) => location.pathname === path;
 
   return (
     <nav style={s.nav}>
-      <div className="container" style={s.inner}>
+      <div style={s.inner}>
         {/* Logo */}
         <Link to="/" style={s.logo}>
-          🌿 PURA ESSÊNCIA
+          Pura <span style={s.logoSpan}>Essência</span>
         </Link>
 
-        {/* Links de Categoria */}
-        <div style={s.categorias}>
-          <Link to="/chas" style={s.catLink}>
-  <img src="https://cdn-icons-png.flaticon.com/128/15746/15746086.png" alt="Chás" style={{ width: 26, height: 22, objectFit: 'contain', marginRight: 1  }} />
-  Chás
-          </Link>
-          <Link to="/Organicos" style={s.catLink}>
-  <img src="https://cdn-icons-png.flaticon.com/128/5110/5110652.png" alt="Orgânico" style={{ width: 26, height: 22, objectFit: 'contain', marginRight: 1  }} />
-  Orgânico
-          </Link>
-            <Link to="/temperos" style={s.catLink}>
-  <img src="https://cdn-icons-png.flaticon.com/128/1730/1730509.png" alt="temperos" style={{ width: 26, height: 22, objectFit: 'contain', marginRight: 1  }} />
-  Temperos
-          </Link>
-        </div>
+        {/* Categorias */}
+        <ul style={s.navLinks}>
+          <li>
+            <Link to="/chas" style={{ ...s.catLink, ...(isActive('/chas') ? s.catActive : {}) }}>
+              Chás & Ervas
+            </Link>
+          </li>
+          <li>
+            <Link to="/organicos" style={{ ...s.catLink, ...(isActive('/organicos') ? s.catActive : {}) }}>
+              Orgânicos
+            </Link>
+          </li>
+          <li>
+            <Link to="/temperos" style={{ ...s.catLink, ...(isActive('/temperos') ? s.catActive : {}) }}>
+              Temperos
+            </Link>
+          </li>
+          <li>
+            <Link to="/" style={{ ...s.catLink, ...(isActive('/') ? s.catActive : {}) }}>
+              Vitrine
+            </Link>
+          </li>
+        </ul>
 
-        {/* Links de Usuário */}
-        <div style={s.links}>
-          <Link to="/" style={{ ...s.link, ...(isActive('/') ? s.linkActive : {}) }}>
-            Vitrine
-          </Link>
-
+        {/* Ações */}
+        <div style={s.actions}>
           {cliente ? (
             <>
-              <Link to="/meus-pedidos" style={s.link}>Meus Pedidos</Link>
-              <span style={s.nome}>Olá, {cliente.nome.split(' ')[0]}!</span>
+              <Link to="/meus-pedidos" style={s.actionLink}>Meus Pedidos</Link>
+              <span style={s.nome}>{cliente.nome.split(' ')[0]}</span>
               <button onClick={handleLogout} style={s.btnSair}>Sair</button>
             </>
           ) : (
             <>
-              <Link to="/login"    style={s.link}>Entrar</Link>
+              <Link to="/login"    style={s.actionLink}>Entrar</Link>
               <Link to="/cadastro" style={s.btnCadastro}>Cadastrar</Link>
             </>
           )}
-
-          <Link to="/carrinho" style={s.carrinho}>
-            🛒 {totalItens > 0 && <span style={s.badge}>{totalItens}</span>}
+          <Link to="/carrinho" style={s.cartBtn}>
+            <span style={s.cartIcon}>🛒</span>
+            {totalItens > 0 && <span style={s.badge}>{totalItens}</span>}
           </Link>
         </div>
       </div>
@@ -65,32 +68,115 @@ export default function Navbar() {
 }
 
 const s = {
-  nav:          { background: '#3A5D3E', color: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' },
-  inner:        { display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64, gap: 16 },
-  logo:         { fontFamily: "'Playfair Display', serif", fontSize: 20, color: '#D4AF37', textDecoration: 'none', fontWeight: 700, letterSpacing: 1, flexShrink: 0 },
-
-  // Categorias destacadas
-  categorias:   { display: 'flex', alignItems: 'center', gap: 4 },
-  catLink:      {
-    color: 'rgba(255,255,255,0.8)',
-    textDecoration: 'none',
-    fontSize: 14,
+  nav: {
+    position: 'sticky',
+    top: 0,
+    zIndex: 100,
+    background: 'rgba(245,240,232,0.96)',
+    backdropFilter: 'blur(8px)',
+    borderBottom: '1px solid rgba(200,169,110,0.25)',
+    padding: '0 2.5rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 68,
+  },
+  inner: {
+    width: '100%',
+    maxWidth: 1200,
+    margin: '0 auto',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
+  logo: {
+    fontFamily: "'Cormorant Garamond', serif",
+    fontSize: '1.6rem',
     fontWeight: 600,
-    padding: '6px 12px',
-    borderRadius: 6,
-    transition: 'background 0.2s, color 0.2s',
+    color: '#1C3A2A',
+    letterSpacing: '0.04em',
+    textDecoration: 'none',
+    flexShrink: 0,
   },
-  catLinkActive: {
-    background: 'rgba(212,175,55,0.2)',
-    color: '#D4AF37',
+  logoSpan: { color: '#C8A96E' },
+  navLinks: {
+    display: 'flex',
+    gap: '2rem',
+    listStyle: 'none',
   },
-
-  links:        { display: 'flex', alignItems: 'center', gap: 14 },
-  link:         { color: '#ecf0f1', textDecoration: 'none', fontSize: 14, fontWeight: 600 },
-  linkActive:   { color: '#D4AF37' },
-  nome:         { color: '#D4AF37', fontSize: 14, fontWeight: 700 },
-  btnSair:      { background: 'transparent', border: '1px solid #ecf0f1', color: '#ecf0f1', padding: '6px 14px', borderRadius: 6, fontSize: 13 },
-  btnCadastro:  { background: '#D4AF37', color: '#333', padding: '8px 16px', borderRadius: 6, fontWeight: 700, fontSize: 13, textDecoration: 'none' },
-  carrinho:     { color: '#ecf0f1', textDecoration: 'none', fontSize: 22, position: 'relative' },
-  badge:        { position: 'absolute', top: -8, right: -8, background: '#D4AF37', color: '#333', borderRadius: '50%', width: 18, height: 18, fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 },
+  catLink: {
+    textDecoration: 'none',
+    color: '#6B6050',
+    fontSize: '0.78rem',
+    fontWeight: 500,
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase',
+    transition: 'color 0.2s',
+  },
+  catActive: { color: '#1C3A2A', borderBottom: '1px solid #C8A96E', paddingBottom: 2 },
+  actions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+    flexShrink: 0,
+  },
+  actionLink: {
+    textDecoration: 'none',
+    color: '#6B6050',
+    fontSize: '0.78rem',
+    fontWeight: 500,
+    letterSpacing: '0.1em',
+    textTransform: 'uppercase',
+  },
+  nome: {
+    color: '#A07840',
+    fontSize: '0.78rem',
+    fontWeight: 600,
+    letterSpacing: '0.06em',
+  },
+  btnSair: {
+    background: 'transparent',
+    border: '1px solid rgba(200,169,110,0.5)',
+    color: '#6B6050',
+    padding: '6px 14px',
+    fontSize: '0.72rem',
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+    cursor: 'pointer',
+  },
+  btnCadastro: {
+    background: '#1C3A2A',
+    color: '#F5F0E8',
+    padding: '8px 18px',
+    fontSize: '0.72rem',
+    fontWeight: 500,
+    letterSpacing: '0.1em',
+    textTransform: 'uppercase',
+    textDecoration: 'none',
+  },
+  cartBtn: {
+    position: 'relative',
+    color: '#1C3A2A',
+    textDecoration: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    padding: '0.4rem',
+  },
+  cartIcon: { fontSize: '1.2rem' },
+  badge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    background: '#1C3A2A',
+    color: '#F5F0E8',
+    borderRadius: '50%',
+    width: 16,
+    height: 16,
+    fontSize: 9,
+    fontWeight: 600,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 };
