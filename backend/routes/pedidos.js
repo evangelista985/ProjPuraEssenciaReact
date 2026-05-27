@@ -163,5 +163,21 @@ router.put('/:id/status', authAdmin, async (req, res) => {
     res.status(500).json({ erro: 'Erro ao atualizar status' });
   }
 });
+// Adicione esta rota no arquivo routes/pedidos.js do Node
+// ANTES do module.exports = router;
+
+// PUT /api/pedidos/:id/rastreio - atualizar rastreio (admin)
+router.put('/:id/rastreio', authAdmin, async (req, res) => {
+  const { statusRastreio } = req.body;
+  const statusMap = { 0: 'pago', 1: 'enviado', 2: 'entregue' };
+  const status = statusMap[statusRastreio];
+  if (status === undefined) return res.status(400).json({ erro: 'Status inválido' });
+  try {
+    await db.query('UPDATE pedidos SET status = ? WHERE id = ?', [status, req.params.id]);
+    res.json({ mensagem: 'Rastreio atualizado!' });
+  } catch {
+    res.status(500).json({ erro: 'Erro ao atualizar rastreio' });
+  }
+});
 
 module.exports = router;

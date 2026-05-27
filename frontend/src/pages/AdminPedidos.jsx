@@ -2,16 +2,129 @@ import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-const statusOpcoes = ['pendente','pago','enviado','entregue','cancelado','finalizado'];
-const statusCor    = {
-  pendente: 'badge-amarelo', pago: 'badge-azul', enviado: 'badge-azul',
-  entregue: 'badge-verde',  cancelado: 'badge-vermelho', finalizado: 'badge-roxo',
+const labelOpcao = {
+  pendente:   'pendente',
+  pago:       'preparação',
+  enviado:    'transporte',
+  entregue:   'entregue',
+  cancelado:  'cancelado',
+  finalizado: 'finalizado',
 };
 
+const statusOpcoes = ['pendente','pago','enviado','entregue','cancelado','finalizado'];
+const statusCor    = {
+  pendente:   'badge-amarelo',
+  pago:       'badge-azul',
+  enviado:    'badge-azul',
+  entregue:   'badge-verde',
+  cancelado:  'badge-vermelho',
+  finalizado: 'badge-azul',
+};
+
+function etapaRastreio(status) {
+  if (status === 'entregue' || status === 'finalizado') return 3;
+  if (status === 'enviado') return 2;
+  if (status === 'pago')    return 1;
+  return 0;
+}
+
+function badgeStatus(status) {
+  let exibir = status;
+  if (status === 'finalizado') exibir = 'pago';
+  if (status === 'pago')       exibir = 'preparação';
+  const cor = statusCor[status] || 'badge-cinza';
+  return <span className={`badge ${cor}`}>{exibir}</span>;
+}
+
+const etapas = [
+  { label: 'Preparação', icon: '📦' },
+  { label: 'Transporte', icon: '🚚' },
+  { label: 'Entregue',   icon: '✅' },
+];
+
+// Rastreio ESTÁTICO — sem animação, reflete status real do banco
+function RastreioIcons({ status }) {
+  const etapaAt = etapaRastreio(status);
+  return (
+    <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
+      {etapas.map((e, i) => {
+        const etapaNum = i + 1;
+        const ativo    = etapaAt >= etapaNum;
+        const atual    = etapaAt === etapaNum;
+        return (
+          <div
+            key={e.label}
+            title={e.label}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}
+          >
+            <div style={{
+              width: 34, height: 34, borderRadius: '50%',
+              background: ativo ? '#3A5D3E' : '#e8ede5',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 16,
+              boxShadow: atual ? '0 0 0 2px #7ab87e' : 'none',
+              transition: 'background 0.3s',
+            }}>
+              {e.icon}
+            </div>
+            <span style={{
+              fontSize: 9, color: ativo ? '#3A5D3E' : '#aaa',
+              fontWeight: ativo ? 700 : 400, letterSpacing: 0.1,
+            }}>
+              {e.label}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function RastreioDetalhe({ status }) {
+  const etapaAt = etapaRastreio(status);
+  return (
+    <div style={{ background: '#f8faf5', borderRadius: 10, padding: '12px 16px', marginBottom: 16 }}>
+      <p style={{ fontSize: 13, fontWeight: 700, color: '#3A5D3E', marginBottom: 10 }}>📍 Rastreio do Pedido</p>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        {etapas.map((e, i) => {
+          const etapaNum = i + 1;
+          const ativo    = etapaAt >= etapaNum;
+          const atual    = etapaAt === etapaNum;
+          return (
+            <div key={e.label} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                <div style={{
+                  width: 40, height: 40, borderRadius: '50%',
+                  background: ativo ? '#3A5D3E' : '#dde5d8',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 18,
+                  boxShadow: atual ? '0 0 0 3px #7ab87e' : 'none',
+                  transition: 'background 0.3s',
+                }}>{e.icon}</div>
+                <span style={{ fontSize: 10, fontWeight: ativo ? 700 : 400, color: ativo ? '#3A5D3E' : '#aaa' }}>
+                  {e.label}
+                </span>
+              </div>
+              {i < etapas.length - 1 && (
+                <div style={{
+                  flex: 1, height: 3, margin: '0 4px', marginBottom: 14,
+                  background: etapaAt > etapaNum ? '#3A5D3E' : '#dde5d8',
+                  borderRadius: 2,
+                  transition: 'background 0.3s',
+                }} />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function AdminPedidos() {
-  const { admin }   = useAuth();
-  const [pedidos,   setPedidos]  = useState([]);
-  const [detalhe,   setDetalhe]  = useState(null);
+  const { admin }  = useAuth();
+  const [pedidos,  setPedidos] = useState([]);
+  const [detalhe,  setDetalhe] = useState(null);
 
   useEffect(() => {
     api.get('/pedidos').then(r => setPedidos(r.data));
@@ -39,8 +152,6 @@ export default function AdminPedidos() {
       <h1 style={{ fontSize: 32, marginBottom: 24 }}>Pedidos</h1>
 
       <div style={{ display: 'flex', gap: 24 }}>
-
-        {/* Lista */}
         <div style={{ flex: 1 }}>
           <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -50,7 +161,8 @@ export default function AdminPedidos() {
                   <th style={th}>Cliente</th>
                   <th style={th}>Total</th>
                   <th style={th}>Status</th>
-                  <th style={th}>Ações</th>
+                  <th style={th}>Rastreio</th>
+                  <th style={th}>Posição</th>
                 </tr>
               </thead>
               <tbody>
@@ -59,21 +171,30 @@ export default function AdminPedidos() {
                     <td style={td}><strong>#{p.id}</strong></td>
                     <td style={td}>
                       <p style={{ fontWeight: 700 }}>{p.cliente_nome}</p>
-                      <p style={{ fontSize: 12, color: '#888' }}>{new Date(p.criado_em).toLocaleDateString('pt-BR')}</p>
+                      <p style={{ fontSize: 12, color: '#888' }}>
+                        {new Date(p.criado_em).toLocaleDateString('pt-BR')}
+                      </p>
                     </td>
                     <td style={td}>
-                      <strong style={{ color: '#3A5D3E' }}>R$ {Number(p.total_final).toFixed(2).replace('.', ',')}</strong>
+                      <strong style={{ color: '#3A5D3E' }}>
+                        R$ {Number(p.total_final).toFixed(2).replace('.', ',')}
+                      </strong>
                     </td>
-                    <td style={td}><span className={`badge ${statusCor[p.status] || 'badge-cinza'}`}>{p.status}</span></td>
+                    <td style={td}>{badgeStatus(p.status)}</td>
+                    <td style={td}>
+                      <RastreioIcons status={p.status} />
+                    </td>
                     <td style={td}>
                       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                         <button className="btn-azul btn-sm" onClick={() => verDetalhe(p.id)}>👁️</button>
                         <select
                           value={p.status}
                           onChange={e => mudarStatus(p.id, e.target.value)}
-                          style={{ padding: '6px 10px', fontSize: 13, borderRadius: 6, border: '1.5px solid #d0d7c4', width: 'auto' }}
+                          style={{ padding: '6px 10px', fontSize: 13, borderRadius: 6, border: '1.5px solid #d0d7c4' }}
                         >
-                          {statusDisponiveis.map(s => <option key={s} value={s}>{s}</option>)}
+                          {statusDisponiveis.map(s => (
+                            <option key={s} value={s}>{labelOpcao[s] ?? s}</option>
+                          ))}
                         </select>
                       </div>
                     </td>
@@ -87,7 +208,6 @@ export default function AdminPedidos() {
           </div>
         </div>
 
-        {/* Painel de detalhe */}
         {detalhe && (
           <div style={{ width: 340, flexShrink: 0 }}>
             <div className="card">
@@ -98,14 +218,17 @@ export default function AdminPedidos() {
               </div>
               <p style={{ marginBottom: 4 }}><strong>Cliente:</strong> {detalhe.cliente_nome}</p>
               <p style={{ marginBottom: 4 }}><strong>E-mail:</strong> {detalhe.cliente_email}</p>
-              <p style={{ marginBottom: 4 }}><strong>Pagamento:</strong> {detalhe.forma_pagamento.toUpperCase()}</p>
+              <p style={{ marginBottom: 4 }}><strong>Pagamento:</strong> {detalhe.forma_pagamento?.toUpperCase()}</p>
               <p style={{ marginBottom: 4 }}>
-                <strong>Status:</strong>{' '}
-                <span className={`badge ${statusCor[detalhe.status] || 'badge-cinza'}`}>{detalhe.status}</span>
+                <strong>Status:</strong>{' '}{badgeStatus(detalhe.status)}
               </p>
-              <p style={{ marginBottom: 4 }}><strong>Data:</strong> {new Date(detalhe.criado_em).toLocaleDateString('pt-BR')}</p>
+              <p style={{ marginBottom: 12 }}>
+                <strong>Data:</strong> {new Date(detalhe.criado_em).toLocaleDateString('pt-BR')}
+              </p>
 
-              <hr style={{ margin: '16px 0', border: 'none', borderTop: '1px solid #eee' }} />
+              <RastreioDetalhe status={detalhe.status} />
+
+              <hr style={{ margin: '8px 0 16px', border: 'none', borderTop: '1px solid #eee' }} />
               <p style={{ fontWeight: 700, marginBottom: 10 }}>Itens:</p>
               {detalhe.itens?.map(i => (
                 <div key={i.id} style={{ display: 'flex', gap: 10, marginBottom: 10, alignItems: 'center' }}>
