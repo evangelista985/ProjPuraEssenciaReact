@@ -118,7 +118,7 @@ export default function Carrinho() {
   );
 
   return (
-    <div className="container" style={{ padding: '30px 20px' }}>
+    <div className="container" style={{ padding: '80px 20px 30px' }}>
       <h1 style={{ marginBottom: 24 }}>Meu Carrinho</h1>
 
       <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap' }}>

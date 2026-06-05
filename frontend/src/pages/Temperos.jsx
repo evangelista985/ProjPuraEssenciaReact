@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { useCart } from '../context/CartContext';
 
-const USOS_CULINARIOS = [
-  { icon: '🥩', titulo: 'Carnes',   desc: 'Realçam o sabor de carnes grelhadas e assadas' },
-  { icon: '🥗', titulo: 'Saladas',  desc: 'Transformam saladas simples em pratos especiais' },
-  { icon: '🍝', titulo: 'Molhos',   desc: 'A base de qualquer molho aromático artesanal' },
-  { icon: '🫙', titulo: 'Conservas',desc: 'Preservam sabor e aroma em azeites e vinagres' },
+const RECEITAS_POPULARES = [
+  { nome: 'Massas ao Alecrim' },
+  { nome: 'Pizza Artesanal' },
+  { nome: 'Saladas Frescas' },
+  { nome: 'Risotos Gourmet' },
 ];
 
 export default function Temperos() {
@@ -21,7 +22,9 @@ export default function Temperos() {
       try {
         const { data } = await api.get('/produtos', { params: { categoria_id: 2 } });
         setProdutos(data);
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        console.error(e);
+      }
       setLoading(false);
     }
     buscarTemperos();
@@ -33,90 +36,104 @@ export default function Temperos() {
   );
 
   return (
-    <div style={{ background: 'var(--cream)', minHeight: '100vh' }}>
-
-      {/* Hero */}
-      <div style={st.hero}>
-        <div style={st.heroContent}>
-          <span style={st.heroBadge}>✦ Aromas & Sabores</span>
-          <h1 style={st.heroTitulo}>
-            Temperos <em style={{ fontStyle: 'italic', color: '#E2C98A' }}>Naturais</em>
-          </h1>
-          <p style={st.heroSub}>Sabor autêntico da natureza em cada pitada</p>
-          <p style={st.heroDetalhe}>
-            Orégano, Alecrim, Manjericão e muito mais. Secos e embalados para preservar todo o aroma e sabor.
-          </p>
-        </div>
-        <div style={st.heroDecoText}>Temperos</div>
-      </div>
-
-      {/* Usos culinários */}
-      <section style={st.usosSection}>
-        <div className="container">
-          <div style={st.sectionHeader}>
-            <span style={st.sectionLabel}>Versatilidade na cozinha</span>
-            <h2 style={st.sectionTitle}>Onde <em style={{ fontStyle: 'italic', color: '#A07840' }}>usar?</em></h2>
+    <div style={st.page}>
+      {/* Hero Section */}
+      <section style={st.hero}>
+        <div style={st.heroOverlay}></div>
+        <div className="container" style={{...st.heroContainer, position: 'relative', zIndex: 1}}>
+          <div style={st.heroContent}>
+                        <h1 style={st.heroTitulo}>Temperos & Especiarias</h1>
+            <p style={st.heroSub}>O segredo das melhores cozinhas em sua casa</p>
+            <p style={st.heroDesc}>
+              Nossa seleção de ervas finas e especiarias é colhida e desidratada artesanalmente para preservar cada nota aromática.
+            </p>
+            <div style={st.heroTags}>
+              {['Alecrim', 'Orégano', 'Manjericão', 'Tomilho', 'Sálvia'].map(t => (
+                <span key={t} style={st.heroTag}>{t}</span>
+              ))}
+            </div>
           </div>
-          <div style={st.usosGrid}>
-            {USOS_CULINARIOS.map((u, i) => (
-              <div key={i} style={st.usoCard}>
-                <div style={st.usoIcon}>{u.icon}</div>
-                <h3 style={st.usoTitulo}>{u.titulo}</h3>
-                <p style={st.usoDesc}>{u.desc}</p>
-              </div>
+        </div>
+      </section>
+
+
+
+      {/* Lista de Produtos */}
+      <div className="container" style={{ padding: '60px 20px' }}>
+        <div style={st.sectionHeader}>
+          <h2 style={st.listTitulo}>Nossa Seleção</h2>
+          <div style={st.buscaWrapper}>
+            <svg style={st.buscaIcon} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input
+              style={st.buscaInput}
+              placeholder="O que você deseja cozinhar hoje?"
+              value={busca}
+              onChange={e => setBusca(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {loading ? (
+          <div style={st.loadingWrap}>
+            <div className="spinner"></div>
+            <p>Preparando os aromas...</p>
+          </div>
+        ) : produtosFiltrados.length === 0 ? (
+          <div style={st.vazioWrap}>
+            <p>Não encontramos o tempero que você busca.</p>
+            <button onClick={() => setBusca('')} style={st.resetBtn}>Ver todos</button>
+          </div>
+        ) : (
+          <div className="grid-produtos">
+            {produtosFiltrados.map(p => (
+              <CardProduto key={p.id} produto={p} onClick={() => nav(`/produto/${p.id}`)} />
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Produtos */}
-      <section style={{ padding: '5rem 0' }}>
-        <div className="container">
-          <div style={st.sectionHeader}>
-            <span style={st.sectionLabel}>Nosso catálogo</span>
-            <h2 style={st.sectionTitle}>Temperos <em style={{ fontStyle: 'italic', color: '#A07840' }}>selecionados</em></h2>
-          </div>
-          <div style={st.searchBar}>
-            <input style={st.searchInput} placeholder="Buscar temperos... ex: Orégano, Alecrim, Manjericão"
-              value={busca} onChange={e => setBusca(e.target.value)} />
-            {busca && <button style={st.btnLimpar} onClick={() => setBusca('')}>✕ Limpar</button>}
-          </div>
-          {!loading && <p style={st.contador}>{produtosFiltrados.length} {produtosFiltrados.length === 1 ? 'tempero encontrado' : 'temperos encontrados'}</p>}
-          {loading ? (
-            <div style={st.centroMsg}><p style={st.loadingTxt}>Preparando os temperos...</p></div>
-          ) : produtosFiltrados.length === 0 ? (
-            <div style={st.centroMsg}><p style={st.vazio}>Nenhum tempero encontrado para "{busca}"</p></div>
-          ) : (
-            <div className="grid-produtos" style={{ paddingBottom: '4rem' }}>
-              {produtosFiltrados.map(p => <CardTempero key={p.id} produto={p} onClick={() => nav(`/produto/${p.id}`)} />)}
-            </div>
-          )}
-        </div>
-      </section>
+        )}
+      </div>
     </div>
   );
 }
 
-function CardTempero({ produto, onClick }) {
+function CardProduto({ produto, onClick }) {
+  const { adicionar } = useCart();
   const temEstoque = produto.quantidade > 0;
-  const [hovered, setHovered] = useState(false);
+  const [added, setAdded] = useState(false);
+
+  function handleAdd(e) {
+    e.stopPropagation();
+    if (!temEstoque) return;
+    adicionar(produto);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1200);
+  }
+
   return (
-    <div style={{ ...st.card, borderColor: hovered ? '#C8A96E' : 'rgba(200,169,110,0.25)', boxShadow: hovered ? '0 12px 32px rgba(28,58,42,0.1)' : 'none', transform: hovered ? 'translateY(-3px)' : 'none' }}
-      onClick={onClick} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <div style={st.imgWrap}>
-        <img src={produto.imagem || 'https://via.placeholder.com/300x220/EDE7D8/1C3A2A?text=Tempero'} alt={produto.nome} style={st.img}
-          onError={e => { e.target.src = 'https://via.placeholder.com/300x220/EDE7D8/1C3A2A?text=Tempero'; }} />
-        {!temEstoque && <div style={st.semEstoque}>ESGOTADO</div>}
-        <div style={st.tempTag}>Temperos</div>
+    <div style={st.card} onClick={onClick}>
+      <div style={st.imgContainer}>
+        <img
+          src={produto.imagem || 'https://via.placeholder.com/400x400/f8f9fa/1C3A2A?text=Tempero'}
+          alt={produto.nome}
+          style={st.img}
+        />
+        {!temEstoque && <div style={st.badgeEsgotado}>Esgotado</div>}
       </div>
-      <div style={{ padding: '1.2rem' }}>
-        <div style={st.productCategory}>Temperos Naturais</div>
+      <div style={st.cardContent}>
         <h3 style={st.cardNome}>{produto.nome}</h3>
-        <p style={st.cardDesc}>{(produto.descricao || '').slice(0, 75)}...</p>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '1rem' }}>
-          <span style={st.preco}>R$ {Number(produto.preco).toFixed(2).replace('.', ',')}</span>
-          <button className="btn-verde" style={{ fontSize: '0.7rem', padding: '8px 16px', opacity: temEstoque ? 1 : 0.5 }} disabled={!temEstoque}>
-            {temEstoque ? 'Ver →' : 'Esgotado'}
+        <p style={st.cardDesc}>{(produto.descricao || '').slice(0, 60)}...</p>
+        <div style={st.cardFooter}>
+          <span style={st.cardPreco}>R$ {Number(produto.preco).toFixed(2).replace('.', ',')}</span>
+          <button
+            style={{
+              ...st.addBtn,
+              ...(added ? st.addBtnAdded : {}),
+              ...(!temEstoque ? st.addBtnDisabled : {}),
+            }}
+            disabled={!temEstoque}
+            onClick={handleAdd}
+            title={temEstoque ? 'Adicionar ao carrinho' : 'Produto esgotado'}
+          >
+            {added ? '✓' : '+'}
           </button>
         </div>
       </div>
@@ -125,40 +142,60 @@ function CardTempero({ produto, onClick }) {
 }
 
 const st = {
-  hero: { position: 'relative', minHeight: 360, display: 'flex', alignItems: 'center', overflow: 'hidden', background: 'linear-gradient(135deg, #1C3A2A 0%, #3E7A52 50%, #0f2018 100%)' },
-  heroContent: { padding: '5rem 5rem', zIndex: 1, flex: 1 },
-  heroBadge: { display: 'inline-flex', alignItems: 'center', background: 'rgba(200,169,110,0.15)', border: '1px solid rgba(200,169,110,0.35)', padding: '0.35rem 1rem', fontSize: '0.68rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#E2C98A', marginBottom: '1.2rem' },
-  heroTitulo: { fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(2.5rem, 4vw, 3.5rem)', fontWeight: 300, color: '#F5F0E8', marginBottom: '0.5rem', lineHeight: 1.1 },
-  heroSub: { fontSize: '1rem', color: '#C8A96E', fontWeight: 400, marginBottom: '0.5rem' },
-  heroDetalhe: { fontSize: '0.88rem', color: 'rgba(245,240,232,0.7)', maxWidth: 460, fontWeight: 300, lineHeight: 1.7 },
-  heroDecoText: { position: 'absolute', right: '2%', fontFamily: "'Cormorant Garamond', serif", fontSize: '6rem', fontWeight: 300, color: 'rgba(200,169,110,0.05)', pointerEvents: 'none', userSelect: 'none', lineHeight: 1 },
-
-  usosSection: { background: 'var(--cream-light)', padding: '5rem 0' },
-  sectionHeader: { textAlign: 'center', marginBottom: '3rem' },
-  sectionLabel: { display: 'inline-block', fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#A07840', fontWeight: 500, marginBottom: '0.6rem' },
-  sectionTitle: { fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(1.8rem, 3vw, 2.4rem)', fontWeight: 300, color: '#1C3A2A', lineHeight: 1.2 },
-
-  usosGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' },
-  usoCard: { textAlign: 'center', padding: '2rem 1.5rem', background: 'var(--cream)', border: '1px solid var(--border)' },
-  usoIcon: { fontSize: '2rem', marginBottom: '1rem' },
-  usoTitulo: { fontFamily: "'Cormorant Garamond', serif", fontSize: '1.1rem', fontWeight: 600, color: '#1C3A2A', marginBottom: '0.5rem' },
-  usoDesc: { fontSize: '0.82rem', color: '#6B6050', lineHeight: 1.6, fontWeight: 300 },
-
-  searchBar: { display: 'flex', gap: 12, marginBottom: '1rem', maxWidth: 560 },
-  searchInput: { flex: 1, border: '1px solid var(--border)', background: 'var(--cream-light)', padding: '10px 16px', fontSize: '0.9rem' },
-  btnLimpar: { background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', padding: '8px 16px', fontSize: '0.75rem', letterSpacing: '0.06em', cursor: 'pointer' },
-  contador: { fontSize: '0.8rem', color: '#6B6050', letterSpacing: '0.06em', marginBottom: '2rem' },
-  centroMsg: { textAlign: 'center', padding: '5rem 0' },
-  loadingTxt: { fontFamily: "'Cormorant Garamond', serif", color: '#1C3A2A', fontSize: '1.2rem', fontStyle: 'italic' },
-  vazio: { color: '#6B6050', fontSize: '0.9rem' },
-
-  card: { background: 'var(--cream-light)', border: '1px solid rgba(200,169,110,0.25)', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.25s' },
-  imgWrap: { position: 'relative', height: 220, background: 'var(--cream-dark)', overflow: 'hidden' },
+  page: { background: '#FCFBFA', minHeight: '100vh' },
+  hero: { 
+    minHeight: '500px', 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    backgroundColor: '#1C3A2A',
+    backgroundImage: 'url(/img/banner_temperos_v2.jpg)',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    position: 'relative',
+    overflow: 'hidden',
+    textAlign: 'center'
+  },
+  heroOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(28, 58, 42, 0.65)',
+    zIndex: 0
+  },
+  heroContainer: { padding: '0 2rem', zIndex: 1, width: '100%', display: 'flex', justifyContent: 'center' },
+  heroContent: { maxWidth: '800px', color: '#FFF', display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  heroBadge: { display: 'none' },
+  heroTitulo: { fontSize: '4rem', marginBottom: '24px', fontFamily: "'Playfair Display', serif", fontWeight: 700, letterSpacing: '1.5px', lineHeight: 1.2 },
+  heroSub: { fontSize: '1.4rem', color: '#3E7A52', fontWeight: 500, marginBottom: '24px', letterSpacing: '0.8px' },
+  heroDesc: { fontSize: '1.1rem', opacity: 0.9, lineHeight: 1.8, marginBottom: '40px', maxWidth: '650px', fontWeight: 300 },
+  heroTags: { display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' },
+  heroTag: { background: 'rgba(255,255,255,0.1)', padding: '5px 15px', borderRadius: '20px', fontSize: '0.8rem', border: '1px solid rgba(255,255,255,0.2)' },
+  receitasSection: { padding: '50px 0', background: '#FFF', borderBottom: '1px solid #F0EFEA' },
+  secTitulo: { fontSize: '1.8rem', color: '#1C3A2A', fontFamily: "'Cormorant Garamond', serif", textAlign: 'center', marginBottom: '40px' },
+  receitasGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' },
+  receitaCard: { display: 'flex', alignItems: 'center', gap: '15px', background: '#FCFBFA', padding: '20px', borderRadius: '12px', border: '1px solid #F0EFEA' },
+  receitaNome: { fontSize: '1.05rem', fontWeight: 700, color: '#1C3A2A', marginBottom: '4px', letterSpacing: '0.5px' },
+  sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px', flexWrap: 'wrap', gap: '20px' },
+  listTitulo: { fontSize: '2rem', color: '#1C3A2A', fontFamily: "'Playfair Display', serif", fontWeight: 700 },
+  buscaWrapper: { position: 'relative', width: '100%', maxWidth: '350px' },
+  buscaIcon: { position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: '#999' },
+  buscaInput: { width: '100%', padding: '12px 15px 12px 45px', borderRadius: '30px', border: '1px solid #E0DDD5', outline: 'none' },
+  loadingWrap: { textAlign: 'center', padding: '60px 0', color: '#5e4015' },
+  vazioWrap: { textAlign: 'center', padding: '60px 0', color: '#6B6050' },
+  resetBtn: { background: 'none', color: '#3E7A52', fontWeight: 600, textDecoration: 'underline', marginTop: '10px' },
+  card: { background: '#FFF', borderRadius: '12px', overflow: 'hidden', border: '1px solid #F0EFEA', cursor: 'pointer', transition: 'all 0.3s' },
+  imgContainer: { height: '220px', overflow: 'hidden', position: 'relative' },
   img: { width: '100%', height: '100%', objectFit: 'cover' },
-  semEstoque: { position: 'absolute', top: 10, right: 10, background: 'var(--perigo)', color: '#fff', fontSize: 10, fontWeight: 700, padding: '3px 8px', letterSpacing: '0.06em', textTransform: 'uppercase' },
-  tempTag: { position: 'absolute', bottom: 8, left: 8, background: 'rgba(28,58,42,0.85)', color: '#E2C98A', fontSize: 10, fontWeight: 600, padding: '3px 9px', letterSpacing: '0.06em', textTransform: 'uppercase' },
-  productCategory: { fontSize: '0.68rem', color: '#A07840', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '0.3rem', fontWeight: 500 },
-  cardNome: { fontFamily: "'Cormorant Garamond', serif", fontSize: '1.15rem', fontWeight: 600, color: '#1A1A14', marginBottom: '0.4rem' },
-  cardDesc: { fontSize: '0.82rem', color: '#6B6050', lineHeight: 1.6, fontWeight: 300 },
-  preco: { fontFamily: "'Cormorant Garamond', serif", fontSize: '1.4rem', fontWeight: 600, color: '#1C3A2A' },
+  badgeEsgotado: { position: 'absolute', top: '10px', right: '10px', background: '#FFF', color: '#E74C3C', padding: '4px 10px', borderRadius: '15px', fontSize: '0.7rem', fontWeight: 700 },
+  cardContent: { padding: '20px' },
+  cardNome: { fontSize: '1.1rem', color: '#1C3A2A', fontWeight: 600, marginBottom: '8px' },
+  cardDesc: { fontSize: '0.85rem', color: '#6B6050', marginBottom: '15px', height: '2.5rem', overflow: 'hidden' },
+  cardFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  cardPreco: { fontSize: '1.1rem', fontWeight: 700, color: '#1C3A2A' },
+  addBtn: { background: '#1C3A2A', color: '#FFF', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', fontSize: '1.4rem', fontWeight: 700, lineHeight: 1, transition: 'background 0.2s, transform 0.15s', flexShrink: 0 },
+  addBtnAdded: { background: '#3E7A52', transform: 'scale(1.15)' },
+  addBtnDisabled: { background: '#C8C4BC', cursor: 'not-allowed' }
 };

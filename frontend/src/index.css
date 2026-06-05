@@ -1,6 +1,18 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
+  --cream: #F5F0E8;
+  --cream-dark: #EDE7D8;
+  --cream-light: #FAF7F2;
+  --gold: #C8A96E;
+  --gold-light: #E2C98A;
+  --gold-dark: #A07840;
+  --green: #1C3A2A;
+  --green-mid: #2D5A3D;
+  --green-light: #3E7A52;
+  --text-dark: #1A1A14;
+  --text-muted: #6B6050;
+  --border: rgba(200,169,110,0.25);
   --verde:        #3A5D3E;
   --verde-escuro: #2E4D37;
   --verde-claro:  #4a7a50;
@@ -15,10 +27,14 @@
   --radius:       8px;
 }
 
+html { scroll-behavior: smooth; }
+
 body {
-  font-family: 'Lato', sans-serif;
-  background: var(--cinza);
-  color: var(--texto);
+  font-family: 'Montserrat', sans-serif;
+  background: var(--cream);
+  color: var(--text-dark);
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 h1, h2, h3 {
@@ -30,7 +46,7 @@ button {
   cursor: pointer;
   border: none;
   border-radius: var(--radius);
-  font-family: 'Lato', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   font-weight: 700;
   transition: opacity 0.2s, transform 0.1s;
 }
@@ -38,8 +54,8 @@ button:hover  { opacity: 0.88; }
 button:active { transform: scale(0.98); }
 
 input, select, textarea {
-  font-family: 'Lato', sans-serif;
-  border: 1.5px solid var(--cinza-medio);
+  font-family: 'Montserrat', sans-serif;
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 10px 14px;
   font-size: 14px;
@@ -48,11 +64,47 @@ input, select, textarea {
   background: #fff;
   transition: border-color 0.2s;
 }
-input:focus, select:focus, textarea:focus { border-color: var(--verde); }
+input:focus, select:focus, textarea:focus { border-color: var(--green); }
 
 /* Botões */
-.btn-verde   { background: var(--verde);   color: #fff;      padding: 12px 24px; font-size: 15px; }
-.btn-dourado { background: var(--dourado); color: var(--texto); padding: 12px 24px; font-size: 15px; }
+.btn-verde   { background: var(--green);   color: #fff;      padding: 12px 24px; font-size: 15px; }
+.btn-dourado { background: var(--gold); color: var(--text-dark); padding: 12px 24px; font-size: 15px; }
+
+.btn-primary {
+  background: var(--green);
+  color: var(--cream);
+  padding: 0.85rem 2rem;
+  border: none;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: background 0.2s, transform 0.1s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-primary:hover { background: var(--green-mid); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--green);
+  padding: 0.85rem 2rem;
+  border: 1px solid var(--green);
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-outline:hover { background: var(--green); color: var(--cream); }
 .btn-azul    { background: #2c6fa8;        color: #fff;      padding: 12px 24px; font-size: 15px; }
 .btn-perigo  { background: var(--perigo);  color: #fff;      padding: 10px 18px; font-size: 14px; }
 .btn-sm      { padding: 8px 14px; font-size: 13px; }
@@ -114,4 +166,98 @@ input:focus, select:focus, textarea:focus { border-color: var(--verde); }
 @media (max-width: 768px) {
   .grid-produtos { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
   .admin-sidebar  { display: none; }
+}
+
+/* ============================================
+   RESPONSIVIDADE GLOBAL - Correções Mobile
+   ============================================ */
+
+/* Hero grid: empilha em mobile */
+@media (max-width: 900px) {
+  /* Vitrine hero */
+  div[style*="gridTemplateColumns: '1fr 1fr'"],
+  section[style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Grid de produtos da vitrine */
+@media (max-width: 600px) {
+  .grid-produtos {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .grid-produtos {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Card hover overlay - CSS puro para não precisar de JS */
+div:hover > .card-overlay {
+  opacity: 1 !important;
+}
+
+/* Corrige hover no card de produto */
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12) !important;
+}
+
+/* ============================================================
+   RESPONSIVIDADE — Cards de Produtos & Footer
+   ============================================================ */
+
+/* Hero banner full-height responsivo */
+@media (max-width: 768px) {
+  /* Vitrine hero: empilha em telas menores */
+  section[style*="gridTemplateColumns: '1fr 1fr'"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Grid de produtos — responsivo */
+@media (max-width: 900px) {
+  /* 3 colunas → 2 colunas */
+  .grid-produtos,
+  div[style*="minmax(230px"] ,
+  div[style*="minmax(210px"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 560px) {
+  /* 2 colunas → 1 coluna */
+  .grid-produtos {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+}
+
+/* Footer grid responsivo */
+@media (max-width: 1024px) {
+  div[style*="1.4fr 1fr 1.2fr 1.2fr"] {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 2rem !important;
+  }
+}
+
+@media (max-width: 600px) {
+  div[style*="1.4fr 1fr 1.2fr 1.2fr"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Hover no card add button */
+div[style*="borderRadius: '16px'"] button:hover:not(:disabled),
+div[style*="borderRadius: '14px'"] button:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+/* Carousel fade animation */
+@keyframes heroFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

@@ -1,66 +1,134 @@
 import { Link } from 'react-router-dom';
 
+const LINKS = [
+  { to: '/',             label: 'Vitrine' },
+  { to: '/produtos',     label: 'Produtos' },
+  { to: '/carrinho',     label: 'Carrinho' },
+  { to: '/meus-pedidos', label: 'Meus Pedidos' },
+  { to: '/login',        label: 'Entrar' },
+  { to: '/cadastro',     label: 'Cadastrar' },
+];
+
+const REDES = [
+  { href: 'https://www.facebook.com/friends/requests/?profile_id=100092841157612',    icon: 'f',  label: 'Facebook' },
+  { href: 'https://www.instagram.com/pura_essencia.official/',   icon: '◈',  label: 'Instagram' },
+  { href: 'https://wa.me/5511981992048', icon: '◉',  label: 'WhatsApp' },
+  { href: 'https://x.com/PuraEssenc91630',              icon: '𝕏',  label: 'Twitter / X' },
+];
+
 export default function Footer() {
   return (
-    <footer style={s.footer}>
-      <div style={s.footerGrid}>
+    <footer id="contato" style={s.footer}>
+      {/* Faixa superior decorativa */}
+      <div style={s.topBar} />
 
-        {/* Col 1 — Logo */}
-        <div>
-          <div style={s.footerLogo}>Pura <span style={s.logoSpan}>Essência</span></div>
-          <p style={s.footerDesc}>
-            Produtos naturais, orgânicos e sustentáveis para uma vida mais saudável e consciente.
-            Da natureza para sua mesa e sua vida.
-          </p>
-          <div style={{ display: 'flex', gap: '0.8rem', marginTop: '1.5rem' }}>
-            {['📱','📸','💬','𝕏'].map((icon, i) => (
-              <div key={i} style={s.socialIcon}>{icon}</div>
-            ))}
+      <div style={s.inner}>
+        <div style={s.grid}>
+
+          {/* Marca */}
+          <div style={s.colBrand}>
+            <div style={s.logoWrap}>
+              <span style={s.logoDot}>●</span>
+              <span style={s.logoText}>Pura Essência</span>
+            </div>
+            <p style={s.slogan}>
+              Da natureza direto para você.<br />
+              Saúde, sabor e bem-estar em cada produto.
+            </p>
+            <div style={s.selos}>
+              <span style={s.selo}>🌿 100% Natural</span>
+              <span style={s.selo}>📜 Certificado</span>
+            </div>
           </div>
-        </div>
 
-        {/* Col 2 — Produtos */}
-        <div style={s.footerCol}>
-          <h4 style={s.footerColTitle}>Produtos</h4>
-          <ul style={s.footerLinks}>
-            <li><Link to="/chas"     style={s.footerLink}>Chás & Ervas</Link></li>
-            <li><Link to="/organicos" style={s.footerLink}>Orgânicos</Link></li>
-            <li><Link to="/temperos" style={s.footerLink}>Temperos</Link></li>
-            <li><Link to="/"         style={s.footerLink}>Vitrine</Link></li>
-          </ul>
-        </div>
+          {/* Navegação */}
+          <div style={s.col}>
+            <h4 style={s.colTitulo}>Navegação</h4>
+            <ul style={s.lista}>
+              {LINKS.map(l => (
+                <li key={l.to}>
+                  <Link
+                    to={l.to}
+                    style={s.link}
+                    onMouseEnter={e => { e.target.style.color = '#C8A96E'; e.target.style.paddingLeft = '6px'; }}
+                    onMouseLeave={e => { e.target.style.color = '#9BB89D'; e.target.style.paddingLeft = '0'; }}
+                  >
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-        {/* Col 3 — Navegação */}
-        <div style={s.footerCol}>
-          <h4 style={s.footerColTitle}>Navegação</h4>
-          <ul style={s.footerLinks}>
-            <li><Link to="/carrinho"     style={s.footerLink}>Carrinho</Link></li>
-            <li><Link to="/meus-pedidos" style={s.footerLink}>Meus Pedidos</Link></li>
-            <li><Link to="/login"        style={s.footerLink}>Entrar</Link></li>
-            <li><Link to="/cadastro"     style={s.footerLink}>Cadastrar</Link></li>
-          </ul>
-        </div>
+          {/* Contato */}
+          <div style={s.col}>
+            <h4 style={s.colTitulo}>Contato</h4>
+            <ul style={s.listaContato}>
+              <li style={s.contatoItem}>
+                <span style={s.contatoIcon}>📍</span>
+                <span>R. Guiapá, 678 – Vila Leopoldina<br />CEP 05089-001 – São Paulo, SP</span>
+              </li>
+              <li style={s.contatoItem}>
+                <span style={s.contatoIcon}>📞</span>
+                <span>(11) 3456-7890</span>
+              </li>
+              <li style={s.contatoItem}>
+                <span style={s.contatoIcon}>✉️</span>
+                <span>puraessenciaetec@gmail.com</span>
+              </li>
+            </ul>
+          </div>
 
-        {/* Col 4 — Atendimento */}
-        <div style={s.footerCol}>
-          <h4 style={s.footerColTitle}>Atendimento</h4>
-          <div style={s.footerContact}>
-            <div>📧 puraessencia@puraessencia.com.br</div>
-            <div>📞 (11) 3456-7890</div>
-            <div>💬 WhatsApp disponível</div>
-            <div style={{ marginTop: '0.8rem', fontSize: '0.78rem', color: 'rgba(245,240,232,0.4)' }}>
-              Seg–Sex: 9h às 18h<br />Sáb: 9h às 13h
+          {/* Redes + Pagamentos */}
+          <div style={s.col}>
+            <h4 style={s.colTitulo}>Redes Sociais</h4>
+            <div style={s.redesWrap}>
+              {REDES.map(r => (
+                <a
+                  key={r.label}
+                  href={r.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={s.redesLink}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = 'rgba(200,169,110,0.15)';
+                    e.currentTarget.style.borderColor = 'rgba(200,169,110,0.45)';
+                    e.currentTarget.style.color = '#C8A96E';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                    e.currentTarget.style.color = '#9BB89D';
+                  }}
+                >
+                  <span style={s.redesIcone}>{r.icon}</span>
+                  <span style={s.redesLabel}>{r.label}</span>
+                </a>
+              ))}
+            </div>
+
+            <div style={s.pagamentos}>
+              <h4 style={{ ...s.colTitulo, marginTop: '1.8rem' }}>Formas de Pagamento</h4>
+              <div style={s.pagRow}>
+                {['PIX', 'Cartão', 'Boleto'].map(p => (
+                  <span key={p} style={s.pagBadge}>{p}</span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div style={s.footerBottom}>
-        <span>© {new Date().getFullYear()} Pura Essência — Todos os direitos reservados.</span>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          {['PIX','VISA','MASTER','BOLETO'].map(m => (
-            <div key={m} style={s.payIcon}>{m}</div>
-          ))}
+        {/* Divisor */}
+        <div style={s.divider} />
+
+        {/* Bottom bar */}
+        <div style={s.bottom}>
+          <p style={s.copyright}>
+            © {new Date().getFullYear()} <strong style={{ color: '#C8A96E' }}>Pura Essência</strong> — Todos os direitos reservados.
+          </p>
+          <p style={s.madeWith}>
+            Feito com <span style={{ color: '#4CAF82' }}>♥</span> e respeito à natureza
+          </p>
         </div>
       </div>
     </footer>
@@ -69,92 +137,107 @@ export default function Footer() {
 
 const s = {
   footer: {
-    background: '#1C3A2A',
-    color: 'rgba(245,240,232,0.75)',
+    background: 'linear-gradient(160deg, #1A3628 0%, #1C3A2A 40%, #1E4030 100%)',
+    color: '#9BB89D',
+    fontFamily: "'Jost', sans-serif",
     marginTop: 0,
-    padding: '4rem 4rem 0',
-    fontFamily: "'Jost', sans-serif",
-    fontSize: '0.88rem',
   },
-  footerGrid: {
+  topBar: {
+    height: 3,
+    background: 'linear-gradient(90deg, #1C3A2A, #C8A96E 40%, #3E7A52 70%, #1C3A2A)',
+  },
+  inner: {
+    maxWidth: 1200,
+    margin: '0 auto',
+    padding: '56px 28px 28px',
+  },
+  grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gridTemplateColumns: '1.4fr 1fr 1.2fr 1.2fr',
     gap: '3rem',
-    paddingBottom: '3rem',
-    borderBottom: '1px solid rgba(200,169,110,0.15)',
+    paddingBottom: '40px',
   },
-  footerLogo: {
+
+  /* Brand column */
+  colBrand: { display: 'flex', flexDirection: 'column', gap: '1rem' },
+  logoWrap: { display: 'flex', alignItems: 'center', gap: '0.6rem' },
+  logoDot: { color: '#C8A96E', fontSize: '0.7rem' },
+  logoText: {
     fontFamily: "'Cormorant Garamond', serif",
-    fontSize: '1.5rem',
-    fontWeight: 600,
-    color: '#F5F0E8',
-    marginBottom: '1rem',
-    letterSpacing: '0.04em',
+    fontSize: '1.5rem', fontWeight: 400, color: '#E8DFC8', letterSpacing: '0.04em',
   },
-  logoSpan: { color: '#C8A96E' },
-  footerDesc: {
-    fontSize: '0.82rem',
-    lineHeight: 1.8,
-    color: 'rgba(245,240,232,0.55)',
+  slogan: {
+    fontSize: '0.88rem', lineHeight: 1.8, color: '#7A9E7C', fontWeight: 300,
   },
-  socialIcon: {
-    width: 36,
-    height: 36,
-    background: 'rgba(200,169,110,0.15)',
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '1rem',
-    cursor: 'pointer',
+  selos: { display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '0.4rem' },
+  selo: {
+    background: 'rgba(200,169,110,0.1)', border: '1px solid rgba(200,169,110,0.2)',
+    color: '#B89A5A', padding: '4px 12px', borderRadius: '20px',
+    fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.04em',
   },
-  footerCol: { display: 'flex', flexDirection: 'column' },
-  footerColTitle: {
-    fontSize: '0.7rem',
-    fontWeight: 600,
-    color: '#C8A96E',
-    textTransform: 'uppercase',
-    letterSpacing: '0.15em',
+
+  /* Common col */
+  col: { display: 'flex', flexDirection: 'column' },
+  colTitulo: {
+    fontSize: '0.65rem', fontWeight: 700,
+    color: '#C8A96E', textTransform: 'uppercase', letterSpacing: '0.18em',
     marginBottom: '1.2rem',
-    fontFamily: "'Jost', sans-serif",
+    paddingBottom: '0.6rem',
+    borderBottom: '1px solid rgba(200,169,110,0.18)',
   },
-  footerLinks: {
-    listStyle: 'none',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.7rem',
+
+  /* Nav links */
+  lista: { listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.6rem' },
+  link: {
+    color: '#9BB89D', textDecoration: 'none', fontSize: '0.88rem',
+    transition: 'color 0.2s, padding-left 0.2s',
+    display: 'block',
   },
-  footerLink: {
-    color: 'rgba(245,240,232,0.6)',
-    textDecoration: 'none',
-    fontSize: '0.85rem',
-    transition: 'color 0.2s',
+
+  /* Contact */
+  listaContato: { listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.9rem' },
+  contatoItem: {
+    display: 'flex', gap: '0.6rem', alignItems: 'flex-start',
+    fontSize: '0.84rem', color: '#7A9E7C', lineHeight: 1.6,
   },
-  footerContact: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.6rem',
-    color: 'rgba(245,240,232,0.6)',
-    fontSize: '0.82rem',
-    lineHeight: 1.6,
+  contatoIcon: { fontSize: '0.95rem', marginTop: '1px', flexShrink: 0 },
+
+  /* Social */
+  redesWrap: { display: 'flex', flexDirection: 'column', gap: '0.5rem' },
+  redesLink: {
+    display: 'flex', alignItems: 'center', gap: '0.7rem',
+    color: '#9BB89D', textDecoration: 'none',
+    padding: '0.5rem 0.75rem', borderRadius: '8px',
+    border: '1px solid rgba(255,255,255,0.08)',
+    transition: 'background 0.2s, border-color 0.2s, color 0.2s',
   },
-  footerBottom: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: '1rem',
-    padding: '1.5rem 0',
-    fontSize: '0.75rem',
-    color: 'rgba(245,240,232,0.35)',
-    letterSpacing: '0.04em',
+  redesIcone: {
+    width: 28, height: 28,
+    background: 'rgba(255,255,255,0.05)',
+    borderRadius: '6px',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontSize: '0.85rem', fontWeight: 700, flexShrink: 0,
+    lineHeight: '28px', textAlign: 'center',
   },
-  payIcon: {
+  redesLabel: { fontSize: '0.84rem' },
+
+  /* Payments */
+  pagamentos: {},
+  pagRow: { display: 'flex', gap: '0.5rem', flexWrap: 'wrap' },
+  pagBadge: {
     background: 'rgba(200,169,110,0.12)',
-    color: 'rgba(245,240,232,0.5)',
-    padding: '4px 10px',
-    fontSize: '0.65rem',
-    fontWeight: 600,
-    letterSpacing: '0.08em',
+    color: '#C8A96E',
+    border: '1px solid rgba(200,169,110,0.25)',
+    padding: '5px 14px', borderRadius: '6px',
+    fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em',
   },
+
+  /* Bottom */
+  divider: { borderTop: '1px solid rgba(255,255,255,0.07)', margin: '0 0 24px' },
+  bottom: {
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    flexWrap: 'wrap', gap: '0.5rem',
+  },
+  copyright: { fontSize: '0.82rem', color: '#5A7E5C' },
+  madeWith: { fontSize: '0.78rem', color: '#4A6E4C', fontWeight: 300 },
 };

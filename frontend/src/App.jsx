@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
@@ -19,14 +20,24 @@ import EsqueciSenha from './pages/EsqueciSenha';
 import Chas from './pages/Chas';
 import Organicos from './pages/Organicos';
 import Temperos from './pages/Temperos';
+import Cosmeticos from './pages/Cosmeticos';
+import Produtos from './pages/Produtos';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 
 function LayoutPublico({ children }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar />
-      <div style={{ flex: 1 }}>
+      <main style={{ flex: 1, paddingTop: '0px' }}>
         {children}
-      </div>
+      </main>
       <Footer />
     </div>
   );
@@ -35,6 +46,7 @@ function LayoutPublico({ children }) {
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AuthProvider>
         <CartProvider>
           <Routes>
@@ -48,13 +60,16 @@ export default function App() {
             <Route path="/meus-pedidos" element={<LayoutPublico><MeusPedidos /></LayoutPublico>} />
 
             {/* ✅ Páginas de Categoria */}
+            <Route path="/produtos"   element={<LayoutPublico><Produtos /></LayoutPublico>} />
             <Route path="/chas"       element={<LayoutPublico><Chas /></LayoutPublico>} />
             <Route path="/organicos"  element={<LayoutPublico><Organicos /></LayoutPublico>} />
             <Route path="/temperos"   element={<LayoutPublico><Temperos /></LayoutPublico>} />
+            <Route path="/cosmeticos" element={<LayoutPublico><Cosmeticos /></LayoutPublico>} />
 
             {/* Admin */}
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Dashboard />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="produtos"  element={<AdminProdutos />} />
               <Route path="pedidos"   element={<AdminPedidos />} />
