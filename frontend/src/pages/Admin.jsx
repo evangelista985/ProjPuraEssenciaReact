@@ -24,9 +24,8 @@ export function AdminLogin() {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#3A5D3E' }}>
       <div className="card" style={{ width: '100%', maxWidth: 400 }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ fontSize: 44 }}>🌿</div>
+          <img src="/img/logonova.png" alt="Pura Essência" style={{ height: '70px', objectFit: 'contain', marginBottom: '12px', display: 'block', margin: '0 auto 12px' }} />
           <h2 style={{ marginTop: 8 }}>Área Administrativa</h2>
-          <p style={{ color: '#888', fontSize: 13, marginTop: 4 }}>Pura Essência</p>
         </div>
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: 16 }}>
@@ -58,7 +57,7 @@ export function AdminLayout() {
   return (
     <div className="admin-wrapper">
       <aside className="admin-sidebar">
-        <div className="admin-sidebar-logo">🌿 Pura Essência</div>
+        <div className="admin-sidebar-logo"><img src="/img/logonova.png" alt="Pura Essência" style={{ height: '50px', objectFit: 'contain' }} /></div>
         <div style={{ padding: '14px 20px', borderBottom: '1px solid #2E4D37' }}>
           <p style={{ fontSize: 13, color: '#c8d8c9' }}>{admin.nome}</p>
           <span className={`badge ${badgeCor[admin.nivel] || 'badge-cinza'}`} style={{ fontSize: 10, marginTop: 4, display: 'inline-block' }}>
