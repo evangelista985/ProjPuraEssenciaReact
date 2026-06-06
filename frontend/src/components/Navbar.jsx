@@ -1,4 +1,4 @@
-import { Link, useNavigate, useLocation, } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useState, useEffect } from 'react';
@@ -11,8 +11,7 @@ export default function Navbar() {
   const [showProdutosMenu, setShowProdutosMenu] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
-  
-  // Detectar se está em página com fundo verde
+
   const isGreenBgPage = ['/chas', '/organicos', '/temperos', '/cosmeticos'].includes(location.pathname);
 
   useEffect(() => {
@@ -35,22 +34,15 @@ export default function Navbar() {
     }
   }
 
-
   return (
     <nav style={{...s.nav, ...(isScrolled ? s.navScrolled : {}), ...(isGreenBgPage && isScrolled ? s.navScrolledGreen : {}), ...(isGreenBgPage && !isScrolled ? s.navGreenBg : {})}}>
       <div style={s.container}>
-        {/* Logo */}
         <Link to="/produtos" style={s.logo}>
-          <img
-            src="/img/logonova.png"
-            alt="Pura Essência"
-            style={s.logoImg}
-          />
+          <img src="/img/logonova.png" alt="Pura Essência" style={s.logoImg} />
         </Link>
 
-        {/* Menu Central */}
         <div style={s.menuCentral}>
-          <button 
+          <button
             onClick={() => {
               if (location.pathname === '/') {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -61,22 +53,32 @@ export default function Navbar() {
                 }, 100);
               }
             }}
-              style={{...s.menuLink, ...(isActive('/') ? s.activeLink : {}), ...(isGreenBgPage && !isScrolled ? s.menuLinkGreen : {}), ...(isGreenBgPage && isScrolled ? s.menuLinkScrolled : {})}}          >
+            style={{
+              ...s.menuLink,
+              ...(location.pathname === '/' ? s.activeLink : {}),
+              ...(isGreenBgPage && !isScrolled ? s.menuLinkGreen : {}),
+              ...(isGreenBgPage && isScrolled ? s.menuLinkScrolled : {}),
+            }}
+          >
             Início
           </button>
-          
+
           <div
             style={s.menuItem}
             onMouseEnter={() => setShowProdutosMenu(true)}
             onMouseLeave={() => setShowProdutosMenu(false)}
           >
-            <button style={{...s.menuLink, ...(location.pathname.includes('produtos') || ['/chas', '/organicos', '/temperos', '/cosmeticos'].includes(location.pathname) ? s.activeLink : {}), ...(isGreenBgPage && !isScrolled ? s.menuLinkGreen : {}), ...(isGreenBgPage && isScrolled ? s.menuLinkScrolled : {})}}>
+            <button
+              style={{
+                ...s.menuLink,
+                ...(location.pathname.includes('produtos') || ['/chas', '/organicos', '/temperos', '/cosmeticos'].includes(location.pathname) ? s.activeLink : {}),
+                ...(isGreenBgPage && !isScrolled ? s.menuLinkGreen : {}),
+                ...(isGreenBgPage && isScrolled ? s.menuLinkScrolled : {}),
+              }}
+            >
               Produtos <span style={{fontSize: '0.6rem', marginLeft: 4}}>▼</span>
             </button>
-            {/* Ponte invisível para manter o hover contínuo entre o botão e o submenu */}
-            {showProdutosMenu && (
-              <div style={s.submenuBridge} />
-            )}
+            {showProdutosMenu && <div style={s.submenuBridge} />}
             {showProdutosMenu && (
               <div style={s.submenu}>
                 <Link to="/produtos" style={s.submenuLink}>Todos os Produtos</Link>
@@ -88,9 +90,23 @@ export default function Navbar() {
             )}
           </div>
 
-          <a href="/#sobre" style={{...s.menuLink, ...(isGreenBgPage && !isScrolled ? s.menuLinkGreen : {}), ...(isGreenBgPage && isScrolled ? s.menuLinkScrolled : {})}}>Sobre</a>
+          <a
+            href="/#sobre"
+            style={{
+              ...s.menuLink,
+              ...(isGreenBgPage && !isScrolled ? s.menuLinkGreen : {}),
+              ...(isGreenBgPage && isScrolled ? s.menuLinkScrolled : {}),
+            }}
+          >
+            Sobre
+          </a>
+
           <button
-            style={{...s.menuLink, ...(isGreenBgPage && !isScrolled ? s.menuLinkGreen : {}), ...(isGreenBgPage && isScrolled ? s.menuLinkScrolled : {})}}
+            style={{
+              ...s.menuLink,
+              ...(isGreenBgPage && !isScrolled ? s.menuLinkGreen : {}),
+              ...(isGreenBgPage && isScrolled ? s.menuLinkScrolled : {}),
+            }}
             onClick={() => {
               const footer = document.querySelector('footer');
               if (footer) {
@@ -102,7 +118,6 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* Barra de Busca e Ações */}
         <div style={s.actions}>
           <div style={s.searchWrap}>
             <input
@@ -114,7 +129,10 @@ export default function Navbar() {
               style={s.searchInput}
             />
             <button onClick={handleSearch} style={s.searchBtn}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
             </button>
           </div>
 
@@ -123,18 +141,32 @@ export default function Navbar() {
               <div style={s.userMenu}>
                 <span style={s.nome}>Olá, {cliente.nome.split(' ')[0]}</span>
                 <Link to="/meus-pedidos" style={s.iconLink} title="Meus Pedidos">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                  </svg>
                 </Link>
                 <button onClick={handleLogout} style={s.btnLogout} title="Sair">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                  </svg>
                 </button>
               </div>
             ) : (
-              <Link to="/login" style={{...s.loginBtn, ...(isGreenBgPage && !isScrolled ? s.loginBtnGreen : {})}}>Entrar</Link>
+              <Link to="/login" style={{...s.loginBtn, ...(isGreenBgPage && !isScrolled ? s.loginBtnGreen : {})}}>
+                Entrar
+              </Link>
             )}
 
             <Link to="/carrinho" style={{...s.carrinho, ...(isGreenBgPage && !isScrolled ? s.carrinhoGreen : {})}}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="9" cy="21" r="1"></circle>
+                <circle cx="20" cy="21" r="1"></circle>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+              </svg>
               {totalItens > 0 && <span style={s.badge}>{totalItens}</span>}
             </Link>
           </div>
@@ -244,8 +276,7 @@ const s = {
     borderRadius: '8px',
     minWidth: '220px',
     boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-    padding: '0 0 12px',
-    paddingTop: '16px',
+    padding: '16px 0 12px',
     marginTop: '0px',
     zIndex: 1001,
     border: '1px solid #F0F0F0',
