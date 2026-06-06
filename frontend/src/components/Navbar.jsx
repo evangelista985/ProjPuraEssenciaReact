@@ -61,8 +61,7 @@ export default function Navbar() {
                 }, 100);
               }
             }}
-            style={{...s.menuLink, ...(isActive('/') ? s.activeLink : {}), ...(isGreenBgPage && !isScrolled ? s.menuLinkGreen : {}), ...(isGreenBgPage && isScrolled ? s.menuLinkScrolled : {})}}
-          >
+              style={{...s.menuLink, ...(isActive('/') ? s.activeLink : {}), ...(isGreenBgPage && !isScrolled ? s.menuLinkGreen : {}), ...(isGreenBgPage && isScrolled ? s.menuLinkScrolled : {})}}          >
             Início
           </button>
           
