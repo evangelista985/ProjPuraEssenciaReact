@@ -87,7 +87,7 @@ const detectarBandeira = (numero) => {
   return 'default';
 };
 
-export default function CheckoutSimulado({ onFinalizar, loading }) {
+export default function CheckoutSimulado({ onFinalizar, loading, hideButton = false }) {
   const [cartao, setCartao] = useState({ numero: '', nome: '', validade: '', cvv: '', parcelas: '1' });
   const [bandeira, setBandeira] = useState('default');
   const [virado, setVirado] = useState(false);
@@ -107,7 +107,12 @@ export default function CheckoutSimulado({ onFinalizar, loading }) {
     }
     if (name === 'cvv') {
       value = value.replace(/\D/g, '').substring(0, 4);
-      if (value) setVirado(true);
+      // Vira para o verso ao começar a digitar
+      if (value.length > 0 && value.length < 3) setVirado(true);
+      // Vira de volta para frente quando tiver 3+ dígitos
+      if (value.length >= 3) {
+        setTimeout(() => setVirado(false), 600);
+      }
     } else {
       setVirado(false);
     }
@@ -236,7 +241,7 @@ export default function CheckoutSimulado({ onFinalizar, loading }) {
               placeholder="123" required autoComplete="cc-csc"
               style={st.input}
               onFocus={() => setVirado(true)}
-              onBlur={() => setVirado(false)}
+              onBlur={() => { if (cartao.cvv.length < 3) setVirado(false); }}
             />
           </div>
         </div>
@@ -251,9 +256,11 @@ export default function CheckoutSimulado({ onFinalizar, loading }) {
           </select>
         </div>
 
-        <button type="submit" style={st.btn} disabled={loading}>
-          {loading ? '⌛ Processando...' : '✅ Finalizar Compra'}
-        </button>
+        {!hideButton && (
+          <button type="submit" style={st.btn} disabled={loading}>
+            {loading ? '⌛ Processando...' : '✅ Finalizar Compra'}
+          </button>
+        )}
       </form>
     </div>
   );
@@ -269,10 +276,11 @@ const st = {
     fontSize: 18, marginBottom: 20, color: '#3A5D3E',
     textAlign: 'center', fontWeight: 700
   },
-  // Flip card
+  // Flip card — tamanho fixo proporcional a um cartão real (ratio 1.586:1)
   cardOuter: {
     perspective: 1000, marginBottom: 6,
-    height: 200, width: '100%'
+    width: 340, height: 214,
+    margin: '0 auto 6px auto',
   },
   cardInner: {
     position: 'relative', width: '100%', height: '100%',

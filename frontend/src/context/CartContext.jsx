@@ -1,9 +1,19 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
-  const [itens, setItens] = useState([]);
+  const [itens, setItens] = useState(() => {
+    try {
+      const salvo = localStorage.getItem('carrinho');
+      return salvo ? JSON.parse(salvo) : [];
+    } catch { return []; }
+  });
+
+  // Persiste no localStorage sempre que itens mudar
+  useEffect(() => {
+    localStorage.setItem('carrinho', JSON.stringify(itens));
+  }, [itens]);
 
   function adicionar(produto, quantidade = 1) {
     setItens(prev => {
@@ -34,7 +44,10 @@ export function CartProvider({ children }) {
     setItens(prev => prev.map(i => i.produto_id === produto_id ? { ...i, quantidade } : i));
   }
 
-  function limpar() { setItens([]); }
+  function limpar() {
+    setItens([]);
+    localStorage.removeItem('carrinho');
+  }
 
   const total      = itens.reduce((acc, i) => acc + i.preco * i.quantidade, 0);
   const totalItens = itens.reduce((acc, i) => acc + i.quantidade, 0);
