@@ -1,15 +1,35 @@
-const mysql = require('mysql2/promise');
-require('dotenv').config();
+const { Pool } = require('pg');
 
-const pool = mysql.createPool({
-  host:     process.env.DB_HOST || 'localhost',
-  port:     process.env.DB_PORT || 3307,
-  user:     process.env.DB_USER || 'root',
-  password: process.env.DB_PASS || '',
-  database: process.env.DB_NAME || 'loja_pura_essencia',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 });
 
-module.exports = pool;
+// Wrapper compatível com a sintaxe mysql2 já usada no projeto
+// mysql2 retorna [rows, fields] — mantemos o mesmo padrão
+const db = {
+  query: async (sql, params = []) => {
+    // Converte placeholders: MySQL usa ? → PostgreSQL usa $1, $2...
+    let i = 0;
+    const pgSql = sql.replace(/\?/g, () => `$${++i}`);
+    const result = await pool.query(pgSql, params);
+    return [result.rows, result.fields];
+  },
+  getConnection: async () => {
+    const client = await pool.connect();
+    return {
+      query: async (sql, params = []) => {
+        let i = 0;
+        const pgSql = sql.replace(/\?/g, () => `$${++i}`);
+        const result = await client.query(pgSql, params);
+        return [result.rows, result.fields];
+      },
+      beginTransaction: () => client.query('BEGIN'),
+      commit:           () => client.query('COMMIT'),
+      rollback:         () => client.query('ROLLBACK'),
+      release:          () => client.release(),
+    };
+  }
+};
+
+module.exports = db;
