@@ -4,9 +4,9 @@ const db      = require('../config/db');
 const { authCliente, authAdmin } = require('../middleware/auth');
 const { enviarEmailConfirmacaoPedido } = require('../config/email');
 
-// POST /api/pedidos - cliente faz pedido
+// POST /api/pedidos
 router.post('/', authCliente, async (req, res) => {
-  const { itens, forma_pagamento, cupom_codigo, frete } = req.body;
+  const { itens, forma_pagamento, cupom_codigo, frete, endereco_entrega: endEntrega } = req.body;
   if (!itens || itens.length === 0) return res.status(400).json({ erro: 'Carrinho vazio' });
   if (!forma_pagamento) return res.status(400).json({ erro: 'Forma de pagamento obrigatória' });
 
@@ -34,13 +34,32 @@ router.post('/', authCliente, async (req, res) => {
     }
 
     const valorDesconto = (total * desconto) / 100;
-    const frete_valor   = frete?.valor   || 0;
-    const frete_servico = frete?.nome    || null;
+    const frete_valor   = frete?.valor  || 0;
+    const frete_servico = frete?.nome   || null;
+    const frete_prazo   = frete?.prazo  || null;
     const total_final   = total - valorDesconto + frete_valor;
 
+    // ── Endereço de entrega — usando nomes do banco real ──
+    const e = endEntrega || {};
+    const cep_entrega         = e.cep          || null;
+    const endereco_entrega = e.endereco || null;
+    const numero_entrega      = e.numero        || null;
+    const complemento_entrega = e.complemento   || null;
+    const bairro_entrega      = e.bairro        || null;
+    const cidade_entrega      = e.cidade        || null;
+    const estado_entrega      = e.estado        || null;
+
     const [pedido] = await conn.query(
-      'INSERT INTO pedidos (cliente_id, total, desconto, total_final, forma_pagamento, cupom_id, status) VALUES (?,?,?,?,?,?,?)',
-      [req.cliente.id, total, valorDesconto, total_final, forma_pagamento, cupom_id, 'pago']
+      `INSERT INTO pedidos
+        (cliente_id, total, desconto, total_final, forma_pagamento, cupom_id, status,
+         frete_valor, frete_servico, frete_prazo,
+         cep_entrega, endereco_entrega, numero_entrega, complemento_entrega,
+         bairro_entrega, cidade_entrega, estado_entrega)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      [req.cliente.id, total, valorDesconto, total_final, forma_pagamento, cupom_id, 'pago',
+       frete_valor, frete_servico, frete_prazo,
+       cep_entrega, endereco_entrega, numero_entrega, complemento_entrega,
+       bairro_entrega, cidade_entrega, estado_entrega]
     );
 
     const pedido_id = pedido.insertId;
@@ -56,33 +75,19 @@ router.post('/', authCliente, async (req, res) => {
         'UPDATE estoque SET quantidade = quantidade - ? WHERE produto_id = ?',
         [item.quantidade, item.produto_id]
       );
-      itensSalvos.push({
-        nome:      produto[0].nome,
-        quantidade: item.quantidade,
-        preco_unit: produto[0].preco,
-      });
+      itensSalvos.push({ nome: produto[0].nome, quantidade: item.quantidade, preco_unit: produto[0].preco });
     }
 
     await conn.commit();
 
-    // ── Buscar dados do cliente para o e-mail ──
-    const [clienteRows] = await db.query(
-      'SELECT id, nome, email FROM clientes WHERE id = ?',
-      [req.cliente.id]
-    );
+    const [clienteRows] = await db.query('SELECT id, nome, email FROM clientes WHERE id = ?', [req.cliente.id]);
 
-    // ── Enviar e-mail de confirmação (não bloqueia a resposta) ──
     enviarEmailConfirmacaoPedido({
       cliente: clienteRows[0],
       pedido: {
-        id:            pedido_id,
-        status:        'pago',
-        forma_pagamento,
-        total,
-        desconto:      valorDesconto,
-        frete_valor,
-        frete_servico,
-        total_final,
+        id: pedido_id, status: 'pago', forma_pagamento,
+        total, desconto: valorDesconto, frete_valor, frete_servico, frete_prazo, total_final,
+        endereco_entrega, numero_entrega, bairro_entrega, cidade_entrega, estado_entrega, cep_entrega,
       },
       itens: itensSalvos,
     });
@@ -96,7 +101,7 @@ router.post('/', authCliente, async (req, res) => {
   }
 });
 
-// GET /api/pedidos/meus - pedidos do cliente logado
+// GET /api/pedidos/meus
 router.get('/meus', authCliente, async (req, res) => {
   try {
     const [pedidos] = await db.query(
@@ -115,7 +120,7 @@ router.get('/meus', authCliente, async (req, res) => {
   }
 });
 
-// GET /api/pedidos - todos os pedidos (admin)
+// GET /api/pedidos (admin)
 router.get('/', authAdmin, async (req, res) => {
   try {
     const [pedidos] = await db.query(
@@ -130,7 +135,7 @@ router.get('/', authAdmin, async (req, res) => {
   }
 });
 
-// GET /api/pedidos/:id - detalhe (admin)
+// GET /api/pedidos/:id (admin)
 router.get('/:id', authAdmin, async (req, res) => {
   try {
     const [pedidos] = await db.query(
@@ -163,10 +168,8 @@ router.put('/:id/status', authAdmin, async (req, res) => {
     res.status(500).json({ erro: 'Erro ao atualizar status' });
   }
 });
-// Adicione esta rota no arquivo routes/pedidos.js do Node
-// ANTES do module.exports = router;
 
-// PUT /api/pedidos/:id/rastreio - atualizar rastreio (admin)
+// PUT /api/pedidos/:id/rastreio
 router.put('/:id/rastreio', authAdmin, async (req, res) => {
   const { statusRastreio } = req.body;
   const statusMap = { 0: 'pago', 1: 'enviado', 2: 'entregue' };

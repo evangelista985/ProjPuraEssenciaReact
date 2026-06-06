@@ -3,22 +3,13 @@ import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const labelOpcao = {
-  pendente:   'pendente',
-  pago:       'preparação',
-  enviado:    'transporte',
-  entregue:   'entregue',
-  cancelado:  'cancelado',
-  finalizado: 'finalizado',
+  pendente: 'pendente', pago: 'preparação', enviado: 'transporte',
+  entregue: 'entregue', cancelado: 'cancelado', finalizado: 'finalizado',
 };
-
 const statusOpcoes = ['pendente','pago','enviado','entregue','cancelado','finalizado'];
 const statusCor    = {
-  pendente:   'badge-amarelo',
-  pago:       'badge-azul',
-  enviado:    'badge-azul',
-  entregue:   'badge-verde',
-  cancelado:  'badge-vermelho',
-  finalizado: 'badge-azul',
+  pendente: 'badge-amarelo', pago: 'badge-azul', enviado: 'badge-azul',
+  entregue: 'badge-verde',   cancelado: 'badge-vermelho', finalizado: 'badge-azul',
 };
 
 function etapaRastreio(status) {
@@ -32,8 +23,7 @@ function badgeStatus(status) {
   let exibir = status;
   if (status === 'finalizado') exibir = 'pago';
   if (status === 'pago')       exibir = 'preparação';
-  const cor = statusCor[status] || 'badge-cinza';
-  return <span className={`badge ${cor}`}>{exibir}</span>;
+  return <span className={`badge ${statusCor[status] || 'badge-cinza'}`}>{exibir}</span>;
 }
 
 const etapas = [
@@ -42,35 +32,24 @@ const etapas = [
   { label: 'Entregue',   icon: '✅' },
 ];
 
-// Rastreio ESTÁTICO — sem animação, reflete status real do banco
 function RastreioIcons({ status }) {
   const etapaAt = etapaRastreio(status);
   return (
     <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
       {etapas.map((e, i) => {
         const etapaNum = i + 1;
-        const ativo    = etapaAt >= etapaNum;
-        const atual    = etapaAt === etapaNum;
+        const ativo = etapaAt >= etapaNum;
+        const atual = etapaAt === etapaNum;
         return (
-          <div
-            key={e.label}
-            title={e.label}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}
-          >
+          <div key={e.label} title={e.label}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
             <div style={{
               width: 34, height: 34, borderRadius: '50%',
               background: ativo ? '#3A5D3E' : '#e8ede5',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 16,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16,
               boxShadow: atual ? '0 0 0 2px #7ab87e' : 'none',
-              transition: 'background 0.3s',
-            }}>
-              {e.icon}
-            </div>
-            <span style={{
-              fontSize: 9, color: ativo ? '#3A5D3E' : '#aaa',
-              fontWeight: ativo ? 700 : 400, letterSpacing: 0.1,
-            }}>
+            }}>{e.icon}</div>
+            <span style={{ fontSize: 9, color: ativo ? '#3A5D3E' : '#aaa', fontWeight: ativo ? 700 : 400 }}>
               {e.label}
             </span>
           </div>
@@ -88,18 +67,16 @@ function RastreioDetalhe({ status }) {
       <div style={{ display: 'flex', alignItems: 'center' }}>
         {etapas.map((e, i) => {
           const etapaNum = i + 1;
-          const ativo    = etapaAt >= etapaNum;
-          const atual    = etapaAt === etapaNum;
+          const ativo = etapaAt >= etapaNum;
+          const atual = etapaAt === etapaNum;
           return (
             <div key={e.label} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                 <div style={{
                   width: 40, height: 40, borderRadius: '50%',
                   background: ativo ? '#3A5D3E' : '#dde5d8',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 18,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
                   boxShadow: atual ? '0 0 0 3px #7ab87e' : 'none',
-                  transition: 'background 0.3s',
                 }}>{e.icon}</div>
                 <span style={{ fontSize: 10, fontWeight: ativo ? 700 : 400, color: ativo ? '#3A5D3E' : '#aaa' }}>
                   {e.label}
@@ -108,15 +85,43 @@ function RastreioDetalhe({ status }) {
               {i < etapas.length - 1 && (
                 <div style={{
                   flex: 1, height: 3, margin: '0 4px', marginBottom: 14,
-                  background: etapaAt > etapaNum ? '#3A5D3E' : '#dde5d8',
-                  borderRadius: 2,
-                  transition: 'background 0.3s',
+                  background: etapaAt > etapaNum ? '#3A5D3E' : '#dde5d8', borderRadius: 2,
                 }} />
               )}
             </div>
           );
         })}
       </div>
+    </div>
+  );
+}
+
+// ── Endereço usando nomes reais do banco ──
+function EnderecoEntrega({ p }) {
+  const tem = p.endereco_entrega || p.cep_entrega;
+  if (!tem) return (
+    <div style={{ background: '#fff8e1', borderRadius: 8, padding: '10px 14px', marginBottom: 16 }}>
+      <p style={{ fontSize: 12, color: '#e67e22' }}>⚠️ Endereço de entrega não registrado neste pedido</p>
+    </div>
+  );
+  return (
+    <div style={{ background: '#f0f7f0', borderRadius: 10, padding: '12px 16px', marginBottom: 16, border: '1px solid #c8e6c9' }}>
+      <p style={{ fontSize: 13, fontWeight: 700, color: '#3A5D3E', marginBottom: 8 }}>🏠 Endereço de Entrega</p>
+      <p style={{ fontSize: 13, fontWeight: 600, color: '#333' }}>
+        {p.endereco_entrega}{p.numero_entrega ? `, Nº ${p.numero_entrega}` : ''}
+        {p.complemento_entrega ? ` — ${p.complemento_entrega}` : ''}
+      </p>
+      <p style={{ fontSize: 13, color: '#555', marginTop: 2 }}>
+        {p.bairro_entrega}{p.cidade_entrega ? ` — ${p.cidade_entrega}` : ''}{p.estado_entrega ? `/${p.estado_entrega}` : ''}
+      </p>
+      {p.cep_entrega && <p style={{ fontSize: 12, color: '#888', marginTop: 2 }}>CEP: {p.cep_entrega}</p>}
+      {p.frete_servico && (
+        <p style={{ fontSize: 12, color: '#3A5D3E', marginTop: 6, fontWeight: 600 }}>
+          🚚 {p.frete_servico}
+          {p.frete_prazo ? ` — ${p.frete_prazo} dias úteis` : ''}
+          {p.frete_valor > 0 ? ` — R$ ${Number(p.frete_valor).toFixed(2).replace('.', ',')}` : ''}
+        </p>
+      )}
     </div>
   );
 }
@@ -181,9 +186,7 @@ export default function AdminPedidos() {
                       </strong>
                     </td>
                     <td style={td}>{badgeStatus(p.status)}</td>
-                    <td style={td}>
-                      <RastreioIcons status={p.status} />
-                    </td>
+                    <td style={td}><RastreioIcons status={p.status} /></td>
                     <td style={td}>
                       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                         <button className="btn-azul btn-sm" onClick={() => verDetalhe(p.id)}>👁️</button>
@@ -209,24 +212,24 @@ export default function AdminPedidos() {
         </div>
 
         {detalhe && (
-          <div style={{ width: 340, flexShrink: 0 }}>
+          <div style={{ width: 360, flexShrink: 0 }}>
             <div className="card">
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
                 <h2 style={{ fontSize: 20 }}>Pedido #{detalhe.id}</h2>
                 <button onClick={() => setDetalhe(null)}
                   style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#888' }}>✕</button>
               </div>
+
               <p style={{ marginBottom: 4 }}><strong>Cliente:</strong> {detalhe.cliente_nome}</p>
               <p style={{ marginBottom: 4 }}><strong>E-mail:</strong> {detalhe.cliente_email}</p>
               <p style={{ marginBottom: 4 }}><strong>Pagamento:</strong> {detalhe.forma_pagamento?.toUpperCase()}</p>
-              <p style={{ marginBottom: 4 }}>
-                <strong>Status:</strong>{' '}{badgeStatus(detalhe.status)}
-              </p>
+              <p style={{ marginBottom: 4 }}><strong>Status:</strong> {badgeStatus(detalhe.status)}</p>
               <p style={{ marginBottom: 12 }}>
                 <strong>Data:</strong> {new Date(detalhe.criado_em).toLocaleDateString('pt-BR')}
               </p>
 
               <RastreioDetalhe status={detalhe.status} />
+              <EnderecoEntrega p={detalhe} />
 
               <hr style={{ margin: '8px 0 16px', border: 'none', borderTop: '1px solid #eee' }} />
               <p style={{ fontWeight: 700, marginBottom: 10 }}>Itens:</p>
@@ -239,7 +242,7 @@ export default function AdminPedidos() {
                   />
                   <div style={{ flex: 1 }}>
                     <p style={{ fontSize: 13, fontWeight: 700 }}>{i.produto_nome}</p>
-                    <p style={{ fontSize: 12, color: '#888' }}>Qtd: {i.quantidade}</p>
+                    <p style={{ fontSize: 12, color: '#888' }}>Qtd: {i.quantidade} × R$ {Number(i.preco_unit).toFixed(2).replace('.', ',')}</p>
                   </div>
                   <p style={{ fontSize: 13, fontWeight: 700 }}>
                     R$ {(i.preco_unit * i.quantidade).toFixed(2).replace('.', ',')}
@@ -252,6 +255,12 @@ export default function AdminPedidos() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginBottom: 6, color: '#3A5D3E' }}>
                   <span>Desconto</span>
                   <span>- R$ {Number(detalhe.desconto).toFixed(2).replace('.', ',')}</span>
+                </div>
+              )}
+              {detalhe.frete_valor > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginBottom: 6, color: '#555' }}>
+                  <span>Frete ({detalhe.frete_servico || '—'})</span>
+                  <span>R$ {Number(detalhe.frete_valor).toFixed(2).replace('.', ',')}</span>
                 </div>
               )}
               <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: 17 }}>

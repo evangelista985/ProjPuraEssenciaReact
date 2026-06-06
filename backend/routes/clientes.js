@@ -6,7 +6,7 @@ const db      = require('../config/db');
 const { enviarEmailConfirmacaoPedido } = require('../config/email');
 const nodemailer = require('nodemailer');
 
-// ── Transportador de e-mail (reutiliza config do .env) ──
+// ── Transportador de e-mail ──
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -15,23 +15,23 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Armazena códigos temporários em memória: { email: { codigo, expira } }
 const codigosReset = {};
 
 // POST /api/clientes/cadastro
 router.post('/cadastro', async (req, res) => {
-  const { nome, email, senha, telefone } = req.body;
+  const { nome, email, senha, telefone, cep, endereco, numero, bairro, cidade, estado } = req.body;
   if (!nome || !email || !senha) return res.status(400).json({ erro: 'Campos obrigatórios faltando' });
   try {
     const [existe] = await db.query('SELECT id FROM clientes WHERE email = ?', [email]);
     if (existe.length > 0) return res.status(400).json({ erro: 'E-mail já cadastrado' });
     const hash = await bcrypt.hash(senha, 10);
     const [result] = await db.query(
-      'INSERT INTO clientes (nome, email, senha, telefone) VALUES (?, ?, ?, ?)',
-      [nome, email, hash, telefone || null]
+      'INSERT INTO clientes (nome, email, senha, telefone, cep, endereco, numero, bairro, cidade, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [nome, email, hash, telefone || null, cep || null, endereco || null, numero || null, bairro || null, cidade || null, estado || null]
     );
     res.status(201).json({ mensagem: 'Cadastro realizado com sucesso!', id: result.insertId });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ erro: 'Erro no servidor' });
   }
 });
@@ -51,34 +51,38 @@ router.post('/login', async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES }
     );
-    res.json({ token, cliente: { id: cliente.id, nome: cliente.nome, email: cliente.email } });
+    res.json({
+      token,
+      cliente: {
+        id:       cliente.id,
+        nome:     cliente.nome,
+        email:    cliente.email,
+        cep:      cliente.cep      || '',
+        endereco: cliente.endereco || '',
+        numero:   cliente.numero   || '',
+        bairro:   cliente.bairro   || '',
+        cidade:   cliente.cidade   || '',
+        estado:   cliente.estado   || ''
+      }
+    });
   } catch {
     res.status(500).json({ erro: 'Erro no servidor' });
   }
 });
 
 // POST /api/clientes/esqueci-senha
-// Gera código de 6 dígitos e envia por e-mail
 router.post('/esqueci-senha', async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ erro: 'E-mail obrigatório' });
-
   try {
     const [rows] = await db.query('SELECT id, nome FROM clientes WHERE email = ?', [email]);
-    // Retorna sucesso mesmo se não encontrar (segurança)
     if (rows.length === 0) {
       return res.json({ mensagem: 'Se este e-mail estiver cadastrado, você receberá o código em breve.' });
     }
-
     const cliente = rows[0];
-
-    // Gera código de 6 dígitos
     const codigo = Math.floor(100000 + Math.random() * 900000).toString();
-    const expira = Date.now() + 15 * 60 * 1000; // 15 minutos
-
+    const expira = Date.now() + 15 * 60 * 1000;
     codigosReset[email] = { codigo, expira };
-
-    // Envia e-mail com o código
     await transporter.sendMail({
       from:    process.env.EMAIL_FROM || 'Pura Essência <puraessenciaetec@gmail.com>',
       to:      email,
@@ -98,23 +102,18 @@ router.post('/esqueci-senha', async (req, res) => {
         </div>
       `,
     });
-
     res.json({ mensagem: 'Código enviado para seu e-mail!' });
   } catch (err) {
-  console.error('Erro ao enviar código:', JSON.stringify(err, Object.getOwnPropertyNames(err)));
-  res.status(500).json({ erro: 'Erro ao enviar o código. Tente novamente.' });
-
+    console.error('Erro ao enviar código:', JSON.stringify(err, Object.getOwnPropertyNames(err)));
+    res.status(500).json({ erro: 'Erro ao enviar o código. Tente novamente.' });
   }
 });
 
 // POST /api/clientes/redefinir-senha
-// Valida código e salva nova senha
 router.post('/redefinir-senha', async (req, res) => {
   const { email, codigo, novaSenha } = req.body;
   if (!email || !codigo || !novaSenha) return res.status(400).json({ erro: 'Campos obrigatórios faltando' });
-
   const registro = codigosReset[email];
-
   if (!registro) return res.status(400).json({ erro: 'Nenhum código solicitado para este e-mail' });
   if (Date.now() > registro.expira) {
     delete codigosReset[email];
@@ -122,7 +121,6 @@ router.post('/redefinir-senha', async (req, res) => {
   }
   if (registro.codigo !== codigo) return res.status(400).json({ erro: 'Código inválido' });
   if (novaSenha.length < 6) return res.status(400).json({ erro: 'A senha deve ter no mínimo 6 caracteres' });
-
   try {
     const hash = await bcrypt.hash(novaSenha, 10);
     await db.query('UPDATE clientes SET senha = ? WHERE email = ?', [hash, email]);
@@ -130,6 +128,49 @@ router.post('/redefinir-senha', async (req, res) => {
     res.json({ mensagem: 'Senha redefinida com sucesso!' });
   } catch {
     res.status(500).json({ erro: 'Erro ao redefinir senha' });
+  }
+});
+
+// PUT /api/clientes/endereco — atualiza endereço padrão do cliente logado
+router.put('/endereco', async (req, res) => {
+  const auth = req.headers.authorization;
+  if (!auth) return res.status(401).json({ erro: 'Token não fornecido' });
+  try {
+    const token   = auth.replace('Bearer ', '');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const id      = decoded.id;
+    const { cep, endereco, numero, bairro, cidade, estado } = req.body;
+    if (!cep || !endereco || !numero || !bairro || !cidade || !estado) {
+      return res.status(400).json({ erro: 'Preencha todos os campos obrigatórios' });
+    }
+    await db.query(
+      `UPDATE clientes SET cep=?, endereco=?, numero=?, bairro=?, cidade=?, estado=? WHERE id=?`,
+      [cep, endereco, numero, bairro, cidade, estado, id]
+    );
+    res.json({ mensagem: 'Endereço atualizado com sucesso!' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ erro: 'Erro ao atualizar endereço' });
+  }
+});
+
+
+// GET /api/clientes/me — retorna dados atualizados do cliente logado
+router.get('/me', async (req, res) => {
+  const auth = req.headers.authorization;
+  if (!auth) return res.status(401).json({ erro: 'Token não fornecido' });
+  try {
+    const jwt = require('jsonwebtoken');
+    const token = auth.replace('Bearer ', '');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const [rows] = await db.query(
+      'SELECT id, nome, email, telefone, cep, endereco, numero, complemento, bairro, cidade, estado FROM clientes WHERE id = ?',
+      [decoded.id]
+    );
+    if (rows.length === 0) return res.status(404).json({ erro: 'Cliente não encontrado' });
+    res.json(rows[0]);
+  } catch {
+    res.status(401).json({ erro: 'Token inválido' });
   }
 });
 
