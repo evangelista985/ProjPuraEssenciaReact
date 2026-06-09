@@ -125,8 +125,8 @@ export default function Vitrine() {
     <div style={st.wrapper}>
 
       {/* ── HERO BANNER ── */}
-      <section style={st.hero}>
-        <div style={st.heroText}>
+      <section style={st.hero} className="vitrine-hero">
+        <div style={st.heroText} className="vitrine-hero-text">
           <div style={st.heroBadge}>
             <span style={st.heroBadgeDot} />
             100% natural · orgânico · sustentável
@@ -147,7 +147,7 @@ export default function Vitrine() {
             </button>
           </div>
         </div>
-        <div style={st.heroImage}>
+        <div style={st.heroImage} className="vitrine-hero-image">
           <video
             src={heroGifUrl}
             autoPlay
@@ -175,7 +175,7 @@ export default function Vitrine() {
       </section>
 
       {/* ── STATS ── */}
-      <section style={st.statsSection}>
+      <section style={st.statsSection} className="vitrine-stats">
         {[
           { num: '100%', label: 'Natural & Orgânico' },
           { num: '+500', label: 'Clientes Satisfeitos' },
@@ -189,7 +189,7 @@ export default function Vitrine() {
       </section>
 
       {/* ── PRODUTOS ── */}
-      <section style={st.produtosSection}>
+      <section style={st.produtosSection} className="vitrine-produtos-section">
         <div style={st.sectionHead}>
           <span style={st.sectionLabel}>Catálogo</span>
           <h2 style={st.secTitle}>Nossos Produtos</h2>
@@ -201,7 +201,7 @@ export default function Vitrine() {
         ) : produtos.length === 0 ? (
           <p style={st.vazio}>Nenhum produto disponível no momento.</p>
         ) : (
-          <div style={st.produtosGrid}>
+          <div style={st.produtosGrid} className="vitrine-produtos-grid">
             {produtos.slice(0, 6).map(p => (
               <ProductCard
                 key={p.id}
@@ -395,7 +395,7 @@ export default function Vitrine() {
       </section>
 
       {/* ── SOBRE ── */}
-      <section style={st.aboutSection} id="sobre">
+      <section style={st.aboutSection} id="sobre" className="vitrine-about">
         <div style={st.aboutVisual}>
           <video
             src={aboutGifUrl}
