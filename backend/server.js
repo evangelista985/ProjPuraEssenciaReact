@@ -21,14 +21,14 @@ const bannersRouter = require('./routes/banners');
 app.use('/api/banners', bannersRouter);
 
 // Servir imagens
-app.use('/img', express.static(path.join(__dirname, '..', 'img')));
+app.use('/img', express.static(path.join(__dirname, 'img')));
 
 // Verificar cupom
 app.post('/api/cupons/verificar', async (req, res) => {
   const { codigo } = req.body;
   try {
     const [rows] = await db.query(
-      'SELECT * FROM cupons WHERE codigo = ? AND ativo = 1 AND (validade IS NULL OR validade >= CURDATE())',
+      'SELECT * FROM cupons WHERE codigo = $1 AND ativo = true AND (validade IS NULL OR validade >= CURRENT_DATE)',
       [codigo]
     );
     if (rows.length === 0) return res.status(404).json({ erro: 'Cupom inválido ou expirado' });
