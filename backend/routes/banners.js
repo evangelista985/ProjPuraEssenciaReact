@@ -10,8 +10,9 @@ router.get('/', async (req, res) => {
       'SELECT * FROM banners WHERE ativo = true ORDER BY ordem ASC'
     );
     res.json(rows);
-  } catch {
-    res.status(500).json({ erro: 'Erro ao buscar banners' });
+  } catch (err) {
+    console.error('Erro banners:', err.message);
+    res.status(500).json({ erro: err.message });
   }
 });
 
@@ -25,8 +26,9 @@ router.post('/', authAdmin, async (req, res) => {
       [titulo, subtitulo || '', imagem, cor_fundo || '#1B4D1A', ordem || 0]
     );
     res.status(201).json({ mensagem: 'Banner criado!', id: result[0].id });
-  } catch {
-    res.status(500).json({ erro: 'Erro ao criar banner' });
+  } catch (err) {
+    console.error('Erro criar banner:', err.message);
+    res.status(500).json({ erro: err.message });
   }
 });
 
@@ -39,8 +41,9 @@ router.put('/:id', authAdmin, async (req, res) => {
       [titulo, subtitulo, imagem, cor_fundo, ordem, ativo ?? true, req.params.id]
     );
     res.json({ mensagem: 'Banner atualizado!' });
-  } catch {
-    res.status(500).json({ erro: 'Erro ao atualizar banner' });
+  } catch (err) {
+    console.error('Erro atualizar banner:', err.message);
+    res.status(500).json({ erro: err.message });
   }
 });
 
@@ -49,8 +52,9 @@ router.delete('/:id', authAdmin, async (req, res) => {
   try {
     await db.query('UPDATE banners SET ativo = false WHERE id = $1', [req.params.id]);
     res.json({ mensagem: 'Banner removido!' });
-  } catch {
-    res.status(500).json({ erro: 'Erro ao remover banner' });
+  } catch (err) {
+    console.error('Erro remover banner:', err.message);
+    res.status(500).json({ erro: err.message });
   }
 });
 
