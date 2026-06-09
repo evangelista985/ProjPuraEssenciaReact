@@ -69,7 +69,7 @@ export default function MeusPedidos() {
   }
 
   return (
-    <div className="container" style={{ padding: '30px 20px' }}>
+    <div className="container" style={{ paddingTop: 'clamp(84px,12vw,100px)', paddingBottom: 40, paddingLeft: 'clamp(12px,4vw,20px)', paddingRight: 'clamp(12px,4vw,20px)' }}>
       <h1 style={{ marginBottom: 24 }}>Meus Pedidos</h1>
 
       {state?.sucesso && (

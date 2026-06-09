@@ -117,7 +117,7 @@ export default function CheckoutEndereco() {
   const formEndereco = (
     <div style={{ marginTop: 16, borderTop: '1px solid #eee', paddingTop: 16 }}
       onClick={e => e.stopPropagation()}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+      <div className="form-row-2">
         <div style={{ gridColumn: '1/-1' }}>
           <label style={st.label}>CEP *</label>
           <input style={st.input} placeholder="00000-000" value={cep}
@@ -166,7 +166,7 @@ export default function CheckoutEndereco() {
   );
 
   return (
-    <div className="container" style={{ padding: '30px 20px', maxWidth: 640, marginTop: 0 }}>
+    <div className="container" style={{ paddingTop: 'clamp(84px,12vw,100px)', paddingBottom: 40, paddingLeft: 'clamp(12px,4vw,20px)', paddingRight: 'clamp(12px,4vw,20px)', maxWidth: 640, margin: '0 auto' }}>
 
       {/* Stepper */}
       <div style={{ ...st.stepper, position: 'relative', zIndex: 1 }}>

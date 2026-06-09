@@ -28,27 +28,27 @@ export default function DetalhesProduto() {
   if (!produto) return <p style={{ textAlign: 'center', padding: 40, color: '#3A5D3E' }}>🌿 Carregando...</p>;
 
   return (
-    <div className="container" style={{ padding: '40px 20px' }}>
-      <button onClick={() => nav(-1)} style={{ background: 'none', border: 'none', color: '#3A5D3E', fontSize: 15, cursor: 'pointer', marginBottom: 20, fontWeight: 700 }}>
+    <div className="container" style={{ paddingTop: 'clamp(84px,12vw,100px)', paddingBottom: 40, paddingLeft: 'clamp(12px,4vw,20px)', paddingRight: 'clamp(12px,4vw,20px)' }}>
+      <button onClick={() => nav(-1)} style={{ background: 'none', border: 'none', color: '#3A5D3E', fontSize: 15, cursor: 'pointer', marginBottom: 20, fontWeight: 700, minHeight: 44, padding: '0 4px' }}>
         ← Voltar
       </button>
 
-      <div style={st.wrap}>
+      <div className="produto-detalhe-layout">
         {/* Imagem */}
-        <div style={st.imgArea}>
+        <div style={{ background: '#f5f7f2', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 280, overflow: 'hidden' }}>
           <img
             src={produto.imagem || 'https://via.placeholder.com/400x300/f5f7f2/3A5D3E?text=Produto'}
             alt={produto.nome}
-            style={st.img}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', maxHeight: 380 }}
             onError={e => { e.target.src = 'https://via.placeholder.com/400x300/f5f7f2/3A5D3E?text=Produto'; }}
           />
         </div>
 
         {/* Info */}
-        <div style={st.info}>
+        <div>
           <span style={st.categLabel}>{produto.categoria_nome}</span>
-          <h1 style={{ fontSize: 36, marginTop: 8, marginBottom: 16 }}>{produto.nome}</h1>
-          <p style={{ fontSize: 32, fontWeight: 800, color: '#dc3545', marginBottom: 6 }}>
+          <h1 style={{ fontSize: 'clamp(1.6rem,5vw,2.4rem)', marginTop: 8, marginBottom: 16 }}>{produto.nome}</h1>
+          <p style={{ fontSize: 'clamp(1.4rem,5vw,2rem)', fontWeight: 800, color: '#dc3545', marginBottom: 6 }}>
             R$ {Number(produto.preco).toFixed(2).replace('.', ',')}
           </p>
           <p style={{ fontSize: 13, color: '#6c757d', marginBottom: 20 }}>À vista no PIX ou Cartão de Crédito/Débito</p>
@@ -79,7 +79,7 @@ export default function DetalhesProduto() {
 
           {msg && <p className={msg.includes('✅') ? 'sucesso' : 'erro'} style={{ marginBottom: 12 }}>{msg}</p>}
 
-          <button className="btn-verde" style={{ width: '100%', fontSize: 17, padding: '15px 0' }}
+          <button className="btn-verde" style={{ width: '100%', fontSize: 'clamp(14px,4vw,17px)', padding: '15px 0', minHeight: 52 }}
             onClick={adicionarCarrinho} disabled={produto.quantidade <= 0}>
             🛒 Adicionar ao Carrinho
           </button>
@@ -97,12 +97,8 @@ export default function DetalhesProduto() {
 }
 
 const st = {
-  wrap:       { display: 'flex', gap: 40, flexWrap: 'wrap' },
-  imgArea:    { flex: '0 0 400px', background: '#f5f7f2', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 340, overflow: 'hidden' },
-  img:        { width: '100%', height: '100%', objectFit: 'cover', maxHeight: 380 },
-  info:       { flex: 1, minWidth: 280 },
   categLabel: { display: 'inline-block', background: '#e8f0e9', color: '#3A5D3E', fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: 1 },
   qtdCtrl:    { display: 'flex', alignItems: 'center', border: '2px solid #d0d7c4', borderRadius: 6, overflow: 'hidden' },
-  qtdBtn:     { background: '#f5f7f2', border: 'none', width: 34, height: 34, fontSize: 18, cursor: 'pointer', fontWeight: 700, color: '#3A5D3E' },
+  qtdBtn:     { background: '#f5f7f2', border: 'none', width: 40, height: 40, fontSize: 18, cursor: 'pointer', fontWeight: 700, color: '#3A5D3E' },
   qtdNum:     { width: 42, textAlign: 'center', fontWeight: 700, fontSize: 16 },
 };
