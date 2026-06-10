@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
@@ -76,7 +74,7 @@ export default function Vitrine() {
     { icon: '📷', label: 'Instagram', url: 'https://www.instagram.com/pura_essencia.official/', color: '#E4405F' },
     { icon: '💬', label: 'WhatsApp', url: 'https://wa.me', color: '#25D366' },
     { icon: '𝕏', label: 'Twitter', url: 'https://x.com/PuraEssenc91630', color: '#000000' },
-    { icon: '✉️', label: 'Email', url: 'puraessenciaetec@gmail.com', color: '#D4AF37' },
+    { icon: '✉️', label: 'Email', url: 'mailto:puraessenciaetec@gmail.com', color: '#D4AF37' },
   ];
 
   useEffect(() => { carregarProdutos(); }, []);
@@ -132,13 +130,14 @@ export default function Vitrine() {
   return (
     <div style={st.wrapper}>
 
-<<<<<<< HEAD
       {/* ── Faixa promocional mobile ── */}
-      <div className="mobile-promo-banner">
-        🌿 FRETE GRÁTIS <span>em pedidos acima de R$ 89</span>
-      </div>
+      {isMobile && (
+        <div className="mobile-promo-banner" style={{ background: '#1C3A2A', color: '#F5F0E8', textAlign: 'center', padding: '0.5rem', fontSize: '0.75rem' }}>
+          🌿 FRETE GRÁTIS <span>em pedidos acima de R$ 89</span>
+        </div>
+      )}
 
-            {/* ── HERO BANNER ── */}
+      {/* ── HERO BANNER ── */}
       <section style={{
         ...st.hero,
         ...(isMobile ? {display:'flex', flexDirection:'column', paddingTop:'0', minHeight:'auto'} : {}),
@@ -149,56 +148,46 @@ export default function Vitrine() {
         }} className="vitrine-hero-text">
           <div style={{
             ...st.heroBadge,
-            ...(isMobile ? {fontSize:'0.58rem', padding:'0.25rem 0.7rem', marginBottom:'0.9rem', alignSelf:'center'} : {}),
+            ...(isMobile ? {fontSize:'0.48rem', padding:'0.2rem 0.55rem', marginBottom:'0.6rem', alignSelf:'center', letterSpacing:'0.1em'} : {}),
           }}>
-=======
-      {/* ── HERO BANNER ── */}
-      <section style={st.hero} className="vitrine-hero">
-        <div style={st.heroText} className="vitrine-hero-text">
-          <div style={st.heroBadge}>
->>>>>>> d09e33699e22d899b5ecc77ad3274c1e181b6144
             <span style={st.heroBadgeDot} />
             100% natural · orgânico · sustentável
           </div>
           <h1 style={{
             ...st.heroTitle,
-            ...(isMobile ? {fontSize:'clamp(1.55rem, 6vw, 2rem)', marginBottom:'0.7rem'} : {}),
+            ...(isMobile ? {fontSize:'clamp(1.1rem, 5vw, 1.45rem)', marginBottom:'0.5rem', lineHeight:1.2} : {}),
           }}>
             Natureza em cada<br /><em style={st.heroTitleEm}>detalhe da sua vida</em>
           </h1>
           <p style={{
             ...st.heroDesc,
-            ...(isMobile ? {fontSize:'0.82rem', lineHeight:1.55, marginBottom:'1.1rem', maxWidth:'100%'} : {}),
+            ...(isMobile ? {fontSize:'0.72rem', lineHeight:1.5, marginBottom:'0.85rem', maxWidth:'100%'} : {}),
           }}>
             Cosméticos, suplementos e alimentos naturais cuidadosamente selecionados para sua saúde e bem-estar. Da natureza para você.
           </p>
           <div style={{
             ...st.heroCta,
-            ...(isMobile ? {justifyContent:'center', gap:'8px'} : {}),
+            ...(isMobile ? {justifyContent:'center', gap:'6px'} : {}),
           }}>
             <button className="btn-primary" style={{
               ...st.heroBtnPrimary,
-              ...(isMobile ? {padding:'0.65rem 1rem', fontSize:'0.72rem'} : {}),
+              ...(isMobile ? {padding:'0.5rem 0.9rem', fontSize:'0.62rem', letterSpacing:'0.08em'} : {}),
             }} onClick={() => nav('/produtos')}>
               Explorar Produtos
             </button>
             <button className="btn-outline" style={{
               ...st.heroBtnOutline,
-              ...(isMobile ? {padding:'0.65rem 1rem', fontSize:'0.72rem'} : {}),
+              ...(isMobile ? {padding:'0.5rem 0.9rem', fontSize:'0.62rem', letterSpacing:'0.08em'} : {}),
             }}
               onClick={() => document.getElementById('sobre')?.scrollIntoView({ behavior: 'smooth' })}>
               Nossa História
             </button>
           </div>
         </div>
-<<<<<<< HEAD
         <div style={{
           ...st.heroImage,
           ...(isMobile ? {order:2, minHeight:'190px', maxHeight:'230px', height:'38vw'} : {}),
         }} className="vitrine-hero-image">
-=======
-        <div style={st.heroImage} className="vitrine-hero-image">
->>>>>>> d09e33699e22d899b5ecc77ad3274c1e181b6144
           <video
             src={heroGifUrl}
             autoPlay
@@ -240,16 +229,11 @@ export default function Vitrine() {
       </section>
 
       {/* ── PRODUTOS ── */}
-<<<<<<< HEAD
       <section style={{
         ...st.produtosSection,
         ...(isMobile ? {padding:'1.5rem 0.75rem'} : {}),
       }} className="vitrine-produtos-section">
         <div style={{...st.sectionHead, ...(isMobile ? {marginBottom:'1rem'} : {})}}>
-=======
-      <section style={st.produtosSection} className="vitrine-produtos-section">
-        <div style={st.sectionHead}>
->>>>>>> d09e33699e22d899b5ecc77ad3274c1e181b6144
           <span style={st.sectionLabel}>Catálogo</span>
           <h2 style={{
             ...st.secTitle,
@@ -263,14 +247,10 @@ export default function Vitrine() {
         ) : produtos.length === 0 ? (
           <p style={st.vazio}>Nenhum produto disponível no momento.</p>
         ) : (
-<<<<<<< HEAD
           <div style={{
             ...st.produtosGrid,
             ...(isMobile ? {gridTemplateColumns:'repeat(2,1fr)', gap:'8px', marginBottom:'1.2rem'} : {}),
           }} className="vitrine-produtos-grid">
-=======
-          <div style={st.produtosGrid} className="vitrine-produtos-grid">
->>>>>>> d09e33699e22d899b5ecc77ad3274c1e181b6144
             {produtos.slice(0, 6).map(p => (
               <ProductCard
                 key={p.id}
@@ -290,7 +270,7 @@ export default function Vitrine() {
       </section>
 
       {/* ── CARROSSEL COVERFLOW 3D ── */}
-      <section style={st.carouselSection}>
+      <section style={st.carouselSection} className="vitrine-carousel-section">
         <style>{`
           .coverflow-wrap {
             perspective: none;
@@ -475,11 +455,7 @@ export default function Vitrine() {
 
       {/* ── SOBRE ── */}
       <section style={st.aboutSection} id="sobre" className="vitrine-about">
-<<<<<<< HEAD
         <div style={{...st.aboutVisual, ...(isMobile ? {minHeight:200, maxHeight:220, padding:0} : {})}} className="vitrine-about-visual">
-=======
-        <div style={st.aboutVisual}>
->>>>>>> d09e33699e22d899b5ecc77ad3274c1e181b6144
           <video
             src={aboutGifUrl}
             autoPlay
@@ -492,13 +468,13 @@ export default function Vitrine() {
             }}
           />
         </div>
-        <div style={st.aboutText}>
+        <div style={st.aboutText} className="vitrine-about-text">
           <span style={st.sectionLabel}>Nossa história</span>
           <h2 style={st.sectionTitle}>
             Nascemos do <em style={{ fontStyle:'italic', color:'#A07840' }}>amor</em><br />pela natureza
           </h2>
           <p style={st.aboutPara}>
-            A Pura Essência surgiu em 2018 de um desejo simples: oferecer produtos realmente naturais,
+            A Pura Essência surgiu em 2018 de um desire simples: oferecer produtos realmente naturais,
             sem greenwashing, sem promessas vazias. Somos uma empresa familiar do interior de Minas Gerais.
           </p>
           <p style={st.aboutPara}>
@@ -551,7 +527,7 @@ export default function Vitrine() {
       </section>
 
       {/* ── ÁREA DO CLIENTE ── */}
-      <section style={st.userSection} id="conta">
+      <section style={st.userSection} id="conta" className="vitrine-user-section">
         <div style={st.sectionHeader}>
           <span style={st.sectionLabel}>Área do Cliente</span>
           <h2 style={st.sectionTitle}>
@@ -582,7 +558,7 @@ export default function Vitrine() {
       </section>
 
       {/* ── CTA FINAL ── */}
-      <section style={st.ctaSection}>
+      <section style={st.ctaSection} className="vitrine-cta-section">
         <h2 style={st.ctaTitle}>Qualidade Garantida</h2>
         <p style={st.ctaDesc}>
           Todos os nossos produtos são certificados e selecionados com rigor para garantir sua qualidade e pureza.
@@ -601,12 +577,11 @@ function ProductCard({ produto, onClick, onAdd }) {
   const [added, setAdded] = useState(false);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth <= 640);
 
-  // sync with resize
-  useState(() => {
+  useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth <= 640);
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
-  });
+  }, []);
 
   function handleAdd(e) {
     e.stopPropagation();
@@ -924,7 +899,7 @@ const st = {
   },
   cfProgressTrack: {
     width: '160px',
-    height: '2px',
+    height: '4px',
     background: 'rgba(245,240,232,0.15)',
     borderRadius: '2px',
     overflow: 'hidden',

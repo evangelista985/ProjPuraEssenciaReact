@@ -214,18 +214,67 @@ export default function Navbar() {
   );
 }
 
-const s = {
-  menuCentral: { display:'flex', alignItems:'center', gap:'2rem' },
-<<<<<<< HEAD
-  menuLink: { background:'none', border:'none', color:'#4A4A4A', textDecoration:'none', fontSize:'0.85rem', fontWeight:500, textTransform:'uppercase', letterSpacing:'0.05em', cursor:'pointer', padding:'8px 0', paddingBottom:'8px', transition:'color 0.2s, box-shadow 0.2s', fontFamily:"'Jost', sans-serif", display:'inline-flex', alignItems:'center', lineHeight:1 },
-  activeLink: { color:'#1C3A2A', boxShadow:'inset 0 -2px 0 #C8A96E' },
-=======
-  menuLink: { background:'none', border:'none', color:'#4A4A4A', textDecoration:'none', fontSize:'0.85rem', fontWeight:500, textTransform:'uppercase', letterSpacing:'0.05em', cursor:'pointer', padding:'8px 0', transition:'color 0.2s', fontFamily:"'Jost', sans-serif" },
-  activeLink: { color:'#1C3A2A', borderBottom:'2px solid #C8A96E' },
->>>>>>> d09e33699e22d899b5ecc77ad3274c1e181b6144
-  menuLinkGreen: { color:'#C8A96E', textShadow:'0 1px 4px rgba(0,0,0,0.25)', fontWeight:600 },
-  menuLinkScrolled: { color:'#1C3A2A' },
-  submenu: { position:'absolute', top:'calc(100% + 8px)', left:'50%', transform:'translateX(-50%)', background:'#FFFFFF', borderRadius:8, minWidth:220, boxShadow:'0 10px 30px rgba(0,0,0,0.1)', padding:'12px 0', zIndex:1001, border:'1px solid #F0F0F0' },
-  submenuLink: { display:'block', padding:'10px 24px', color:'#666', textDecoration:'none', fontSize:'0.9rem', transition:'all 0.2s' },
-  actions: { display:'flex', alignItems:'center', gap:'1.5rem' },
+const s = { 
+  menuCentral: { 
+    display: "flex", 
+    alignItems: "center", 
+    gap: "2rem" 
+  }, 
+  menuLink: { 
+    background: "none", 
+    border: "none", 
+    color: "#4A4A4A", 
+    textDecoration: "none", 
+    fontSize: "0.85rem", 
+    fontWeight: 500, 
+    textTransform: "uppercase", 
+    letterSpacing: "0.05em", 
+    cursor: "pointer", 
+    padding: "8px 0", 
+    paddingBottom: "8px", 
+    transition: "color 0.2s, box-shadow 0.2s", 
+    fontFamily: "Jost, sans-serif", 
+    display: "inline-flex", 
+    alignItems: "center", 
+    lineHeight: 1 
+  }, 
+  activeLink: { 
+    color: "#1C3A2A", 
+    boxShadow: "inset 0 -2px 0 #C8A96E" 
+  }, 
+  menuLinkGreen: { 
+    color: "#C8A96E", 
+    textShadow: "0 1px 4px rgba(0,0,0,0.25)", 
+    fontWeight: 600 
+  }, 
+  menuLinkScrolled: { 
+    color: "#1C3A2A" 
+  }, 
+  submenu: { 
+    position: "absolute", 
+    top: "calc(100% + 8px)", 
+    left: "50%", 
+    transform: "translateX(-50%)", 
+    background: "#FFFFFF", 
+    borderRadius: 8, 
+    minWidth: 220, 
+    boxShadow: "0 10px 30px rgba(0,0,0,0.1)", 
+    padding: "12px 0", 
+    zIndex: 1001, 
+    border: "1px solid #F0F0F0" 
+  }, 
+  submenuLink: { 
+    display: "block", 
+    padding: "10px 24px", 
+    color: "#666", 
+    textDecoration: "none", 
+    fontSize: "0.9rem", 
+    transition: "all 0.2s" 
+  }, 
+  actions: { 
+    display: "flex", 
+    alignItems: "center", 
+    gap: "1.5rem" 
+  }
 };
+
