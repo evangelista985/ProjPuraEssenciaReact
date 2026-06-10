@@ -4,7 +4,7 @@ import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const st = {
-  page:  { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'linear-gradient(135deg, #f5f7f2 0%, #e8f0e9 100%)', paddingTop: 120 },
+  page:  { minHeight: '100vh', paddingTop: 90, paddingBottom: 40, paddingLeft: 16, paddingRight: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #f5f7f2 0%, #e8f0e9 100%)' },
   box:   { width: '100%', maxWidth: 420 },
   campo: { marginBottom: 16 },
   label: { display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 6, color: '#3A5D3E' },

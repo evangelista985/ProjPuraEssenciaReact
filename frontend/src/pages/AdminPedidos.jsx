@@ -158,7 +158,7 @@ export default function AdminPedidos() {
 
       <div style={{ display: 'flex', gap: 24 }}>
         <div style={{ flex: 1 }}>
-          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+          <div className="card table-scroll" style={{ padding: 0 }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ background: '#f8faf5' }}>

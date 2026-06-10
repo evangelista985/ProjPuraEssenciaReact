@@ -77,12 +77,13 @@ export default function Produtos() {
 
         {/* Filtros */}
         <div style={st.filtrosContainer}>
-          <div style={st.tabsCategorias}>
+          <div style={st.tabsCategorias} className="mobile-cat-scroll">
             {categorias.map(cat => (
               <button
                 key={cat.key}
                 onClick={() => setFiltroCategoria(cat.key)}
                 style={{ ...st.tabBtn, ...(filtroCategoria === cat.key ? st.tabBtnActive : {}) }}
+                className={filtroCategoria === cat.key ? 'active-cat' : ''}
               >
                 {cat.label}
               </button>
@@ -214,10 +215,10 @@ const st = {
   page: {
     backgroundColor: '#FCFBFA',
     minHeight: '100vh',
-    paddingTop: '100px',
+    paddingTop: 'clamp(84px,12vw,100px)',
     paddingBottom: '60px',
   },
-  container: { maxWidth: 1240, margin: '0 auto', padding: '0 20px' },
+  container: { maxWidth: 1240, margin: '0 auto', padding: '0 clamp(12px,4vw,20px)' },
   header: { textAlign: 'center', marginBottom: '48px' },
   headerLabel: {
     display: 'inline-block', fontSize: '0.68rem', letterSpacing: '0.2em',

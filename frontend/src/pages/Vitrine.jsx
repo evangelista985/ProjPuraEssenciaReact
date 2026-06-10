@@ -56,6 +56,14 @@ export default function Vitrine() {
   const [prevSlide, setPrevSlide] = useState(null);
   const [slideProgress, setSlideProgress] = useState(0);
   const [animating, setAnimating] = useState(false);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth <= 640);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 640);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   const [gifUrl, setGifUrl] = useState('https://www.pexels.com/pt-br/download/video/11012202/');
   const [editingGif, setEditingGif] = useState(false);
   // ⚠️ INSIRA AS URLs DOS SEUS GIFs ABAIXO:
@@ -124,30 +132,62 @@ export default function Vitrine() {
   return (
     <div style={st.wrapper}>
 
-      {/* ── HERO BANNER ── */}
-      <section style={st.hero}>
-        <div style={st.heroText}>
-          <div style={st.heroBadge}>
+      {/* ── Faixa promocional mobile ── */}
+      <div className="mobile-promo-banner">
+        🌿 FRETE GRÁTIS <span>em pedidos acima de R$ 89</span>
+      </div>
+
+            {/* ── HERO BANNER ── */}
+      <section style={{
+        ...st.hero,
+        ...(isMobile ? {display:'flex', flexDirection:'column', paddingTop:'0', minHeight:'auto'} : {}),
+      }} className="vitrine-hero">
+        <div style={{
+          ...st.heroText,
+          ...(isMobile ? {padding:'1.6rem 1rem 1.4rem', order:1, textAlign:'center'} : {}),
+        }} className="vitrine-hero-text">
+          <div style={{
+            ...st.heroBadge,
+            ...(isMobile ? {fontSize:'0.58rem', padding:'0.25rem 0.7rem', marginBottom:'0.9rem', alignSelf:'center'} : {}),
+          }}>
             <span style={st.heroBadgeDot} />
             100% natural · orgânico · sustentável
           </div>
-          <h1 style={st.heroTitle}>
+          <h1 style={{
+            ...st.heroTitle,
+            ...(isMobile ? {fontSize:'clamp(1.55rem, 6vw, 2rem)', marginBottom:'0.7rem'} : {}),
+          }}>
             Natureza em cada<br /><em style={st.heroTitleEm}>detalhe da sua vida</em>
           </h1>
-          <p style={st.heroDesc}>
+          <p style={{
+            ...st.heroDesc,
+            ...(isMobile ? {fontSize:'0.82rem', lineHeight:1.55, marginBottom:'1.1rem', maxWidth:'100%'} : {}),
+          }}>
             Cosméticos, suplementos e alimentos naturais cuidadosamente selecionados para sua saúde e bem-estar. Da natureza para você.
           </p>
-          <div style={st.heroCta}>
-            <button className="btn-primary" style={st.heroBtnPrimary} onClick={() => nav('/produtos')}>
+          <div style={{
+            ...st.heroCta,
+            ...(isMobile ? {justifyContent:'center', gap:'8px'} : {}),
+          }}>
+            <button className="btn-primary" style={{
+              ...st.heroBtnPrimary,
+              ...(isMobile ? {padding:'0.65rem 1rem', fontSize:'0.72rem'} : {}),
+            }} onClick={() => nav('/produtos')}>
               Explorar Produtos
             </button>
-            <button className="btn-outline" style={st.heroBtnOutline}
+            <button className="btn-outline" style={{
+              ...st.heroBtnOutline,
+              ...(isMobile ? {padding:'0.65rem 1rem', fontSize:'0.72rem'} : {}),
+            }}
               onClick={() => document.getElementById('sobre')?.scrollIntoView({ behavior: 'smooth' })}>
               Nossa História
             </button>
           </div>
         </div>
-        <div style={st.heroImage}>
+        <div style={{
+          ...st.heroImage,
+          ...(isMobile ? {order:2, minHeight:'190px', maxHeight:'230px', height:'38vw'} : {}),
+        }} className="vitrine-hero-image">
           <video
             src={heroGifUrl}
             autoPlay
@@ -157,7 +197,7 @@ export default function Vitrine() {
             style={st.heroGif}
           />
           <div style={st.heroGifOverlay} />
-          <div style={st.heroStats}>
+          <div style={{...st.heroStats, ...(isMobile ? {display:'none'} : {})}}>
             <div style={st.heroStat}>
               <div style={st.statNum}>500+</div>
               <div style={st.statLabel}>Produtos</div>
@@ -175,7 +215,7 @@ export default function Vitrine() {
       </section>
 
       {/* ── STATS ── */}
-      <section style={st.statsSection}>
+      <section style={st.statsSection} className="vitrine-stats">
         {[
           { num: '100%', label: 'Natural & Orgânico' },
           { num: '+500', label: 'Clientes Satisfeitos' },
@@ -189,11 +229,17 @@ export default function Vitrine() {
       </section>
 
       {/* ── PRODUTOS ── */}
-      <section style={st.produtosSection}>
-        <div style={st.sectionHead}>
+      <section style={{
+        ...st.produtosSection,
+        ...(isMobile ? {padding:'1.5rem 0.75rem'} : {}),
+      }} className="vitrine-produtos-section">
+        <div style={{...st.sectionHead, ...(isMobile ? {marginBottom:'1rem'} : {})}}>
           <span style={st.sectionLabel}>Catálogo</span>
-          <h2 style={st.secTitle}>Nossos Produtos</h2>
-          <p style={st.secDesc}>Seleção cuidadosa de produtos naturais para sua saúde e bem-estar</p>
+          <h2 style={{
+            ...st.secTitle,
+            ...(isMobile ? {fontSize:'clamp(1.4rem, 5vw, 1.8rem)'} : {}),
+          }}>Nossos Produtos</h2>
+          {!isMobile && <p style={st.secDesc}>Seleção cuidadosa de produtos naturais para sua saúde e bem-estar</p>}
         </div>
 
         {loading ? (
@@ -201,7 +247,10 @@ export default function Vitrine() {
         ) : produtos.length === 0 ? (
           <p style={st.vazio}>Nenhum produto disponível no momento.</p>
         ) : (
-          <div style={st.produtosGrid}>
+          <div style={{
+            ...st.produtosGrid,
+            ...(isMobile ? {gridTemplateColumns:'repeat(2,1fr)', gap:'8px', marginBottom:'1.2rem'} : {}),
+          }} className="vitrine-produtos-grid">
             {produtos.slice(0, 6).map(p => (
               <ProductCard
                 key={p.id}
@@ -253,6 +302,13 @@ export default function Vitrine() {
             position: relative;
           }
           .cf-arrow-btn:hover { background: rgba(255,255,255,0.28); transform: scale(1.1); }
+          @media (max-width: 640px) {
+            .cf-arrow-btn {
+              width: 38px !important;
+              height: 38px !important;
+              font-size: 1.3rem !important;
+            }
+          }
           .cf-dot {
             width: 8px; height: 8px; border-radius: 50%;
             background: rgba(245,240,232,0.3);
@@ -267,10 +323,10 @@ export default function Vitrine() {
           <h2 style={st.cfSectionTitle}>Explore Nossa Coleção</h2>
         </div>
 
-        <div style={st.cfOuter}>
+        <div style={{...st.cfOuter, gap: isMobile ? '0.8rem' : '2rem', padding: isMobile ? '0 0.8rem' : '0 2rem'}}>
           <button className="cf-arrow-btn" onClick={() => goToSlide((slide - 1 + SLIDES.length) % SLIDES.length)}>‹</button>
 
-          <div className="coverflow-wrap" style={st.cfStage}>
+          <div className="coverflow-wrap" style={{...st.cfStage, height: isMobile ? '300px' : '460px'}}>
             {SLIDES.map((img, i) => {
               const total = SLIDES.length;
               let offset = i - slide;
@@ -278,11 +334,14 @@ export default function Vitrine() {
               if (offset < -Math.floor(total / 2)) offset += total;
               const isCenter = offset === 0;
               const absOff   = Math.abs(offset);
-              const side     = offset < 0 ? -1 : 1;
-              // Mostra apenas 3 cards: centro + 1 de cada lado
-              if (absOff > 1) return null;
-              const translateX = offset * 280;
-              const rotateY    = 0;
+              // No mobile mostra apenas o card central
+              if (isMobile && absOff > 0) return null;
+              // No desktop mostra centro + 1 de cada lado
+              if (!isMobile && absOff > 1) return null;
+
+              const cardW      = isMobile ? 240 : 330;
+              const cardH      = isMobile ? 290 : 450;
+              const translateX = isMobile ? 0 : offset * 280;
               const scale      = isCenter ? 1 : 0.78;
               const opacity    = isCenter ? 1 : 0.60;
               const zIdx       = isCenter ? 10 : 5;
@@ -294,14 +353,14 @@ export default function Vitrine() {
                   onClick={() => !isCenter && goToSlide(i)}
                   style={{
                     position: 'absolute',
-                    width: 330,
-                    height: 450,
+                    width: cardW,
+                    height: cardH,
                     top: '50%',
                     left: '50%',
-                    marginLeft: -165,
-                    marginTop: -225,
+                    marginLeft: -cardW / 2,
+                    marginTop: -cardH / 2,
                     zIndex: zIdx,
-                    transform: `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`,
+                    transform: `translateX(${translateX}px) translateZ(${translateZ}px) scale(${scale})`,
                     opacity,
                     boxShadow: isCenter
                       ? '0 32px 80px rgba(0,0,0,0.72)'
@@ -336,7 +395,7 @@ export default function Vitrine() {
                     }}>{img.badge}</span>
                     <h3 style={{
                       fontFamily: "'Cormorant Garamond', serif",
-                      fontSize: isCenter ? '1.45rem' : '1.1rem',
+                      fontSize: isMobile ? '1.15rem' : (isCenter ? '1.45rem' : '1.1rem'),
                       fontWeight: 700,
                       color: '#F5F0E8',
                       lineHeight: 1.2,
@@ -344,7 +403,7 @@ export default function Vitrine() {
                       transition: 'font-size 0.4s',
                     }}>{img.alt}</h3>
                     <p style={{
-                      fontSize: '0.7rem',
+                      fontSize: isMobile ? '0.65rem' : '0.7rem',
                       color: 'rgba(245,240,232,0.6)',
                       lineHeight: 1.5,
                       marginBottom: isCenter ? '1rem' : '0',
@@ -395,15 +454,18 @@ export default function Vitrine() {
       </section>
 
       {/* ── SOBRE ── */}
-      <section style={st.aboutSection} id="sobre">
-        <div style={st.aboutVisual}>
+      <section style={st.aboutSection} id="sobre" className="vitrine-about">
+        <div style={{...st.aboutVisual, ...(isMobile ? {minHeight:200, maxHeight:220, padding:0} : {})}} className="vitrine-about-visual">
           <video
             src={aboutGifUrl}
             autoPlay
             muted
             loop
             playsInline
-            style={st.aboutAnimatedGif}
+            style={{
+              ...st.aboutAnimatedGif,
+              ...(isMobile ? {height:'100%', maxHeight:'220px', objectFit:'cover'} : {}),
+            }}
           />
         </div>
         <div style={st.aboutText}>
@@ -513,6 +575,14 @@ export default function Vitrine() {
 function ProductCard({ produto, onClick, onAdd }) {
   const temEstoque = produto.quantidade > 0;
   const [added, setAdded] = useState(false);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth <= 640);
+
+  // sync with resize
+  useState(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 640);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  });
 
   function handleAdd(e) {
     e.stopPropagation();
@@ -530,7 +600,7 @@ function ProductCard({ produto, onClick, onAdd }) {
       onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.07)'; }}
     >
       {!temEstoque && <div style={st.productBadge}>Indisponível</div>}
-      <div style={st.productImg}>
+      <div style={{...st.productImg, ...(isMobile ? {height:'130px'} : {})}}>
         <img
           src={produto.imagem || 'https://via.placeholder.com/300x220/F5F0E8/1C3A2A?text=Produto'}
           alt={produto.nome}
@@ -539,15 +609,16 @@ function ProductCard({ produto, onClick, onAdd }) {
         />
         <div style={st.imgShimmer} />
       </div>
-      <div style={st.productInfo}>
-        <div style={st.productCategory}>{produto.categoria_nome || 'Natural'}</div>
-        <div style={st.productName}>{produto.nome}</div>
-        <div style={st.productDesc}>{(produto.descricao || '').slice(0, 65)}{produto.descricao?.length > 65 ? '…' : ''}</div>
+      <div style={{...st.productInfo, ...(isMobile ? {padding:'0.65rem 0.7rem 0.8rem'} : {})}}>
+        <div style={{...st.productCategory, ...(isMobile ? {fontSize:'0.58rem'} : {})}}>{produto.categoria_nome || 'Natural'}</div>
+        <div style={{...st.productName, ...(isMobile ? {fontSize:'0.8rem', minHeight:'2rem'} : {})}}>{produto.nome}</div>
+        {!isMobile && <div style={st.productDesc}>{(produto.descricao || '').slice(0, 65)}{produto.descricao?.length > 65 ? '…' : ''}</div>}
         <div style={st.productFooter}>
-          <span style={st.productPrice}>R$ {Number(produto.preco).toFixed(2).replace('.', ',')}</span>
+          <span style={{...st.productPrice, ...(isMobile ? {fontSize:'0.95rem'} : {})}}>R$ {Number(produto.preco).toFixed(2).replace('.', ',')}</span>
           <button
             style={{
               ...st.addBtn,
+              ...(isMobile ? {width:'28px', height:'28px', fontSize:'1.1rem'} : {}),
               ...(added ? st.addBtnAdded : {}),
               ...(!temEstoque ? st.addBtnDisabled : {}),
             }}

@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import MobileBottomNav from './components/MobileBottomNav';
 import Vitrine from './pages/Vitrine';
 import DetalhesProduto from './pages/DetalhesProduto';
 import Carrinho from './pages/Carrinho';
@@ -23,7 +24,6 @@ import Temperos from './pages/Temperos';
 import Cosmeticos from './pages/Cosmeticos';
 import Produtos from './pages/Produtos';
 
-// ScrollToTop DEVE ficar dentro do BrowserRouter
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
@@ -34,10 +34,11 @@ function LayoutPublico({ children }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar />
-      <main style={{ flex: 1, paddingTop: '70px' }}>
+      <main style={{ flex: 1, paddingTop: '70px' }} className="main-layout">
         {children}
       </main>
       <Footer />
+      <MobileBottomNav />
     </div>
   );
 }
@@ -47,27 +48,20 @@ function AppRoutes() {
     <>
       <ScrollToTop />
       <Routes>
-        {/* Público */}
         <Route path="/"             element={<LayoutPublico><Vitrine /></LayoutPublico>} />
         <Route path="/produto/:id"  element={<LayoutPublico><DetalhesProduto /></LayoutPublico>} />
         <Route path="/login"        element={<LayoutPublico><Login /></LayoutPublico>} />
         <Route path="/cadastro"     element={<LayoutPublico><Cadastro /></LayoutPublico>} />
         <Route path="/esqueci-senha" element={<LayoutPublico><EsqueciSenha /></LayoutPublico>} />
         <Route path="/meus-pedidos" element={<LayoutPublico><MeusPedidos /></LayoutPublico>} />
-
-        {/* ✅ Fluxo de compra em 3 etapas */}
         <Route path="/carrinho"           element={<LayoutPublico><Carrinho /></LayoutPublico>} />
         <Route path="/checkout/endereco"  element={<LayoutPublico><CheckoutEndereco /></LayoutPublico>} />
         <Route path="/checkout/pagamento" element={<LayoutPublico><CheckoutPagamento /></LayoutPublico>} />
-
-        {/* Categorias */}
         <Route path="/produtos"   element={<LayoutPublico><Produtos /></LayoutPublico>} />
         <Route path="/chas"       element={<LayoutPublico><Chas /></LayoutPublico>} />
         <Route path="/organicos"  element={<LayoutPublico><Organicos /></LayoutPublico>} />
         <Route path="/temperos"   element={<LayoutPublico><Temperos /></LayoutPublico>} />
         <Route path="/cosmeticos" element={<LayoutPublico><Cosmeticos /></LayoutPublico>} />
-
-        {/* Admin */}
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />

@@ -940,3 +940,394 @@ div:hover > .card-overlay { opacity: 1 !important; }
     padding: 1rem 1.2rem !important;
   }
 }
+
+
+/* ═══════════════════════════════════════════════════════════
+   MELHORIAS DE RESPONSIVIDADE — versão Mstore completa
+   Baseado na referência visual ShopiCo
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Tablet intermediário 641px–900px ── */
+@media (min-width: 641px) and (max-width: 900px) {
+  .vitrine-hero {
+    grid-template-columns: 1fr !important;
+    min-height: auto !important;
+  }
+  .vitrine-hero-text {
+    padding: 5rem 2.5rem 3rem !important;
+    text-align: center;
+  }
+  .vitrine-hero-image {
+    min-height: 320px !important;
+    max-height: 380px;
+  }
+  /* Carrossel em tablet: card único maior */
+  .coverflow-wrap {
+    height: 360px !important;
+  }
+  /* Seção about empilhada */
+  .vitrine-about {
+    grid-template-columns: 1fr !important;
+  }
+  /* Grid de produtos 2 colunas */
+  .vitrine-produtos-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ── MOBILE: scrollbar de páginas (tab bar estilo ShopiCo) ── */
+@media (max-width: 640px) {
+
+  /* ── Altura navbar fixa reduzida ── */
+  .navbar-top {
+    height: 56px !important;
+  }
+
+  /* ── Padding body para bottom nav + safe area ── */
+  body {
+    padding-bottom: max(70px, calc(70px + env(safe-area-inset-bottom)));
+  }
+
+  /* ── Hero Banner: vídeo ocupa tela toda no mobile ── */
+  .vitrine-hero {
+    display: flex !important;
+    flex-direction: column !important;
+    padding-top: 56px !important;
+    min-height: 0 !important;
+  }
+
+  .vitrine-hero-text {
+    order: 1;
+    padding: 1.6rem 1rem 1.4rem !important;
+    text-align: center !important;
+    background: #F5F0E8 !important;
+    min-height: 0 !important;
+  }
+
+  /* Título hero menor e mais compacto */
+  .vitrine-hero-text h1 {
+    font-size: clamp(1.6rem, 6.5vw, 2.2rem) !important;
+    line-height: 1.15 !important;
+    margin-bottom: 0.8rem !important;
+  }
+
+  /* Descrição hero mais curta */
+  .vitrine-hero-text p {
+    font-size: 0.82rem !important;
+    line-height: 1.6 !important;
+    margin-bottom: 1.2rem !important;
+    max-width: 100% !important;
+  }
+
+  /* Badge hero menor */
+  .vitrine-hero .hero-badge,
+  .vitrine-hero [style*="heroBadge"] {
+    font-size: 0.6rem !important;
+    padding: 0.3rem 0.7rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  /* Botões CTA hero centralizados, menores */
+  .vitrine-hero-text > div:last-of-type,
+  .vitrine-hero-text [style*="heroCta"] {
+    justify-content: center !important;
+    gap: 8px !important;
+  }
+
+  .vitrine-hero-text .btn-primary,
+  .vitrine-hero-text .btn-outline {
+    padding: 0.7rem 1.1rem !important;
+    font-size: 0.72rem !important;
+  }
+
+  /* Vídeo hero: altura menor no mobile */
+  .vitrine-hero-image {
+    order: 2;
+    min-height: 200px !important;
+    max-height: 240px !important;
+    height: 40vw !important;
+  }
+
+  /* Esconde as stats que ficam sobre o vídeo no mobile */
+  .vitrine-hero-image [style*="heroStats"] {
+    display: none !important;
+  }
+
+  /* ── Barra de stats compacta (3 colunas) ── */
+  .vitrine-stats {
+    grid-template-columns: repeat(3, 1fr) !important;
+    background: #fff !important;
+    border-bottom: 1px solid #EBEBEB;
+  }
+
+  .vitrine-stats > div {
+    padding: 10px 4px !important;
+    border-right: 1px solid #EBEBEB;
+  }
+
+  .vitrine-stats > div:last-child {
+    border-right: none !important;
+  }
+
+  /* Números stat menores */
+  .vitrine-stats [style*="2.4rem"],
+  .vitrine-stats .stat-num {
+    font-size: 1.4rem !important;
+  }
+
+  /* ── Seção de produtos: 2 colunas estilo app ── */
+  .vitrine-produtos-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    margin-bottom: 1.2rem !important;
+  }
+
+  /* Título da seção de produtos menor */
+  .vitrine-produtos-section .sectionHead,
+  .vitrine-produtos-section [style*="sectionHead"] {
+    margin-bottom: 1.2rem !important;
+  }
+
+  /* ── Cards de produto estilo app ── */
+  /* Altura da imagem do card */
+  .vitrine-produtos-grid [style*="height: '200px'"],
+  .vitrine-produtos-grid [style*="height:\"200px\""],
+  .vitrine-produtos-grid [style*="height:'200px'"] {
+    height: 140px !important;
+  }
+
+  /* Nome do produto no card */
+  .vitrine-produtos-grid [style*="productName"],
+  .vitrine-produtos-grid [style*="font-size: '1.08rem'"] {
+    font-size: 0.82rem !important;
+    min-height: 2rem !important;
+  }
+
+  /* Esconde descrição do card no mobile */
+  .vitrine-produtos-grid [style*="productDesc"] {
+    display: none !important;
+  }
+
+  /* Preço do card */
+  .vitrine-produtos-grid [style*="productPrice"],
+  .vitrine-produtos-grid [style*="1.25rem"][style*="A07840"] {
+    font-size: 1rem !important;
+  }
+
+  /* ── Carrossel coverflow: card único centralizado ── */
+  .coverflow-wrap {
+    height: 280px !important;
+  }
+
+  /* Botões de seta do carrossel menores */
+  .cf-arrow-btn {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 1.2rem !important;
+  }
+
+  /* ── Seção Sobre: vídeo menor no mobile ── */
+  .vitrine-about {
+    grid-template-columns: 1fr !important;
+    min-height: 0 !important;
+  }
+
+  /* Container do vídeo "Sobre" bem menor */
+  .vitrine-about video,
+  .vitrine-about [style*="aboutAnimatedGif"] {
+    max-height: 200px !important;
+    width: 100% !important;
+    height: 200px !important;
+    object-fit: cover !important;
+  }
+
+  /* Visual do sobre: altura reduzida */
+  .vitrine-about [style*="aboutVisual"],
+  .vitrine-about > div:first-child {
+    min-height: 200px !important;
+    max-height: 220px !important;
+  }
+
+  /* Padding texto do sobre compacto */
+  .vitrine-about [style*="aboutText"],
+  .vitrine-about > div:last-child {
+    padding: 2rem 1rem !important;
+  }
+
+  /* ── Parágrafo sobre menores ── */
+  .vitrine-about p {
+    font-size: 0.82rem !important;
+    line-height: 1.65 !important;
+  }
+
+  /* ── Benefícios (cards da área do cliente) ── */
+  .vitrine-user .benefit-cards,
+  [style*="benefitCards"] {
+    grid-template-columns: 1fr !important;
+    gap: 0.8rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  /* ── Título da seção "Sobre" e "Área do Cliente" ── */
+  .vitrine-about h2,
+  .vitrine-user h2,
+  [style*="sectionTitle"] {
+    font-size: clamp(1.4rem, 5vw, 1.9rem) !important;
+    line-height: 1.2 !important;
+  }
+
+  /* ── CTA final menor ── */
+  [style*="ctaSection"] h2,
+  .vitrine-cta h2 {
+    font-size: clamp(1.4rem, 5vw, 1.8rem) !important;
+  }
+
+  /* ── Barra de categorias (scroll horizontal, estilo ShopiCo) ── */
+  .vitrine-cat-bar {
+    display: flex !important;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 10px 12px;
+    background: #fff;
+    border-bottom: 1px solid #F0F0F0;
+  }
+  .vitrine-cat-bar::-webkit-scrollbar { display: none; }
+
+  /* ── Bottom nav: indicador de página ativo ── */
+  .mobile-bottom-nav__item.active .mobile-bottom-nav__label {
+    color: #1C3A2A;
+    font-weight: 700;
+  }
+
+  /* ── Bottom nav: linha indicadora no topo do item ativo ── */
+  .mobile-bottom-nav__item.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 2px;
+    background: #1C3A2A;
+    border-radius: 0 0 4px 4px;
+  }
+
+  .mobile-bottom-nav__item {
+    position: relative;
+  }
+
+  /* ── Promobar sempre acima do conteúdo ── */
+  .mobile-promo-banner {
+    position: sticky;
+    top: 56px;
+    z-index: 900;
+    font-size: 11px !important;
+    padding: 6px 12px !important;
+  }
+
+  /* ── Grid geral produto pages 2 colunas ── */
+  .grid-produtos {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  /* Imagem do card 2 colunas menor */
+  .grid-produtos [style*="height: '200px'"] {
+    height: 130px !important;
+  }
+
+  /* ── Seção CTA "Qualidade Garantida" compacta ── */
+  [style*="ctaSection"] {
+    padding: 2.5rem 1rem !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* ── Títulos gerais de seção ── */
+  h2[style*="Cormorant"] {
+    font-size: clamp(1.5rem, 5.5vw, 2rem) !important;
+  }
+
+  /* ── Seção "Área do Cliente": padding menor ── */
+  [style*="userSection"] {
+    padding: 2rem 1rem !important;
+  }
+
+  /* ── Padding section produtos ── */
+  .vitrine-produtos-section {
+    padding: 1.8rem 0.75rem !important;
+  }
+
+  /* ── Footer oculto (já tem bottom nav) ── */
+  footer {
+    display: none !important;
+  }
+
+  /* ── Ajuste para padding top do main ── */
+  main {
+    padding-top: 56px !important;
+  }
+}
+
+/* ── Mobile muito pequeno (≤360px) ── */
+@media (max-width: 360px) {
+  .vitrine-hero-image {
+    max-height: 180px !important;
+    height: 36vw !important;
+  }
+
+  .vitrine-hero-text h1 {
+    font-size: 1.5rem !important;
+  }
+
+  .coverflow-wrap {
+    height: 240px !important;
+  }
+
+  .vitrine-produtos-grid {
+    gap: 6px !important;
+  }
+
+  .mobile-bottom-nav__label {
+    font-size: 9px !important;
+  }
+}
+
+/* ── Landscape mobile (tela deitada) ── */
+@media (max-width: 900px) and (orientation: landscape) {
+  .vitrine-hero-image {
+    min-height: 160px !important;
+    max-height: 180px !important;
+  }
+
+  .vitrine-hero-text {
+    padding: 1rem 1.5rem !important;
+  }
+
+  .vitrine-hero-text h1 {
+    font-size: 1.6rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .vitrine-hero-text p {
+    display: none !important;
+  }
+}
+
+/* ── Main layout: padding-top para navbar ── */
+.main-layout {
+  padding-top: 70px;
+}
+
+@media (max-width: 640px) {
+  .main-layout {
+    padding-top: 56px !important;
+  }
+
+  /* Vitrine não precisa do padding-top extra (o hero section já trata) */
+  .main-layout > .vitrine-hero:first-child,
+  .main-layout > div > .vitrine-hero:first-child {
+    padding-top: 0;
+  }
+}

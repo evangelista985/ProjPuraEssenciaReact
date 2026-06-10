@@ -18,17 +18,13 @@ const HERO_SLIDES = [
   },
 ];
 
-const BENEFICIOS = [
-  { titulo: 'Puro & Natural' },
-  { titulo: 'Bem-estar' },
-  { titulo: 'Imunidade' },
-  { titulo: 'Relaxamento' },
-];
+const INTERVALO = 6000;
 
 export default function Chas() {
   const [produtos, setProdutos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [slide, setSlide] = useState(0);
+  const [progresso, setProgresso] = useState(0);
   const [busca, setBusca] = useState('');
   const nav = useNavigate();
 
@@ -46,10 +42,20 @@ export default function Chas() {
     buscarChas();
   }, []);
 
+  // Avança slide + reseta progresso
   useEffect(() => {
-    const t = setInterval(() => setSlide(s => (s + 1) % HERO_SLIDES.length), 6000);
-    return () => clearInterval(t);
-  }, []);
+    setProgresso(0);
+    const PASSO = 50;
+    let elapsed = 0;
+    const prog = setInterval(() => {
+      elapsed += PASSO;
+      setProgresso(Math.min((elapsed / INTERVALO) * 100, 100));
+    }, PASSO);
+    const t = setTimeout(() => {
+      setSlide(s => (s + 1) % HERO_SLIDES.length);
+    }, INTERVALO);
+    return () => { clearInterval(prog); clearTimeout(t); };
+  }, [slide]);
 
   const produtosFiltrados = produtos.filter(p =>
     p.nome.toLowerCase().includes(busca.toLowerCase()) ||
@@ -60,35 +66,64 @@ export default function Chas() {
 
   return (
     <div style={st.page}>
-      {/* Hero Section */}
-      <section style={{...st.hero, background: sl.bg}}>
-        <div style={st.heroOverlay}></div>
-        <div className="container" style={{...st.heroContainer, position: 'relative', zIndex: 1}}>
+
+      {/* ── Hero Banner ── */}
+      <section style={{ ...st.hero, background: sl.bg }}>
+        <div style={st.heroOverlay} />
+
+        <div className="container" style={{ ...st.heroContainer, position: 'relative', zIndex: 1 }}>
           <div style={st.heroContent} key={slide}>
-                        <h1 style={st.heroTitulo}>{sl.titulo}</h1>
+            <h1 style={st.heroTitulo}>{sl.titulo}</h1>
             <p style={st.heroSub}>{sl.subtitulo}</p>
             <p style={st.heroDetalhe}>{sl.detalhe}</p>
-            <div style={st.heroDots}>
-              {HERO_SLIDES.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setSlide(i)}
-                  style={{ ...st.dot, width: i === slide ? 30 : 10, background: i === slide ? '#C8A96E' : 'rgba(255,255,255,0.3)' }}
-                />
-              ))}
+
+            {/* Numeração do slide */}
+            <div style={st.slideCounter}>
+              <span style={st.slideAtual}>0{slide + 1}</span>
+              <span style={st.slideTotal}> / 0{HERO_SLIDES.length}</span>
             </div>
           </div>
         </div>
+
+        {/* Setas laterais */}
+        <button
+          style={{ ...st.seta, left: '2rem' }}
+          onClick={() => setSlide(s => (s - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
+          aria-label="Slide anterior"
+        >
+          ‹
+        </button>
+        <button
+          style={{ ...st.seta, right: '2rem' }}
+          onClick={() => setSlide(s => (s + 1) % HERO_SLIDES.length)}
+          aria-label="Próximo slide"
+        >
+          ›
+        </button>
+
+        {/* Barra de progresso na base */}
+        <div style={st.progressoBase}>
+          {HERO_SLIDES.map((_, i) => (
+            <div key={i} style={st.progressoSegmento}>
+              <div
+                style={{
+                  ...st.progressoFill,
+                  width: i < slide ? '100%' : i === slide ? `${progresso}%` : '0%',
+                }}
+              />
+            </div>
+          ))}
+        </div>
       </section>
 
-
-
-      {/* Lista de Produtos */}
+      {/* ── Lista de Produtos ── */}
       <div className="container" style={{ padding: '60px 20px' }}>
         <div style={st.sectionHeader}>
           <h2 style={st.secTitulo}>Nossos Chás</h2>
           <div style={st.buscaWrapper}>
-            <svg style={st.buscaIcon} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <svg style={st.buscaIcon} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
             <input
               style={st.buscaInput}
               placeholder="Buscar por nome ou benefício..."
@@ -100,7 +135,7 @@ export default function Chas() {
 
         {loading ? (
           <div style={st.loadingWrap}>
-            <div className="spinner"></div>
+            <div className="spinner" />
             <p>Selecionando as melhores ervas...</p>
           </div>
         ) : produtosFiltrados.length === 0 ? (
@@ -149,11 +184,7 @@ function CardProduto({ produto, onClick }) {
         <div style={st.cardFooter}>
           <span style={st.cardPreco}>R$ {Number(produto.preco).toFixed(2).replace('.', ',')}</span>
           <button
-            style={{
-              ...st.addBtn,
-              ...(added ? st.addBtnAdded : {}),
-              ...(!temEstoque ? st.addBtnDisabled : {}),
-            }}
+            style={{ ...st.addBtn, ...(added ? st.addBtnAdded : {}), ...(!temEstoque ? st.addBtnDisabled : {}) }}
             disabled={!temEstoque}
             onClick={handleAdd}
             title={temEstoque ? 'Adicionar ao carrinho' : 'Produto esgotado'}
@@ -168,28 +199,73 @@ function CardProduto({ produto, onClick }) {
 
 const st = {
   page: { background: '#FCFBFA', minHeight: '100vh' },
-  hero: { minHeight: '500px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#1C3A2A', backgroundImage: 'url(/img/banner_chas_v2.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', transition: 'all 0.8s ease', textAlign: 'center', position: 'relative', overflow: 'hidden' },
-  heroOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(28, 58, 42, 0.65)', zIndex: 0 },
+
+  /* Hero */
+  hero: {
+    minHeight: '500px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#1C3A2A', backgroundImage: 'url(/img/banner_chas_v2.jpg)',
+    backgroundSize: 'cover', backgroundPosition: 'center',
+    textAlign: 'center', position: 'relative', overflow: 'hidden',
+  },
+  heroOverlay: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    background: 'rgba(28,58,42,0.65)', zIndex: 0,
+  },
   heroContainer: { padding: '0 2rem', width: '100%', display: 'flex', justifyContent: 'center' },
-  heroContent: { maxWidth: '800px', color: '#FFF', display: 'flex', flexDirection: 'column', alignItems: 'center', animation: 'heroFadeIn 0.7s ease' },
-  heroBadge: { display: 'none' },
-  heroTitulo: { fontSize: '4rem', marginBottom: '24px', fontFamily: "'Playfair Display', serif", fontWeight: 700, letterSpacing: '1.5px', lineHeight: 1.2 },
-  heroSub: { fontSize: '1.4rem', color: '#3E7A52', fontWeight: 500, marginBottom: '24px', letterSpacing: '0.8px' },
-  heroDetalhe: { fontSize: '1.1rem', opacity: 0.9, lineHeight: 1.8, marginBottom: '40px', maxWidth: '650px', fontWeight: 300 },
-  heroDots: { display: 'flex', gap: '10px', justifyContent: 'center' },
-  dot: { height: '6px', borderRadius: '3px', border: 'none', cursor: 'pointer', transition: 'all 0.3s' },
-  beneficiosSection: { padding: '40px 0', background: '#FFF', borderBottom: '1px solid #F0EFEA' },
-  beneficiosGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '30px' },
-  beneficioCard: { textAlign: 'center' },
-  beneficioTitulo: { fontSize: '1.1rem', fontWeight: 700, color: '#1C3A2A', marginBottom: '8px', letterSpacing: '0.5px' },
+  heroContent: {
+    maxWidth: '800px', color: '#FFF', display: 'flex', flexDirection: 'column',
+    alignItems: 'center', animation: 'heroFadeIn 0.7s ease',
+  },
+  heroTitulo: {
+    fontSize: '4rem', marginBottom: '24px',
+    fontFamily: "'Playfair Display', serif", fontWeight: 700,
+    letterSpacing: '1.5px', lineHeight: 1.2,
+  },
+  heroSub: { fontSize: '1.4rem', color: '#C8A96E', fontWeight: 500, marginBottom: '24px', letterSpacing: '0.8px' },
+  heroDetalhe: { fontSize: '1.1rem', opacity: 0.9, lineHeight: 1.8, marginBottom: '2rem', maxWidth: '650px', fontWeight: 300 },
+
+  /* Contador de slide */
+  slideCounter: { display: 'flex', alignItems: 'baseline', gap: '2px', marginTop: '0.5rem' },
+  slideAtual: { fontFamily: "'Playfair Display', serif", fontSize: '2rem', fontWeight: 700, color: '#C8A96E', lineHeight: 1 },
+  slideTotal: { fontSize: '0.9rem', color: 'rgba(255,255,255,0.45)', fontWeight: 400, letterSpacing: '0.05em' },
+
+  /* Setas */
+  seta: {
+    position: 'absolute', top: '50%', transform: 'translateY(-50%)',
+    zIndex: 10, background: 'rgba(255,255,255,0.1)',
+    backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.2)',
+    color: '#F5F0E8', borderRadius: '50%', width: '44px', height: '44px',
+    fontSize: '1.8rem', lineHeight: 1, display: 'flex', alignItems: 'center',
+    justifyContent: 'center', cursor: 'pointer',
+    transition: 'background 0.2s',
+  },
+
+  /* Barra de progresso */
+  progressoBase: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    display: 'flex', gap: '3px', zIndex: 10, padding: '0 0',
+  },
+  progressoSegmento: {
+    flex: 1, height: '3px',
+    background: 'rgba(255,255,255,0.15)',
+    overflow: 'hidden',
+  },
+  progressoFill: {
+    height: '100%', background: '#C8A96E',
+    transition: 'width 0.05s linear',
+  },
+
+  /* Produtos */
   sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px', flexWrap: 'wrap', gap: '20px' },
   secTitulo: { fontSize: '2rem', color: '#1C3A2A', fontFamily: "'Playfair Display', serif", fontWeight: 700 },
   buscaWrapper: { position: 'relative', width: '100%', maxWidth: '350px' },
-  buscaIcon: { position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: '1C3A2A' },
+  buscaIcon: { position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: '#1C3A2A' },
   buscaInput: { width: '100%', padding: '12px 15px 12px 45px', borderRadius: '30px', border: '1px solid #E0DDD5', outline: 'none' },
   loadingWrap: { textAlign: 'center', padding: '60px 0', color: '#6B6050' },
   vazioWrap: { textAlign: 'center', padding: '60px 0', color: '#6B6050' },
-  resetBtn: { background: 'none', color: '#3E7A52', fontWeight: 600, textDecoration: 'underline', marginTop: '10px' },
+  resetBtn: { background: 'none', color: '#3E7A52', fontWeight: 600, textDecoration: 'underline', marginTop: '10px', border: 'none', cursor: 'pointer' },
+
+  /* Cards */
   card: { background: '#FFF', borderRadius: '12px', overflow: 'hidden', border: '1px solid #F0EFEA', cursor: 'pointer', transition: 'all 0.3s' },
   imgContainer: { height: '220px', overflow: 'hidden', position: 'relative' },
   img: { width: '100%', height: '100%', objectFit: 'cover' },
@@ -201,5 +277,5 @@ const st = {
   cardPreco: { fontSize: '1.1rem', fontWeight: 700, color: '#1C3A2A' },
   addBtn: { background: '#1C3A2A', color: '#FFF', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', fontSize: '1.4rem', fontWeight: 700, lineHeight: 1, transition: 'background 0.2s, transform 0.15s', flexShrink: 0 },
   addBtnAdded: { background: '#3E7A52', transform: 'scale(1.15)' },
-  addBtnDisabled: { background: '#C8C4BC', cursor: 'not-allowed' }
+  addBtnDisabled: { background: '#C8C4BC', cursor: 'not-allowed' },
 };
