@@ -99,6 +99,7 @@ export default function Produtos() {
               value={filtroNome}
               onChange={e => setFiltroNome(e.target.value)}
               style={st.inputBusca}
+              className="produtos-busca-input"
             />
             {filtroNome && (
               <button onClick={() => setFiltroNome('')} style={st.limparBusca}>✕</button>
@@ -249,10 +250,10 @@ const st = {
     background: '#1C3A2A', color: '#FFF',
     boxShadow: '0 4px 12px rgba(28,58,42,0.2)',
   },
-  buscaWrapper: { position: 'relative', flex: '1 1 240px', maxWidth: '380px' },
+  buscaWrapper: { position: 'relative', flex: '1 1 240px', maxWidth: '380px', display: 'flex', alignItems: 'center' },
   buscaIcon: {
     position: 'absolute', left: 14, top: '50%',
-    transform: 'translateY(-50%)', color: '#aaa', pointerEvents: 'none',
+    transform: 'translateY(-50%)', color: '#aaa', pointerEvents: 'none', display: 'flex', alignItems: 'center',
   },
   inputBusca: {
     width: '100%', padding: '11px 38px 11px 42px',

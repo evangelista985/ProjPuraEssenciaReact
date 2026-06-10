@@ -130,14 +130,14 @@ input, select { min-height: 44px; }
 /* ── Navbar Mobile ── */
 .navbar-mobile-overlay {
   display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.45); z-index: 998;
+  background: rgba(0,0,0,0.45); z-index: 1000;
 }
 .navbar-mobile-overlay.open { display: block; }
 
 .navbar-mobile-menu {
   position: fixed; top: 0; right: -100%;
   width: 85%; max-width: 320px; height: 100dvh;
-  background: #fff; z-index: 999;
+  background: #fff; z-index: 1001;
   transition: right 0.3s ease;
   display: flex; flex-direction: column; overflow-y: auto;
   box-shadow: -4px 0 24px rgba(0,0,0,0.15);
@@ -969,5 +969,26 @@ div:hover > .card-overlay { opacity: 1 !important; }
   .produtos-filtros-container > div:last-child {
     width: 100% !important;
     max-width: 100% !important;
+  }
+}
+
+/* ── Fix: input busca de produtos — altura fixa para alinhar ícone ── */
+.produtos-busca-input {
+  min-height: unset !important;
+  height: 44px !important;
+  line-height: 1 !important;
+}
+
+@media (max-width: 640px) {
+  /* Fix: container de filtros vira coluna centralizada no mobile */
+  .produtos-filtros-container {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 12px !important;
+  }
+  .produtos-filtros-container > div:last-child {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: unset !important;
   }
 }

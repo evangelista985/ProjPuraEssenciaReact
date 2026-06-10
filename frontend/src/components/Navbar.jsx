@@ -48,9 +48,9 @@ export default function Navbar() {
       <nav style={{
         position:'fixed', top:0, left:0, right:0, zIndex:1000,
         height:70, display:'flex', alignItems:'center',
-        background: navBg,
-        boxShadow: isScrolled ? '0 4px 25px rgba(0,0,0,0.08)' : 'none',
-        backdropFilter: (isScrolled || isGreenBgPage) ? 'blur(12px)' : 'none',
+        background: mobileOpen ? 'rgba(255,255,255,0.98)' : navBg,
+        boxShadow: (isScrolled || mobileOpen) ? '0 4px 25px rgba(0,0,0,0.08)' : 'none',
+        backdropFilter: (isScrolled || isGreenBgPage || mobileOpen) ? 'blur(12px)' : 'none',
         transition: 'all 0.3s ease',
       }}>
         <div style={{maxWidth:1200,margin:'0 auto',padding:'0 1.5rem',display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',gap:'1rem'}}>
