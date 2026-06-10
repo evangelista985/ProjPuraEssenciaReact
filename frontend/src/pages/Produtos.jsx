@@ -330,7 +330,8 @@ const st = {
   cardPreco: { fontSize: '1.2rem', fontWeight: 700, color: '#1C3A2A' },
   addBtn: {
     background: '#1C3A2A', color: '#FFF',
-    width: '36px', height: '36px', borderRadius: '50%',
+    width: '36px', height: '36px', minWidth: '36px', minHeight: '36px',
+    borderRadius: '50%', padding: 0,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     border: 'none', cursor: 'pointer',
     fontSize: '1.4rem', fontWeight: 700, lineHeight: 1,

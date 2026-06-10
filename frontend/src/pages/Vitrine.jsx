@@ -161,9 +161,13 @@ export default function Vitrine() {
           </h1>
           <p style={{
             ...st.heroDesc,
-            ...(isMobile ? {fontSize:'0.72rem', lineHeight:1.5, marginBottom:'0.85rem', maxWidth:'100%'} : {}),
+            ...(isMobile ? {fontSize:'0.65rem', lineHeight:1.55, marginBottom:'0.85rem', maxWidth:'88%', margin:'0 auto 0.85rem', color:'#7A7060', fontWeight:400, letterSpacing:'0.01em'} : {}),
           }}>
-            Cosméticos, suplementos e alimentos naturais cuidadosamente selecionados para sua saúde e bem-estar. Da natureza para você.
+            {isMobile ? (
+              <>Cosméticos, suplementos e alimentos naturais<br />selecionados para sua saúde e bem-estar.</>
+            ) : (
+              'Cosméticos, suplementos e alimentos naturais cuidadosamente selecionados para sua saúde e bem-estar. Da natureza para você.'
+            )}
           </p>
           <div style={{
             ...st.heroCta,
@@ -482,12 +486,37 @@ export default function Vitrine() {
             rastreáveis, respeito ao meio ambiente e aos produtores locais.
           </p>
           <div style={st.statsAbout}>
-            {[['6+','Anos de mercado'],['48','Fornecedores locais'],['12k','Clientes felizes']].map(([n,l]) => (
-              <div key={n}>
-                <div style={st.statAboutNum}>{n}</div>
-                <div style={st.statAboutLabel}>{l}</div>
+            {isMobile ? (
+              /* Layout triangular no mobile: 2 em cima, 1 centralizado embaixo */
+              <div style={{width:'100%'}}>
+                <div style={{display:'flex', justifyContent:'center', alignItems:'flex-start', gap:0}}>
+                  {[['6+','Anos de mercado'],['48','Fornecedores locais']].map(([n,l], i) => (
+                    <>
+                      <div key={n} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:'4px',padding:'10px 20px'}}>
+                        <div style={{...st.statAboutNum, fontSize:'2.2rem'}}>{n}</div>
+                        <div style={{...st.statAboutLabel, textAlign:'center', fontSize:'0.62rem'}}>{l}</div>
+                      </div>
+                      {i === 0 && <div key="div" style={{width:'1px', height:'52px', background:'rgba(160,120,64,0.25)', alignSelf:'center', margin:'0 4px'}} />}
+                    </>
+                  ))}
+                </div>
+                {/* Linha conectora vertical */}
+                <div style={{display:'flex',flexDirection:'column',alignItems:'center'}}>
+                  <div style={{width:'1px', height:'22px', background:'rgba(160,120,64,0.25)'}} />
+                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:'4px',padding:'6px 20px 10px'}}>
+                    <div style={{...st.statAboutNum, fontSize:'2.2rem'}}>12k</div>
+                    <div style={{...st.statAboutLabel, textAlign:'center', fontSize:'0.62rem'}}>Clientes felizes</div>
+                  </div>
+                </div>
               </div>
-            ))}
+            ) : (
+              [['6+','Anos de mercado'],['48','Fornecedores locais'],['12k','Clientes felizes']].map(([n,l]) => (
+                <div key={n}>
+                  <div style={st.statAboutNum}>{n}</div>
+                  <div style={st.statAboutLabel}>{l}</div>
+                </div>
+              ))
+            )}
           </div>
           
           {/* Caixa Expansível de Redes Sociais */}
@@ -617,7 +646,7 @@ function ProductCard({ produto, onClick, onAdd }) {
           <button
             style={{
               ...st.addBtn,
-              ...(isMobile ? {width:'28px', height:'28px', fontSize:'1.1rem'} : {}),
+              ...(isMobile ? {width:'30px', height:'30px', minWidth:'30px', minHeight:'30px', fontSize:'1.15rem', borderRadius:'50%', padding:0} : {}),
               ...(added ? st.addBtnAdded : {}),
               ...(!temEstoque ? st.addBtnDisabled : {}),
             }}
@@ -834,8 +863,9 @@ const st = {
   },
   addBtn: {
     background: '#1C3A2A', color: '#F5F0E8', border: 'none',
-    width: '34px', height: '34px', borderRadius: '50%', cursor: 'pointer',
-    fontSize: '1.3rem', lineHeight: 1,
+    width: '34px', height: '34px', minWidth: '34px', minHeight: '34px',
+    borderRadius: '50%', cursor: 'pointer',
+    fontSize: '1.3rem', lineHeight: 1, padding: 0,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     transition: 'background 0.2s, transform 0.15s',
     fontWeight: 700, flexShrink: 0,
