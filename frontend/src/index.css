@@ -436,6 +436,7 @@ div:hover > .card-overlay { opacity: 1 !important; }
     padding-right: max(0px, env(safe-area-inset-right));
   }
 }
+<<<<<<< HEAD
 
 /* ══════════════════════════════════════════════════════════
    MOBILE STORE LAYOUT — estilo Mstore
@@ -940,3 +941,5 @@ div:hover > .card-overlay { opacity: 1 !important; }
     padding: 1rem 1.2rem !important;
   }
 }
+=======
+>>>>>>> d09e33699e22d899b5ecc77ad3274c1e181b6144

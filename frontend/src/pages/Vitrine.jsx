@@ -132,6 +132,7 @@ export default function Vitrine() {
   return (
     <div style={st.wrapper}>
 
+<<<<<<< HEAD
       {/* ── Faixa promocional mobile ── */}
       <div className="mobile-promo-banner">
         🌿 FRETE GRÁTIS <span>em pedidos acima de R$ 89</span>
@@ -150,6 +151,12 @@ export default function Vitrine() {
             ...st.heroBadge,
             ...(isMobile ? {fontSize:'0.58rem', padding:'0.25rem 0.7rem', marginBottom:'0.9rem', alignSelf:'center'} : {}),
           }}>
+=======
+      {/* ── HERO BANNER ── */}
+      <section style={st.hero} className="vitrine-hero">
+        <div style={st.heroText} className="vitrine-hero-text">
+          <div style={st.heroBadge}>
+>>>>>>> d09e33699e22d899b5ecc77ad3274c1e181b6144
             <span style={st.heroBadgeDot} />
             100% natural · orgânico · sustentável
           </div>
@@ -184,10 +191,14 @@ export default function Vitrine() {
             </button>
           </div>
         </div>
+<<<<<<< HEAD
         <div style={{
           ...st.heroImage,
           ...(isMobile ? {order:2, minHeight:'190px', maxHeight:'230px', height:'38vw'} : {}),
         }} className="vitrine-hero-image">
+=======
+        <div style={st.heroImage} className="vitrine-hero-image">
+>>>>>>> d09e33699e22d899b5ecc77ad3274c1e181b6144
           <video
             src={heroGifUrl}
             autoPlay
@@ -229,11 +240,16 @@ export default function Vitrine() {
       </section>
 
       {/* ── PRODUTOS ── */}
+<<<<<<< HEAD
       <section style={{
         ...st.produtosSection,
         ...(isMobile ? {padding:'1.5rem 0.75rem'} : {}),
       }} className="vitrine-produtos-section">
         <div style={{...st.sectionHead, ...(isMobile ? {marginBottom:'1rem'} : {})}}>
+=======
+      <section style={st.produtosSection} className="vitrine-produtos-section">
+        <div style={st.sectionHead}>
+>>>>>>> d09e33699e22d899b5ecc77ad3274c1e181b6144
           <span style={st.sectionLabel}>Catálogo</span>
           <h2 style={{
             ...st.secTitle,
@@ -247,10 +263,14 @@ export default function Vitrine() {
         ) : produtos.length === 0 ? (
           <p style={st.vazio}>Nenhum produto disponível no momento.</p>
         ) : (
+<<<<<<< HEAD
           <div style={{
             ...st.produtosGrid,
             ...(isMobile ? {gridTemplateColumns:'repeat(2,1fr)', gap:'8px', marginBottom:'1.2rem'} : {}),
           }} className="vitrine-produtos-grid">
+=======
+          <div style={st.produtosGrid} className="vitrine-produtos-grid">
+>>>>>>> d09e33699e22d899b5ecc77ad3274c1e181b6144
             {produtos.slice(0, 6).map(p => (
               <ProductCard
                 key={p.id}
@@ -455,7 +475,11 @@ export default function Vitrine() {
 
       {/* ── SOBRE ── */}
       <section style={st.aboutSection} id="sobre" className="vitrine-about">
+<<<<<<< HEAD
         <div style={{...st.aboutVisual, ...(isMobile ? {minHeight:200, maxHeight:220, padding:0} : {})}} className="vitrine-about-visual">
+=======
+        <div style={st.aboutVisual}>
+>>>>>>> d09e33699e22d899b5ecc77ad3274c1e181b6144
           <video
             src={aboutGifUrl}
             autoPlay
