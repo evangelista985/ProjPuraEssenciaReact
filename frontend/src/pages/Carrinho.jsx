@@ -22,7 +22,7 @@ export default function Carrinho() {
   }
 
   return (
-    <div className="container" style={{ paddingTop: 'clamp(84px,12vw,100px)', paddingBottom: 40, paddingLeft: 'clamp(12px,4vw,20px)', paddingRight: 'clamp(12px,4vw,20px)' }}>
+    <div className="container" style={{ paddingTop: 'clamp(68px,9vw,84px)', paddingBottom: 40, paddingLeft: 'clamp(12px,4vw,20px)', paddingRight: 'clamp(12px,4vw,20px)' }}>
       <h1 style={{ marginBottom: 24, fontSize: 'clamp(1.6rem,5vw,2.2rem)' }}>Meu Carrinho</h1>
 
       <div className="carrinho-layout">

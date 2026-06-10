@@ -76,7 +76,7 @@ export default function Produtos() {
         </header>
 
         {/* Filtros */}
-        <div style={st.filtrosContainer}>
+        <div style={st.filtrosContainer} className="produtos-filtros-container">
           <div style={st.tabsCategorias} className="mobile-cat-scroll">
             {categorias.map(cat => (
               <button
@@ -215,7 +215,7 @@ const st = {
   page: {
     backgroundColor: '#FCFBFA',
     minHeight: '100vh',
-    paddingTop: 'clamp(84px,12vw,100px)',
+    paddingTop: 'clamp(68px,9vw,84px)',
     paddingBottom: '60px',
   },
   container: { maxWidth: 1240, margin: '0 auto', padding: '0 clamp(12px,4vw,20px)' },
@@ -236,7 +236,8 @@ const st = {
   },
   tabsCategorias: {
     display: 'flex', gap: '6px', background: '#F0EFEA',
-    padding: '4px', borderRadius: '30px', flexWrap: 'wrap',
+    padding: '6px', borderRadius: '30px', flexWrap: 'wrap',
+    justifyContent: 'center',
   },
   tabBtn: {
     padding: '8px 22px', borderRadius: '25px', fontSize: '0.85rem',

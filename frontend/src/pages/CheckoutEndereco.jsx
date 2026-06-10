@@ -166,7 +166,7 @@ export default function CheckoutEndereco() {
   );
 
   return (
-    <div className="container" style={{ paddingTop: 'clamp(84px,12vw,100px)', paddingBottom: 40, paddingLeft: 'clamp(12px,4vw,20px)', paddingRight: 'clamp(12px,4vw,20px)', maxWidth: 640, margin: '0 auto' }}>
+    <div className="container" style={{ paddingTop: 'clamp(68px,9vw,84px)', paddingBottom: 40, paddingLeft: 'clamp(12px,4vw,20px)', paddingRight: 'clamp(12px,4vw,20px)', maxWidth: 640, margin: '0 auto' }}>
 
       {/* Stepper */}
       <div style={{ ...st.stepper, position: 'relative', zIndex: 1 }}>

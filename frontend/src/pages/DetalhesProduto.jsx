@@ -28,7 +28,7 @@ export default function DetalhesProduto() {
   if (!produto) return <p style={{ textAlign: 'center', padding: 40, color: '#3A5D3E' }}>🌿 Carregando...</p>;
 
   return (
-    <div className="container" style={{ paddingTop: 'clamp(84px,12vw,100px)', paddingBottom: 40, paddingLeft: 'clamp(12px,4vw,20px)', paddingRight: 'clamp(12px,4vw,20px)' }}>
+    <div className="container" style={{ paddingTop: 'clamp(68px,9vw,84px)', paddingBottom: 40, paddingLeft: 'clamp(12px,4vw,20px)', paddingRight: 'clamp(12px,4vw,20px)' }}>
       <button onClick={() => nav(-1)} style={{ background: 'none', border: 'none', color: '#3A5D3E', fontSize: 15, cursor: 'pointer', marginBottom: 20, fontWeight: 700, minHeight: 44, padding: '0 4px' }}>
         ← Voltar
       </button>

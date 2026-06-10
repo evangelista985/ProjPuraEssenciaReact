@@ -112,7 +112,7 @@ input, select { min-height: 44px; }
 
 /* ── Admin Layout ── */
 .admin-wrapper  { display: flex; min-height: 100vh; }
-.admin-sidebar  { width: 240px; background: var(--verde); color: #fff; flex-shrink: 0; position: relative; }
+.admin-sidebar  { width: 240px; background: var(--verde); color: #fff; flex-shrink: 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
 .admin-sidebar-logo {
   padding: 20px; border-bottom: 1px solid var(--verde-escuro);
   font-family: 'Playfair Display', serif; font-size: 20px; color: var(--dourado);
@@ -436,7 +436,6 @@ div:hover > .card-overlay { opacity: 1 !important; }
     padding-right: max(0px, env(safe-area-inset-right));
   }
 }
-<<<<<<< HEAD
 
 /* ══════════════════════════════════════════════════════════
    MOBILE STORE LAYOUT — estilo Mstore
@@ -745,15 +744,16 @@ div:hover > .card-overlay { opacity: 1 !important; }
   }
 }
 
-/* ── Mstore: barra de categorias horizontal scroll ── */
+/* ── Mstore: barra de categorias centralizada mobile ── */
 @media (max-width: 640px) {
   .mobile-cat-scroll {
     display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    padding-bottom: 4px;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    width: 100%;
+    overflow-x: unset;
+    padding-bottom: 0;
   }
   .mobile-cat-scroll::-webkit-scrollbar { display: none; }
 
@@ -941,5 +941,33 @@ div:hover > .card-overlay { opacity: 1 !important; }
     padding: 1rem 1.2rem !important;
   }
 }
-=======
->>>>>>> d09e33699e22d899b5ecc77ad3274c1e181b6144
+
+/* ══════════════════════════════════════════════════════════
+   FIXES MOBILE — ajustes de espaço e layout
+   ══════════════════════════════════════════════════════════ */
+
+/* Fix: reduz espaço excessivo no topo em telas pequenas */
+@media (max-width: 640px) {
+  /* Páginas com paddingTop inline via clamp — override para mobile */
+  [style*="paddingTop"] {
+    /* Não é possível sobrescrever inline diretamente, 
+       então usamos classes nas páginas específicas */
+  }
+
+  /* Fix: DetalhesProduto e CheckoutEndereco — reduzir topo */
+  .page-topo-reduzido {
+    padding-top: 72px !important;
+  }
+
+  /* Fix: Produtos — filtrosContainer vira coluna centralizada no mobile */
+  .produtos-filtros-container {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 12px !important;
+  }
+
+  .produtos-filtros-container > div:last-child {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
