@@ -148,20 +148,20 @@ export default function Vitrine() {
         }} className="vitrine-hero-text">
           <div style={{
             ...st.heroBadge,
-            ...(isMobile ? {fontSize:'0.48rem', padding:'0.2rem 0.55rem', marginBottom:'0.6rem', alignSelf:'center', letterSpacing:'0.1em'} : {}),
+            ...(isMobile ? {fontSize:'0.55rem', padding:'0.25rem 0.6rem', marginBottom:'0.75rem', alignSelf:'center', letterSpacing:'0.12em'} : {}),
           }}>
             <span style={st.heroBadgeDot} />
             100% natural · orgânico · sustentável
           </div>
           <h1 style={{
             ...st.heroTitle,
-            ...(isMobile ? {fontSize:'clamp(1.1rem, 5vw, 1.45rem)', marginBottom:'0.5rem', lineHeight:1.2} : {}),
+            ...(isMobile ? {fontSize:'clamp(1.35rem, 4.5vw, 1.6rem)', marginBottom:'0.6rem', lineHeight:1.25, letterSpacing:'-0.01em'} : {}),
           }}>
             Natureza em cada<br /><em style={st.heroTitleEm}>detalhe da sua vida</em>
           </h1>
           <p style={{
             ...st.heroDesc,
-            ...(isMobile ? {fontSize:'0.65rem', lineHeight:1.55, marginBottom:'0.85rem', maxWidth:'88%', margin:'0 auto 0.85rem', color:'#7A7060', fontWeight:400, letterSpacing:'0.01em'} : {}),
+            ...(isMobile ? {fontSize:'0.72rem', lineHeight:1.6, marginBottom:'1rem', maxWidth:'90%', margin:'0 auto 1rem', color:'#7A7060', fontWeight:300, letterSpacing:'0.015em'} : {}),
           }}>
             {isMobile ? (
               <>Cosméticos, suplementos e alimentos naturais<br />selecionados para sua saúde e bem-estar.</>
@@ -175,14 +175,11 @@ export default function Vitrine() {
           }}>
             <button className="btn-primary" style={{
               ...st.heroBtnPrimary,
-              ...(isMobile ? {padding:'0.5rem 0.9rem', fontSize:'0.62rem', letterSpacing:'0.08em'} : {}),
-            }} onClick={() => nav('/produtos')}>
-              Explorar Produtos
+              ...(isMobile ? {padding:'0.55rem 1.1rem', fontSize:'0.65rem', letterSpacing:'0.1em'} : {}),
             </button>
             <button className="btn-outline" style={{
               ...st.heroBtnOutline,
-              ...(isMobile ? {padding:'0.5rem 0.9rem', fontSize:'0.62rem', letterSpacing:'0.08em'} : {}),
-            }}
+              ...(isMobile ? {padding:'0.55rem 1.1rem', fontSize:'0.65rem', letterSpacing:'0.1em'} : {}),
               onClick={() => document.getElementById('sobre')?.scrollIntoView({ behavior: 'smooth' })}>
               Nossa História
             </button>
@@ -190,7 +187,7 @@ export default function Vitrine() {
         </div>
         <div style={{
           ...st.heroImage,
-          ...(isMobile ? {order:2, minHeight:'190px', maxHeight:'230px', height:'38vw'} : {}),
+          ...(isMobile ? {order:2, minHeight:'220px', maxHeight:'260px', height:'45vw'} : {}),
         }} className="vitrine-hero-image">
           <video
             src={heroGifUrl}
@@ -459,7 +456,7 @@ export default function Vitrine() {
 
       {/* ── SOBRE ── */}
       <section style={st.aboutSection} id="sobre" className="vitrine-about">
-        <div style={{...st.aboutVisual, ...(isMobile ? {minHeight:200, maxHeight:220, padding:0} : {})}} className="vitrine-about-visual">
+        <div style={{...st.aboutVisual, ...(isMobile ? {minHeight:'auto', maxHeight:'none', height:'56vw', padding:0} : {})}} className="vitrine-about-visual">
           <video
             src={aboutGifUrl}
             autoPlay
@@ -468,7 +465,7 @@ export default function Vitrine() {
             playsInline
             style={{
               ...st.aboutAnimatedGif,
-              ...(isMobile ? {height:'100%', maxHeight:'220px', objectFit:'cover'} : {}),
+              ...(isMobile ? {height:'100%', width:'100%', maxHeight:'none', objectFit:'contain', background:'#2D5A3D'} : {}),
             }}
           />
         </div>
