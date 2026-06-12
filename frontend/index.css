@@ -112,7 +112,7 @@ input, select { min-height: 44px; }
 
 /* ── Admin Layout ── */
 .admin-wrapper  { display: flex; min-height: 100vh; }
-.admin-sidebar  { width: 240px; background: var(--verde); color: #fff; flex-shrink: 0; position: relative; }
+.admin-sidebar  { width: 240px; background: var(--verde); color: #fff; flex-shrink: 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
 .admin-sidebar-logo {
   padding: 20px; border-bottom: 1px solid var(--verde-escuro);
   font-family: 'Playfair Display', serif; font-size: 20px; color: var(--dourado);
@@ -130,14 +130,14 @@ input, select { min-height: 44px; }
 /* ── Navbar Mobile ── */
 .navbar-mobile-overlay {
   display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.45); z-index: 998;
+  background: rgba(0,0,0,0.45); z-index: 1000;
 }
 .navbar-mobile-overlay.open { display: block; }
 
 .navbar-mobile-menu {
   position: fixed; top: 0; right: -100%;
   width: 85%; max-width: 320px; height: 100dvh;
-  background: #fff; z-index: 999;
+  background: #fff; z-index: 1001;
   transition: right 0.3s ease;
   display: flex; flex-direction: column; overflow-y: auto;
   box-shadow: -4px 0 24px rgba(0,0,0,0.15);
@@ -409,7 +409,8 @@ div:hover > .card-overlay { opacity: 1 !important; }
 /* ── ≤ 420px: mobile pequeno ── */
 @media (max-width: 420px) {
   .grid-produtos {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
   }
   .vitrine-produtos-grid { grid-template-columns: 1fr; }
 
@@ -564,37 +565,24 @@ div:hover > .card-overlay { opacity: 1 !important; }
 
   .vitrine-hero-text h1,
   .vitrine-hero-text [style*="font-size"] {
-    font-size: clamp(1.05rem, 5vw, 1.4rem) !important;
-    line-height: 1.2 !important;
+    font-size: clamp(1.3rem, 5.5vw, 1.7rem) !important;
+    line-height: 1.25 !important;
   }
 
   .vitrine-hero-text p {
     font-size: 0.72rem !important;
-    line-height: 1.5 !important;
+    line-height: 1.6 !important;
   }
 
-  /* Badge menor */
-  .vitrine-hero-text > div:first-child {
-    font-size: 0.48rem !important;
-    padding: 0.2rem 0.55rem !important;
-    letter-spacing: 0.1em !important;
-  }
-
-  /* Botões menores */
+  /* Botões do hero: mesma largura e tamanho */
   .vitrine-hero-text .btn-primary,
   .vitrine-hero-text .btn-outline {
+    flex: 1 1 0;
+    min-width: 0;
+    text-align: center;
+    padding: 0.6rem 0.8rem !important;
     font-size: 0.62rem !important;
-    padding: 0.5rem 0.9rem !important;
-    letter-spacing: 0.08em !important;
-  }
-
-  /* Botões do hero lado a lado */
-  .vitrine-hero-text [style*="display:'flex'"],
-  .vitrine-hero-text [style*='display:"flex"'],
-  .vitrine-hero-text [style*="display: 'flex'"] {
-    justify-content: center !important;
-    flex-wrap: wrap !important;
-    gap: 6px !important;
+    letter-spacing: 0.09em !important;
   }
 
   .vitrine-hero-image {
@@ -689,6 +677,52 @@ div:hover > .card-overlay { opacity: 1 !important; }
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 10px !important;
   }
+
+  /* Card de produto compacto: igual à imagem de referência */
+  .produto-card {
+    border-radius: 12px !important;
+  }
+
+  .produto-card > div:first-child {
+    height: 130px !important;
+  }
+
+  .produto-card .card-content-inner,
+  .produto-card > div:last-child {
+    padding: 10px 10px 12px !important;
+  }
+
+  /* Nome do produto */
+  .produto-card h3 {
+    font-size: 0.82rem !important;
+    margin-bottom: 4px !important;
+    min-height: auto !important;
+    line-height: 1.3 !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  /* Descrição */
+  .produto-card p {
+    font-size: 0.68rem !important;
+    line-height: 1.4 !important;
+    margin-bottom: 8px !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  /* Preço */
+  .produto-card [style*="cardPreco"],
+  .produto-card span:last-of-type {
+    font-size: 0.95rem !important;
+  }
+
+  /* Botão + */
+  .produto-card button {
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    min-height: 30px !important;
+    font-size: 1.2rem !important;
+  }
 }
 
 /* ── Seções "sobre" e categorias: empilha + compacta ── */
@@ -760,15 +794,16 @@ div:hover > .card-overlay { opacity: 1 !important; }
   }
 }
 
-/* ── Mstore: barra de categorias horizontal scroll ── */
+/* ── Mstore: barra de categorias centralizada mobile ── */
 @media (max-width: 640px) {
   .mobile-cat-scroll {
     display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    padding-bottom: 4px;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    width: 100%;
+    overflow-x: unset;
+    padding-bottom: 0;
   }
   .mobile-cat-scroll::-webkit-scrollbar { display: none; }
 
@@ -958,145 +993,52 @@ div:hover > .card-overlay { opacity: 1 !important; }
 }
 
 /* ══════════════════════════════════════════════════════════
-   TEXTOS MENORES NA TELA PRINCIPAL — ajuste responsivo mobile
+   FIXES MOBILE — ajustes de espaço e layout
    ══════════════════════════════════════════════════════════ */
 
-/* ── Stats bar: números e labels menores ── */
+/* Fix: reduz espaço excessivo no topo em telas pequenas */
 @media (max-width: 640px) {
-  .vitrine-stats [style] .stat-num,
-  .vitrine-stats > div > div:first-child {
-    font-size: 1.5rem !important;
+  /* Páginas com paddingTop inline via clamp — override para mobile */
+  [style*="paddingTop"] {
+    /* Não é possível sobrescrever inline diretamente, 
+       então usamos classes nas páginas específicas */
   }
-  .vitrine-stats > div > div:last-child {
-    font-size: 0.68rem !important;
-    letter-spacing: 0.02em !important;
+
+  /* Fix: DetalhesProduto e CheckoutEndereco — reduzir topo */
+  .page-topo-reduzido {
+    padding-top: 72px !important;
+  }
+
+  /* Fix: Produtos — filtrosContainer vira coluna centralizada no mobile */
+  .produtos-filtros-container {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 12px !important;
+  }
+
+  .produtos-filtros-container > div:last-child {
+    width: 100% !important;
+    max-width: 100% !important;
   }
 }
 
-/* ── Hero: redução adicional em telas < 400px ── */
-@media (max-width: 400px) {
-  .vitrine-hero-text h1 {
-    font-size: clamp(0.95rem, 5.5vw, 1.2rem) !important;
-  }
-  .vitrine-hero-text p {
-    font-size: 0.68rem !important;
-    line-height: 1.45 !important;
-  }
-  .vitrine-hero-text > div:first-child {
-    font-size: 0.44rem !important;
-    padding: 0.18rem 0.5rem !important;
-    margin-bottom: 0.5rem !important;
-  }
-  .vitrine-hero-text .btn-primary,
-  .vitrine-hero-text .btn-outline {
-    font-size: 0.58rem !important;
-    padding: 0.42rem 0.75rem !important;
-  }
+/* ── Fix: input busca de produtos — altura fixa para alinhar ícone ── */
+.produtos-busca-input {
+  min-height: unset !important;
+  height: 44px !important;
+  line-height: 1 !important;
 }
 
-/* ── Seção Produtos: título e label menores ── */
 @media (max-width: 640px) {
-  .vitrine-produtos-section .sectionLabel,
-  .vitrine-produtos-section span {
-    font-size: 0.6rem !important;
-    letter-spacing: 0.15em !important;
+  /* Fix: container de filtros vira coluna centralizada no mobile */
+  .produtos-filtros-container {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 12px !important;
   }
-  .vitrine-produtos-section h2 {
-    font-size: clamp(1.25rem, 5vw, 1.7rem) !important;
-    margin-bottom: 0.3rem !important;
-  }
-}
-
-/* ── Card de produto: nome, preço e categoria menores ── */
-@media (max-width: 640px) {
-  /* Nome do produto */
-  .vitrine-produtos-grid [style*="Cormorant"] {
-    font-size: 0.9rem !important;
-    min-height: 2.4rem !important;
-  }
-  /* Preço */
-  .vitrine-produtos-grid [style*="1.25rem"] {
-    font-size: 1rem !important;
-  }
-  /* Categoria */
-  .vitrine-produtos-grid [style*="0.65rem"] {
-    font-size: 0.58rem !important;
-  }
-}
-
-/* ── Seção Sobre: textos menores ── */
-@media (max-width: 640px) {
-  .vitrine-about-text .sectionLabel {
-    font-size: 0.6rem !important;
-  }
-  .vitrine-about-text h2 {
-    font-size: clamp(1.3rem, 5vw, 1.8rem) !important;
-    line-height: 1.2 !important;
-  }
-  .vitrine-about-text p {
-    font-size: 0.8rem !important;
-    line-height: 1.65 !important;
-  }
-  .vitrine-about-text .stat-about-num {
-    font-size: 1.4rem !important;
-  }
-  .vitrine-about-text .stat-about-label {
-    font-size: 0.65rem !important;
-  }
-}
-
-/* ── Seção Área do Cliente: textos menores ── */
-@media (max-width: 640px) {
-  .vitrine-user-section h2 {
-    font-size: clamp(1.25rem, 5vw, 1.7rem) !important;
-  }
-  .vitrine-user-section p,
-  .vitrine-user-section .sectionSub {
-    font-size: 0.8rem !important;
-  }
-  .vitrine-user-section h4 {
-    font-size: 0.95rem !important;
-  }
-  .vitrine-user-section .benefit-desc {
-    font-size: 0.75rem !important;
-  }
-  .vitrine-user-section .auth-note {
-    font-size: 0.75rem !important;
-  }
-  .vitrine-user-section .auth-btn {
-    font-size: 0.68rem !important;
-    padding: 0.75rem 1.5rem !important;
-    letter-spacing: 0.08em !important;
-  }
-}
-
-/* ── Seção CTA final: textos menores ── */
-@media (max-width: 640px) {
-  .vitrine-cta-section h2 {
-    font-size: clamp(1.3rem, 5.5vw, 1.8rem) !important;
-    margin-bottom: 0.7rem !important;
-  }
-  .vitrine-cta-section p {
-    font-size: 0.82rem !important;
-    line-height: 1.65 !important;
-  }
-}
-
-/* ── Carrossel: título e textos dos slides menores ── */
-@media (max-width: 640px) {
-  .vitrine-carousel-section h2 {
-    font-size: 1.4rem !important;
-  }
-  .vitrine-carousel-section h3 {
-    font-size: 1rem !important;
-    line-height: 1.25 !important;
-  }
-  .vitrine-carousel-section p {
-    font-size: 0.75rem !important;
-  }
-  /* Label "Explore Nossa Coleção" */
-  .vitrine-carousel-section span[style*="0.68rem"],
-  .vitrine-carousel-section [style*="cfSectionLabel"] {
-    font-size: 0.58rem !important;
+  .produtos-filtros-container > div:last-child {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: unset !important;
   }
 }
