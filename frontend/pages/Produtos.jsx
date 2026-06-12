@@ -161,8 +161,7 @@ function CardProduto({ produto, onClick, onAdd }) {
 
   return (
     <div
-      style={st.card}
-      className="produto-card"
+      className="produto-card pc-card"
       onClick={onClick}
       onMouseEnter={e => {
         e.currentTarget.style.transform = 'translateY(-6px)';
@@ -177,30 +176,26 @@ function CardProduto({ produto, onClick, onAdd }) {
         if (img) img.style.transform = 'scale(1)';
       }}
     >
-      <div style={st.imgContainer}>
+      <div className="pc-img-container">
         <img
           src={produto.imagem || 'https://via.placeholder.com/400x400/f8f9fa/1C3A2A?text=Pura+Essência'}
           alt={produto.nome}
-          style={st.img}
+          className="pc-img"
           onError={e => { e.target.src = 'https://via.placeholder.com/400x400/f8f9fa/1C3A2A?text=Pura+Essência'; }}
         />
-        {!temEstoque && <div style={st.badgeEsgotado}>Esgotado</div>}
-        <div style={st.imgGradient} />
+        {!temEstoque && <div className="pc-badge-esgotado">Esgotado</div>}
+        <div className="pc-img-gradient" />
       </div>
-      <div style={st.cardContent}>
-        <span style={st.cardCategoria}>{produto.categoria_nome || 'Natural'}</span>
-        <h3 style={st.cardNome}>{produto.nome}</h3>
-        <p style={st.cardDesc}>
+      <div className="pc-content">
+        <span className="pc-categoria">{produto.categoria_nome || 'Natural'}</span>
+        <h3 className="pc-nome">{produto.nome}</h3>
+        <p className="pc-desc">
           {(produto.descricao || '').slice(0, 72)}{(produto.descricao?.length || 0) > 72 ? '…' : ''}
         </p>
-        <div style={st.cardFooter}>
-          <span style={st.cardPreco}>R$ {Number(produto.preco).toFixed(2).replace('.', ',')}</span>
+        <div className="pc-footer">
+          <span className="pc-preco">R$ {Number(produto.preco).toFixed(2).replace('.', ',')}</span>
           <button
-            style={{
-              ...st.addBtn,
-              ...(added ? st.addBtnAdded : {}),
-              ...(!temEstoque ? st.addBtnDisabled : {}),
-            }}
+            className={`pc-add-btn${added ? ' pc-add-btn--added' : ''}${!temEstoque ? ' pc-add-btn--disabled' : ''}`}
             disabled={!temEstoque}
             onClick={handleAdd}
             title={temEstoque ? 'Adicionar ao carrinho' : 'Produto esgotado'}
