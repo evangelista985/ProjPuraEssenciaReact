@@ -129,7 +129,7 @@ export default function Produtos() {
                 </button>
               </div>
             ) : (
-              <div style={st.grid}>
+              <div style={st.grid} className="grid-produtos">
                 {produtosFiltrados.map(p => (
                   <CardProduto
                     key={p.id}
@@ -162,6 +162,7 @@ function CardProduto({ produto, onClick, onAdd }) {
   return (
     <div
       style={st.card}
+      className="produto-card"
       onClick={onClick}
       onMouseEnter={e => {
         e.currentTarget.style.transform = 'translateY(-6px)';
@@ -275,7 +276,7 @@ const st = {
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
     gap: '24px',
   },
   card: {

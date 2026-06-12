@@ -564,21 +564,24 @@ div:hover > .card-overlay { opacity: 1 !important; }
 
   .vitrine-hero-text h1,
   .vitrine-hero-text [style*="font-size"] {
-    font-size: clamp(1.7rem, 7vw, 2.4rem) !important;
-    line-height: 1.2 !important;
+    font-size: clamp(1.3rem, 5.5vw, 1.7rem) !important;
+    line-height: 1.25 !important;
   }
 
   .vitrine-hero-text p {
-    font-size: 0.85rem !important;
+    font-size: 0.72rem !important;
+    line-height: 1.6 !important;
   }
 
-  /* Botões do hero lado a lado */
-  .vitrine-hero-text [style*="display:'flex'"],
-  .vitrine-hero-text [style*='display:"flex"'],
-  .vitrine-hero-text [style*="display: 'flex'"] {
-    justify-content: center !important;
-    flex-wrap: wrap !important;
-    gap: 10px !important;
+  /* Botões do hero: mesma largura e tamanho */
+  .vitrine-hero-text .btn-primary,
+  .vitrine-hero-text .btn-outline {
+    flex: 1 1 0;
+    min-width: 0;
+    text-align: center;
+    padding: 0.6rem 0.8rem !important;
+    font-size: 0.62rem !important;
+    letter-spacing: 0.09em !important;
   }
 
   .vitrine-hero-image {
@@ -672,6 +675,52 @@ div:hover > .card-overlay { opacity: 1 !important; }
   .categoria-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 10px !important;
+  }
+
+  /* Card de produto compacto: igual à imagem de referência */
+  .produto-card {
+    border-radius: 12px !important;
+  }
+
+  .produto-card > div:first-child {
+    height: 130px !important;
+  }
+
+  .produto-card .card-content-inner,
+  .produto-card > div:last-child {
+    padding: 10px 10px 12px !important;
+  }
+
+  /* Nome do produto */
+  .produto-card h3 {
+    font-size: 0.82rem !important;
+    margin-bottom: 4px !important;
+    min-height: auto !important;
+    line-height: 1.3 !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  /* Descrição */
+  .produto-card p {
+    font-size: 0.68rem !important;
+    line-height: 1.4 !important;
+    margin-bottom: 8px !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  /* Preço */
+  .produto-card [style*="cardPreco"],
+  .produto-card span:last-of-type {
+    font-size: 0.95rem !important;
+  }
+
+  /* Botão + */
+  .produto-card button {
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    min-height: 30px !important;
+    font-size: 1.2rem !important;
   }
 }
 
