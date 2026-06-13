@@ -35,7 +35,7 @@ function templateConfirmacaoPedido({ cliente, pedido, itens }) {
 
   const statusLabel = {
     pago:     '✅ Pagamento aprovado',
-    pendente: '⏳ Aguardando pagamento',
+    pendente: '⏳ Pagamento em processamento',
   }[pedido.status] || pedido.status;
 
   const tituloPrincipal = pedido.status === 'pendente'
@@ -167,7 +167,7 @@ async function enviarEmail({ to, nome, subject, html }) {
 // ── Função principal de envio: confirmação de pedido ───────
 async function enviarEmailConfirmacaoPedido({ cliente, pedido, itens }) {
   const subject = pedido.status === 'pendente'
-    ? `⏳ Pedido #${pedido.id} recebido — aguardando pagamento`
+    ? `⏳ Pedido #${pedido.id} recebido — pagamento em processamento`
     : `✅ Pedido #${pedido.id} confirmado — Pura Essência`;
 
   return enviarEmail({
