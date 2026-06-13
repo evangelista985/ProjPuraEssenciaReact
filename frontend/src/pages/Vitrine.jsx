@@ -176,11 +176,13 @@ export default function Vitrine() {
             <button className="btn-primary" style={{
               ...st.heroBtnPrimary,
               ...(isMobile ? {padding:'0.55rem 1.1rem', fontSize:'0.65rem', letterSpacing:'0.1em'} : {}),
+            }} onClick={() => nav('/produtos')}>
+              Explorar Produtos
             </button>
             <button className="btn-outline" style={{
               ...st.heroBtnOutline,
               ...(isMobile ? {padding:'0.55rem 1.1rem', fontSize:'0.65rem', letterSpacing:'0.1em'} : {}),
-              onClick={() => document.getElementById('sobre')?.scrollIntoView({ behavior: 'smooth' })}>
+            }} onClick={() => document.getElementById('sobre')?.scrollIntoView({ behavior: 'smooth' })}>
               Nossa História
             </button>
           </div>

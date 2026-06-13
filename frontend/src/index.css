@@ -409,9 +409,10 @@ div:hover > .card-overlay { opacity: 1 !important; }
 /* ── ≤ 420px: mobile pequeno ── */
 @media (max-width: 420px) {
   .grid-produtos {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
   }
-  .vitrine-produtos-grid { grid-template-columns: 1fr; }
+  .vitrine-produtos-grid { grid-template-columns: repeat(2, 1fr); }
 
   /* Logo navbar menor */
   .navbar-logo { height: 42px !important; }

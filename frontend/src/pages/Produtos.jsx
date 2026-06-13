@@ -129,7 +129,7 @@ export default function Produtos() {
                 </button>
               </div>
             ) : (
-              <div className="grid-produtos" style={st.grid}>
+              <div className="grid-produtos">
                 {produtosFiltrados.map(p => (
                   <CardProduto
                     key={p.id}
