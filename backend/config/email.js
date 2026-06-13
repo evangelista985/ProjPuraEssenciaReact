@@ -9,16 +9,39 @@ const dns = require('dns');
 // (corrige ENETUNREACH ao conectar no SMTP do Gmail)
 dns.setDefaultResultOrder('ipv4first');
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  family: 4, // força IPv4 (Render não tem rota IPv6 para o Gmail)
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // Senha de app do Google (não a senha normal)
-  },
-});
+// Cria o transporter resolvendo manualmente o IPv4 do smtp.gmail.com,
+// pois o ENETUNREACH persiste mesmo com ipv4first em alguns ambientes do Render.
+let transporterPromise = null;
+
+async function getTransporter() {
+  if (transporterPromise) return transporterPromise;
+
+  transporterPromise = (async () => {
+    let host = 'smtp.gmail.com';
+    try {
+      const { address } = await dns.promises.lookup('smtp.gmail.com', { family: 4 });
+      host = address;
+    } catch (err) {
+      console.error('⚠️  Falha ao resolver IPv4 do smtp.gmail.com, usando hostname padrão:', err.message);
+    }
+
+    return nodemailer.createTransport({
+      host,
+      port: 465,
+      secure: true,
+      family: 4,
+      tls: {
+        servername: 'smtp.gmail.com', // necessário para validar o certificado TLS
+      },
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS, // Senha de app do Google (não a senha normal)
+      },
+    });
+  })();
+
+  return transporterPromise;
+}
 
 // ── Template HTML do e-mail de confirmação ─────────────────
 function templateConfirmacaoPedido({ cliente, pedido, itens }) {
@@ -149,6 +172,7 @@ async function enviarEmailConfirmacaoPedido({ cliente, pedido, itens }) {
     : `✅ Pedido #${pedido.id} confirmado — Pura Essência`;
 
   try {
+    const transporter = await getTransporter();
     await transporter.sendMail({
       from:    process.env.EMAIL_FROM || 'Pura Essência <noreply@puraessencia.com.br>',
       to:      cliente.email,
@@ -158,6 +182,8 @@ async function enviarEmailConfirmacaoPedido({ cliente, pedido, itens }) {
     console.log(`📧 E-mail de confirmação enviado para ${cliente.email} (Pedido #${pedido.id})`);
     return true;
   } catch (err) {
+    // Reseta o transporter cacheado (o IP do Gmail pode mudar)
+    transporterPromise = null;
     // Não quebra o fluxo do pedido se o e-mail falhar
     console.error('⚠️  Falha ao enviar e-mail de confirmação:', err.message);
     return false;
