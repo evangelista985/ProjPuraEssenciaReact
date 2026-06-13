@@ -3,17 +3,7 @@ const router  = express.Router();
 const bcrypt  = require('bcryptjs');
 const jwt     = require('jsonwebtoken');
 const db      = require('../config/db');
-const { enviarEmailConfirmacaoPedido } = require('../config/email');
-const nodemailer = require('nodemailer');
-
-// ── Transportador de e-mail ──
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const { enviarEmailConfirmacaoPedido, enviarEmail } = require('../config/email');
 
 const codigosReset = {};
 
@@ -83,9 +73,10 @@ router.post('/esqueci-senha', async (req, res) => {
     const codigo = Math.floor(100000 + Math.random() * 900000).toString();
     const expira = Date.now() + 15 * 60 * 1000;
     codigosReset[email] = { codigo, expira };
-    await transporter.sendMail({
-      from:    process.env.EMAIL_FROM || 'Pura Essência <puraessenciaetec@gmail.com>',
+
+    await enviarEmail({
       to:      email,
+      nome:    cliente.nome,
       subject: '🔑 Código para redefinir sua senha — Pura Essência',
       html: `
         <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;background:#f5f7f2;padding:32px;border-radius:12px">
@@ -102,6 +93,7 @@ router.post('/esqueci-senha', async (req, res) => {
         </div>
       `,
     });
+
     res.json({ mensagem: 'Código enviado para seu e-mail!' });
   } catch (err) {
     console.error('Erro ao enviar código:', JSON.stringify(err, Object.getOwnPropertyNames(err)));
@@ -153,7 +145,6 @@ router.put('/endereco', async (req, res) => {
     res.status(500).json({ erro: 'Erro ao atualizar endereço' });
   }
 });
-
 
 // GET /api/clientes/me — retorna dados atualizados do cliente logado
 router.get('/me', async (req, res) => {
