@@ -5,7 +5,10 @@
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
+  family: 4, // força IPv4 (Render não tem rota IPv6 para o Gmail)
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS, // Senha de app do Google (não a senha normal)
@@ -27,6 +30,14 @@ function templateConfirmacaoPedido({ cliente, pedido, itens }) {
     pendente: '⏳ Aguardando pagamento',
   }[pedido.status] || pedido.status;
 
+  const tituloPrincipal = pedido.status === 'pendente'
+    ? 'Pedido recebido!'
+    : 'Pedido confirmado!';
+
+  const mensagemPrincipal = pedido.status === 'pendente'
+    ? `Olá, <strong>${cliente.nome}</strong>! Recebemos seu pedido <strong>#${pedido.id}</strong> e estamos aguardando a confirmação do pagamento via <strong>${pedido.forma_pagamento.toUpperCase()}</strong>.`
+    : `Olá, <strong>${cliente.nome}</strong>! Seu pedido <strong>#${pedido.id}</strong> foi recebido com sucesso.`;
+
   return `
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -44,9 +55,9 @@ function templateConfirmacaoPedido({ cliente, pedido, itens }) {
 
         <!-- Mensagem principal -->
         <tr><td style="padding:36px 40px 24px">
-          <h1 style="margin:0 0 8px;font-size:22px;color:#3A5D3E">Pedido confirmado!</h1>
+          <h1 style="margin:0 0 8px;font-size:22px;color:#3A5D3E">${tituloPrincipal}</h1>
           <p style="margin:0;font-size:15px;color:#555;line-height:1.6">
-            Olá, <strong>${cliente.nome}</strong>! Seu pedido <strong>#${pedido.id}</strong> foi recebido com sucesso.
+            ${mensagemPrincipal}
           </p>
         </td></tr>
 
@@ -100,11 +111,11 @@ function templateConfirmacaoPedido({ cliente, pedido, itens }) {
         </td></tr>
 
         <!-- Endereço de entrega -->
-        ${pedido.logradouro_entrega ? `
+        ${pedido.endereco_entrega ? `
         <tr><td style="padding:0 40px 28px">
           <p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#333">📍 Endereço de entrega</p>
           <div style="background:#f5f7f2;border-radius:8px;padding:14px 16px;font-size:14px;color:#555;line-height:1.8">
-            ${pedido.logradouro_entrega}, ${pedido.numero_entrega}
+            ${pedido.endereco_entrega}, ${pedido.numero_entrega}
             ${pedido.complemento_entrega ? ' — ' + pedido.complemento_entrega : ''}<br>
             ${pedido.bairro_entrega} — ${pedido.cidade_entrega}/${pedido.estado_entrega}<br>
             CEP: ${pedido.cep_entrega}
@@ -128,11 +139,15 @@ function templateConfirmacaoPedido({ cliente, pedido, itens }) {
 
 // ── Função principal de envio ──────────────────────────────
 async function enviarEmailConfirmacaoPedido({ cliente, pedido, itens }) {
+  const subject = pedido.status === 'pendente'
+    ? `⏳ Pedido #${pedido.id} recebido — aguardando pagamento`
+    : `✅ Pedido #${pedido.id} confirmado — Pura Essência`;
+
   try {
     await transporter.sendMail({
       from:    process.env.EMAIL_FROM || 'Pura Essência <noreply@puraessencia.com.br>',
       to:      cliente.email,
-      subject: `✅ Pedido #${pedido.id} confirmado — Pura Essência`,
+      subject,
       html:    templateConfirmacaoPedido({ cliente, pedido, itens }),
     });
     console.log(`📧 E-mail de confirmação enviado para ${cliente.email} (Pedido #${pedido.id})`);
