@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
@@ -56,6 +54,14 @@ export default function Vitrine() {
   const [prevSlide, setPrevSlide] = useState(null);
   const [slideProgress, setSlideProgress] = useState(0);
   const [animating, setAnimating] = useState(false);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth <= 640);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 640);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   const [gifUrl, setGifUrl] = useState('https://www.pexels.com/pt-br/download/video/11012202/');
   const [editingGif, setEditingGif] = useState(false);
   // ⚠️ INSIRA AS URLs DOS SEUS GIFs ABAIXO:
@@ -68,7 +74,7 @@ export default function Vitrine() {
     { icon: '📷', label: 'Instagram', url: 'https://www.instagram.com/pura_essencia.official/', color: '#E4405F' },
     { icon: '💬', label: 'WhatsApp', url: 'https://wa.me', color: '#25D366' },
     { icon: '𝕏', label: 'Twitter', url: 'https://x.com/PuraEssenc91630', color: '#000000' },
-    { icon: '✉️', label: 'Email', url: 'puraessenciaetec@gmail.com', color: '#D4AF37' },
+    { icon: '✉️', label: 'Email', url: 'mailto:puraessenciaetec@gmail.com', color: '#D4AF37' },
   ];
 
   useEffect(() => { carregarProdutos(); }, []);
@@ -124,30 +130,67 @@ export default function Vitrine() {
   return (
     <div style={st.wrapper}>
 
+      {/* ── Faixa promocional mobile ── */}
+      {isMobile && (
+        <div className="mobile-promo-banner" style={{ background: '#1C3A2A', color: '#F5F0E8', textAlign: 'center', padding: '0.5rem', fontSize: '0.75rem' }}>
+          🌿 FRETE GRÁTIS <span>em pedidos acima de R$ 89</span>
+        </div>
+      )}
+
       {/* ── HERO BANNER ── */}
-      <section style={st.hero}>
-        <div style={st.heroText}>
-          <div style={st.heroBadge}>
+      <section style={{
+        ...st.hero,
+        ...(isMobile ? {display:'flex', flexDirection:'column', paddingTop:'0', minHeight:'auto'} : {}),
+      }} className="vitrine-hero">
+        <div style={{
+          ...st.heroText,
+          ...(isMobile ? {padding:'1.6rem 1rem 1.4rem', order:1, textAlign:'center'} : {}),
+        }} className="vitrine-hero-text">
+          <div style={{
+            ...st.heroBadge,
+            ...(isMobile ? {fontSize:'0.55rem', padding:'0.25rem 0.6rem', marginBottom:'0.75rem', alignSelf:'center', letterSpacing:'0.12em'} : {}),
+          }}>
             <span style={st.heroBadgeDot} />
             100% natural · orgânico · sustentável
           </div>
-          <h1 style={st.heroTitle}>
+          <h1 style={{
+            ...st.heroTitle,
+            ...(isMobile ? {fontSize:'clamp(1.35rem, 4.5vw, 1.6rem)', marginBottom:'0.6rem', lineHeight:1.25, letterSpacing:'-0.01em'} : {}),
+          }}>
             Natureza em cada<br /><em style={st.heroTitleEm}>detalhe da sua vida</em>
           </h1>
-          <p style={st.heroDesc}>
-            Cosméticos, suplementos e alimentos naturais cuidadosamente selecionados para sua saúde e bem-estar. Da natureza para você.
+          <p style={{
+            ...st.heroDesc,
+            ...(isMobile ? {fontSize:'0.72rem', lineHeight:1.6, marginBottom:'1rem', maxWidth:'90%', margin:'0 auto 1rem', color:'#7A7060', fontWeight:300, letterSpacing:'0.015em'} : {}),
+          }}>
+            {isMobile ? (
+              <>Cosméticos, suplementos e alimentos naturais<br />selecionados para sua saúde e bem-estar.</>
+            ) : (
+              'Cosméticos, suplementos e alimentos naturais cuidadosamente selecionados para sua saúde e bem-estar. Da natureza para você.'
+            )}
           </p>
-          <div style={st.heroCta}>
-            <button className="btn-primary" style={st.heroBtnPrimary} onClick={() => nav('/produtos')}>
+          <div style={{
+            ...st.heroCta,
+            ...(isMobile ? {justifyContent:'center', gap:'6px'} : {}),
+          }}>
+            <button className="btn-primary" style={{
+              ...st.heroBtnPrimary,
+              ...(isMobile ? {padding:'0.55rem 1.1rem', fontSize:'0.65rem', letterSpacing:'0.1em'} : {}),
+            }} onClick={() => nav('/produtos')}>
               Explorar Produtos
             </button>
-            <button className="btn-outline" style={st.heroBtnOutline}
-              onClick={() => document.getElementById('sobre')?.scrollIntoView({ behavior: 'smooth' })}>
+            <button className="btn-outline" style={{
+              ...st.heroBtnOutline,
+              ...(isMobile ? {padding:'0.55rem 1.1rem', fontSize:'0.65rem', letterSpacing:'0.1em'} : {}),
+            }} onClick={() => document.getElementById('sobre')?.scrollIntoView({ behavior: 'smooth' })}>
               Nossa História
             </button>
           </div>
         </div>
-        <div style={st.heroImage}>
+        <div style={{
+          ...st.heroImage,
+          ...(isMobile ? {order:2, minHeight:'220px', maxHeight:'260px', height:'45vw'} : {}),
+        }} className="vitrine-hero-image">
           <video
             src={heroGifUrl}
             autoPlay
@@ -157,7 +200,7 @@ export default function Vitrine() {
             style={st.heroGif}
           />
           <div style={st.heroGifOverlay} />
-          <div style={st.heroStats}>
+          <div style={{...st.heroStats, ...(isMobile ? {display:'none'} : {})}}>
             <div style={st.heroStat}>
               <div style={st.statNum}>500+</div>
               <div style={st.statLabel}>Produtos</div>
@@ -175,7 +218,7 @@ export default function Vitrine() {
       </section>
 
       {/* ── STATS ── */}
-      <section style={st.statsSection}>
+      <section style={st.statsSection} className="vitrine-stats">
         {[
           { num: '100%', label: 'Natural & Orgânico' },
           { num: '+500', label: 'Clientes Satisfeitos' },
@@ -189,11 +232,17 @@ export default function Vitrine() {
       </section>
 
       {/* ── PRODUTOS ── */}
-      <section style={st.produtosSection}>
-        <div style={st.sectionHead}>
+      <section style={{
+        ...st.produtosSection,
+        ...(isMobile ? {padding:'1.5rem 0.75rem'} : {}),
+      }} className="vitrine-produtos-section">
+        <div style={{...st.sectionHead, ...(isMobile ? {marginBottom:'1rem'} : {})}}>
           <span style={st.sectionLabel}>Catálogo</span>
-          <h2 style={st.secTitle}>Nossos Produtos</h2>
-          <p style={st.secDesc}>Seleção cuidadosa de produtos naturais para sua saúde e bem-estar</p>
+          <h2 style={{
+            ...st.secTitle,
+            ...(isMobile ? {fontSize:'clamp(1.4rem, 5vw, 1.8rem)'} : {}),
+          }}>Nossos Produtos</h2>
+          {!isMobile && <p style={st.secDesc}>Seleção cuidadosa de produtos naturais para sua saúde e bem-estar</p>}
         </div>
 
         {loading ? (
@@ -201,7 +250,10 @@ export default function Vitrine() {
         ) : produtos.length === 0 ? (
           <p style={st.vazio}>Nenhum produto disponível no momento.</p>
         ) : (
-          <div style={st.produtosGrid}>
+          <div style={{
+            ...st.produtosGrid,
+            ...(isMobile ? {gridTemplateColumns:'repeat(2,1fr)', gap:'8px', marginBottom:'1.2rem'} : {}),
+          }} className="vitrine-produtos-grid">
             {produtos.slice(0, 6).map(p => (
               <ProductCard
                 key={p.id}
@@ -221,7 +273,7 @@ export default function Vitrine() {
       </section>
 
       {/* ── CARROSSEL COVERFLOW 3D ── */}
-      <section style={st.carouselSection}>
+      <section style={st.carouselSection} className="vitrine-carousel-section">
         <style>{`
           .coverflow-wrap {
             perspective: none;
@@ -253,6 +305,13 @@ export default function Vitrine() {
             position: relative;
           }
           .cf-arrow-btn:hover { background: rgba(255,255,255,0.28); transform: scale(1.1); }
+          @media (max-width: 640px) {
+            .cf-arrow-btn {
+              width: 38px !important;
+              height: 38px !important;
+              font-size: 1.3rem !important;
+            }
+          }
           .cf-dot {
             width: 8px; height: 8px; border-radius: 50%;
             background: rgba(245,240,232,0.3);
@@ -267,10 +326,10 @@ export default function Vitrine() {
           <h2 style={st.cfSectionTitle}>Explore Nossa Coleção</h2>
         </div>
 
-        <div style={st.cfOuter}>
+        <div style={{...st.cfOuter, gap: isMobile ? '0.8rem' : '2rem', padding: isMobile ? '0 0.8rem' : '0 2rem'}}>
           <button className="cf-arrow-btn" onClick={() => goToSlide((slide - 1 + SLIDES.length) % SLIDES.length)}>‹</button>
 
-          <div className="coverflow-wrap" style={st.cfStage}>
+          <div className="coverflow-wrap" style={{...st.cfStage, height: isMobile ? '300px' : '460px'}}>
             {SLIDES.map((img, i) => {
               const total = SLIDES.length;
               let offset = i - slide;
@@ -278,11 +337,14 @@ export default function Vitrine() {
               if (offset < -Math.floor(total / 2)) offset += total;
               const isCenter = offset === 0;
               const absOff   = Math.abs(offset);
-              const side     = offset < 0 ? -1 : 1;
-              // Mostra apenas 3 cards: centro + 1 de cada lado
-              if (absOff > 1) return null;
-              const translateX = offset * 280;
-              const rotateY    = 0;
+              // No mobile mostra apenas o card central
+              if (isMobile && absOff > 0) return null;
+              // No desktop mostra centro + 1 de cada lado
+              if (!isMobile && absOff > 1) return null;
+
+              const cardW      = isMobile ? 240 : 330;
+              const cardH      = isMobile ? 290 : 450;
+              const translateX = isMobile ? 0 : offset * 280;
               const scale      = isCenter ? 1 : 0.78;
               const opacity    = isCenter ? 1 : 0.60;
               const zIdx       = isCenter ? 10 : 5;
@@ -294,14 +356,14 @@ export default function Vitrine() {
                   onClick={() => !isCenter && goToSlide(i)}
                   style={{
                     position: 'absolute',
-                    width: 330,
-                    height: 450,
+                    width: cardW,
+                    height: cardH,
                     top: '50%',
                     left: '50%',
-                    marginLeft: -165,
-                    marginTop: -225,
+                    marginLeft: -cardW / 2,
+                    marginTop: -cardH / 2,
                     zIndex: zIdx,
-                    transform: `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`,
+                    transform: `translateX(${translateX}px) translateZ(${translateZ}px) scale(${scale})`,
                     opacity,
                     boxShadow: isCenter
                       ? '0 32px 80px rgba(0,0,0,0.72)'
@@ -336,7 +398,7 @@ export default function Vitrine() {
                     }}>{img.badge}</span>
                     <h3 style={{
                       fontFamily: "'Cormorant Garamond', serif",
-                      fontSize: isCenter ? '1.45rem' : '1.1rem',
+                      fontSize: isMobile ? '1.15rem' : (isCenter ? '1.45rem' : '1.1rem'),
                       fontWeight: 700,
                       color: '#F5F0E8',
                       lineHeight: 1.2,
@@ -344,7 +406,7 @@ export default function Vitrine() {
                       transition: 'font-size 0.4s',
                     }}>{img.alt}</h3>
                     <p style={{
-                      fontSize: '0.7rem',
+                      fontSize: isMobile ? '0.65rem' : '0.7rem',
                       color: 'rgba(245,240,232,0.6)',
                       lineHeight: 1.5,
                       marginBottom: isCenter ? '1rem' : '0',
@@ -395,24 +457,27 @@ export default function Vitrine() {
       </section>
 
       {/* ── SOBRE ── */}
-      <section style={st.aboutSection} id="sobre">
-        <div style={st.aboutVisual}>
+      <section style={st.aboutSection} id="sobre" className="vitrine-about">
+        <div style={{...st.aboutVisual, ...(isMobile ? {minHeight:'auto', maxHeight:'none', height:'56vw', padding:0} : {})}} className="vitrine-about-visual">
           <video
             src={aboutGifUrl}
             autoPlay
             muted
             loop
             playsInline
-            style={st.aboutAnimatedGif}
+            style={{
+              ...st.aboutAnimatedGif,
+              ...(isMobile ? {height:'100%', width:'100%', maxHeight:'none', objectFit:'contain', background:'#2D5A3D'} : {}),
+            }}
           />
         </div>
-        <div style={st.aboutText}>
+        <div style={st.aboutText} className="vitrine-about-text">
           <span style={st.sectionLabel}>Nossa história</span>
           <h2 style={st.sectionTitle}>
             Nascemos do <em style={{ fontStyle:'italic', color:'#A07840' }}>amor</em><br />pela natureza
           </h2>
           <p style={st.aboutPara}>
-            A Pura Essência surgiu em 2018 de um desejo simples: oferecer produtos realmente naturais,
+            A Pura Essência surgiu em 2018 de um desire simples: oferecer produtos realmente naturais,
             sem greenwashing, sem promessas vazias. Somos uma empresa familiar do interior de Minas Gerais.
           </p>
           <p style={st.aboutPara}>
@@ -420,12 +485,37 @@ export default function Vitrine() {
             rastreáveis, respeito ao meio ambiente e aos produtores locais.
           </p>
           <div style={st.statsAbout}>
-            {[['6+','Anos de mercado'],['48','Fornecedores locais'],['12k','Clientes felizes']].map(([n,l]) => (
-              <div key={n}>
-                <div style={st.statAboutNum}>{n}</div>
-                <div style={st.statAboutLabel}>{l}</div>
+            {isMobile ? (
+              /* Layout triangular no mobile: 2 em cima, 1 centralizado embaixo */
+              <div style={{width:'100%'}}>
+                <div style={{display:'flex', justifyContent:'center', alignItems:'flex-start', gap:0}}>
+                  {[['6+','Anos de mercado'],['48','Fornecedores locais']].map(([n,l], i) => (
+                    <>
+                      <div key={n} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:'4px',padding:'10px 20px'}}>
+                        <div style={{...st.statAboutNum, fontSize:'2.2rem'}}>{n}</div>
+                        <div style={{...st.statAboutLabel, textAlign:'center', fontSize:'0.62rem'}}>{l}</div>
+                      </div>
+                      {i === 0 && <div key="div" style={{width:'1px', height:'52px', background:'rgba(160,120,64,0.25)', alignSelf:'center', margin:'0 4px'}} />}
+                    </>
+                  ))}
+                </div>
+                {/* Linha conectora vertical */}
+                <div style={{display:'flex',flexDirection:'column',alignItems:'center'}}>
+                  <div style={{width:'1px', height:'22px', background:'rgba(160,120,64,0.25)'}} />
+                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:'4px',padding:'6px 20px 10px'}}>
+                    <div style={{...st.statAboutNum, fontSize:'2.2rem'}}>12k</div>
+                    <div style={{...st.statAboutLabel, textAlign:'center', fontSize:'0.62rem'}}>Clientes felizes</div>
+                  </div>
+                </div>
               </div>
-            ))}
+            ) : (
+              [['6+','Anos de mercado'],['48','Fornecedores locais'],['12k','Clientes felizes']].map(([n,l]) => (
+                <div key={n}>
+                  <div style={st.statAboutNum}>{n}</div>
+                  <div style={st.statAboutLabel}>{l}</div>
+                </div>
+              ))
+            )}
           </div>
           
           {/* Caixa Expansível de Redes Sociais */}
@@ -465,7 +555,7 @@ export default function Vitrine() {
       </section>
 
       {/* ── ÁREA DO CLIENTE ── */}
-      <section style={st.userSection} id="conta">
+      <section style={st.userSection} id="conta" className="vitrine-user-section">
         <div style={st.sectionHeader}>
           <span style={st.sectionLabel}>Área do Cliente</span>
           <h2 style={st.sectionTitle}>
@@ -496,7 +586,7 @@ export default function Vitrine() {
       </section>
 
       {/* ── CTA FINAL ── */}
-      <section style={st.ctaSection}>
+      <section style={st.ctaSection} className="vitrine-cta-section">
         <h2 style={st.ctaTitle}>Qualidade Garantida</h2>
         <p style={st.ctaDesc}>
           Todos os nossos produtos são certificados e selecionados com rigor para garantir sua qualidade e pureza.
@@ -513,6 +603,13 @@ export default function Vitrine() {
 function ProductCard({ produto, onClick, onAdd }) {
   const temEstoque = produto.quantidade > 0;
   const [added, setAdded] = useState(false);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth <= 640);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 640);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   function handleAdd(e) {
     e.stopPropagation();
@@ -530,7 +627,7 @@ function ProductCard({ produto, onClick, onAdd }) {
       onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.07)'; }}
     >
       {!temEstoque && <div style={st.productBadge}>Indisponível</div>}
-      <div style={st.productImg}>
+      <div style={{...st.productImg, ...(isMobile ? {height:'130px'} : {})}}>
         <img
           src={produto.imagem || 'https://via.placeholder.com/300x220/F5F0E8/1C3A2A?text=Produto'}
           alt={produto.nome}
@@ -539,15 +636,16 @@ function ProductCard({ produto, onClick, onAdd }) {
         />
         <div style={st.imgShimmer} />
       </div>
-      <div style={st.productInfo}>
-        <div style={st.productCategory}>{produto.categoria_nome || 'Natural'}</div>
-        <div style={st.productName}>{produto.nome}</div>
-        <div style={st.productDesc}>{(produto.descricao || '').slice(0, 65)}{produto.descricao?.length > 65 ? '…' : ''}</div>
+      <div style={{...st.productInfo, ...(isMobile ? {padding:'0.65rem 0.7rem 0.8rem'} : {})}}>
+        <div style={{...st.productCategory, ...(isMobile ? {fontSize:'0.58rem'} : {})}}>{produto.categoria_nome || 'Natural'}</div>
+        <div style={{...st.productName, ...(isMobile ? {fontSize:'0.8rem', minHeight:'2rem'} : {})}}>{produto.nome}</div>
+        {!isMobile && <div style={st.productDesc}>{(produto.descricao || '').slice(0, 65)}{produto.descricao?.length > 65 ? '…' : ''}</div>}
         <div style={st.productFooter}>
-          <span style={st.productPrice}>R$ {Number(produto.preco).toFixed(2).replace('.', ',')}</span>
+          <span style={{...st.productPrice, ...(isMobile ? {fontSize:'0.95rem'} : {})}}>R$ {Number(produto.preco).toFixed(2).replace('.', ',')}</span>
           <button
             style={{
               ...st.addBtn,
+              ...(isMobile ? {width:'30px', height:'30px', minWidth:'30px', minHeight:'30px', fontSize:'1.15rem', borderRadius:'50%', padding:0} : {}),
               ...(added ? st.addBtnAdded : {}),
               ...(!temEstoque ? st.addBtnDisabled : {}),
             }}
@@ -764,8 +862,9 @@ const st = {
   },
   addBtn: {
     background: '#1C3A2A', color: '#F5F0E8', border: 'none',
-    width: '34px', height: '34px', borderRadius: '50%', cursor: 'pointer',
-    fontSize: '1.3rem', lineHeight: 1,
+    width: '34px', height: '34px', minWidth: '34px', minHeight: '34px',
+    borderRadius: '50%', cursor: 'pointer',
+    fontSize: '1.3rem', lineHeight: 1, padding: 0,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     transition: 'background 0.2s, transform 0.15s',
     fontWeight: 700, flexShrink: 0,
@@ -829,7 +928,7 @@ const st = {
   },
   cfProgressTrack: {
     width: '160px',
-    height: '2px',
+    height: '4px',
     background: 'rgba(245,240,232,0.15)',
     borderRadius: '2px',
     overflow: 'hidden',

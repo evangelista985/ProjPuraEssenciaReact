@@ -76,13 +76,14 @@ export default function Produtos() {
         </header>
 
         {/* Filtros */}
-        <div style={st.filtrosContainer}>
-          <div style={st.tabsCategorias}>
+        <div style={st.filtrosContainer} className="produtos-filtros-container">
+          <div style={st.tabsCategorias} className="mobile-cat-scroll">
             {categorias.map(cat => (
               <button
                 key={cat.key}
                 onClick={() => setFiltroCategoria(cat.key)}
                 style={{ ...st.tabBtn, ...(filtroCategoria === cat.key ? st.tabBtnActive : {}) }}
+                className={filtroCategoria === cat.key ? 'active-cat' : ''}
               >
                 {cat.label}
               </button>
@@ -98,6 +99,7 @@ export default function Produtos() {
               value={filtroNome}
               onChange={e => setFiltroNome(e.target.value)}
               style={st.inputBusca}
+              className="produtos-busca-input"
             />
             {filtroNome && (
               <button onClick={() => setFiltroNome('')} style={st.limparBusca}>✕</button>
@@ -127,7 +129,7 @@ export default function Produtos() {
                 </button>
               </div>
             ) : (
-              <div style={st.grid}>
+              <div className="grid-produtos">
                 {produtosFiltrados.map(p => (
                   <CardProduto
                     key={p.id}
@@ -214,10 +216,10 @@ const st = {
   page: {
     backgroundColor: '#FCFBFA',
     minHeight: '100vh',
-    paddingTop: '100px',
+    paddingTop: 'clamp(68px,9vw,84px)',
     paddingBottom: '60px',
   },
-  container: { maxWidth: 1240, margin: '0 auto', padding: '0 20px' },
+  container: { maxWidth: 1240, margin: '0 auto', padding: '0 clamp(12px,4vw,20px)' },
   header: { textAlign: 'center', marginBottom: '48px' },
   headerLabel: {
     display: 'inline-block', fontSize: '0.68rem', letterSpacing: '0.2em',
@@ -235,7 +237,8 @@ const st = {
   },
   tabsCategorias: {
     display: 'flex', gap: '6px', background: '#F0EFEA',
-    padding: '4px', borderRadius: '30px', flexWrap: 'wrap',
+    padding: '6px', borderRadius: '30px', flexWrap: 'wrap',
+    justifyContent: 'center',
   },
   tabBtn: {
     padding: '8px 22px', borderRadius: '25px', fontSize: '0.85rem',
@@ -247,10 +250,10 @@ const st = {
     background: '#1C3A2A', color: '#FFF',
     boxShadow: '0 4px 12px rgba(28,58,42,0.2)',
   },
-  buscaWrapper: { position: 'relative', flex: '1 1 240px', maxWidth: '380px' },
+  buscaWrapper: { position: 'relative', flex: '1 1 240px', maxWidth: '380px', display: 'flex', alignItems: 'center' },
   buscaIcon: {
     position: 'absolute', left: 14, top: '50%',
-    transform: 'translateY(-50%)', color: '#aaa', pointerEvents: 'none',
+    transform: 'translateY(-50%)', color: '#aaa', pointerEvents: 'none', display: 'flex', alignItems: 'center',
   },
   inputBusca: {
     width: '100%', padding: '11px 38px 11px 42px',
@@ -274,6 +277,7 @@ const st = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))',
     gap: '24px',
+    /* Responsividade mobile via classe grid-produtos no CSS global */
   },
   card: {
     background: '#FFF', borderRadius: '16px', overflow: 'hidden',
@@ -329,7 +333,8 @@ const st = {
   cardPreco: { fontSize: '1.2rem', fontWeight: 700, color: '#1C3A2A' },
   addBtn: {
     background: '#1C3A2A', color: '#FFF',
-    width: '36px', height: '36px', borderRadius: '50%',
+    width: '36px', height: '36px', minWidth: '36px', minHeight: '36px',
+    borderRadius: '50%', padding: 0,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     border: 'none', cursor: 'pointer',
     fontSize: '1.4rem', fontWeight: 700, lineHeight: 1,

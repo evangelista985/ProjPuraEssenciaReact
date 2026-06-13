@@ -23,7 +23,7 @@ export default function Footer() {
       <div style={s.topBar} />
 
       <div style={s.inner}>
-        <div style={s.grid}>
+        <div style={s.grid} className="footer-grid">
 
           {/* Marca */}
           <div style={s.colBrand}>

@@ -159,6 +159,55 @@ router.get('/:id', authAdmin, async (req, res) => {
   }
 });
 
+// PUT /api/pedidos/:id/cancelar (cliente cancela o próprio pedido)
+router.put('/:id/cancelar', authCliente, async (req, res) => {
+  const pedidoId = req.params.id;
+  const conn = await db.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // Busca o pedido e verifica se pertence ao cliente
+    const [pedidos] = await conn.query(
+      'SELECT * FROM pedidos WHERE id = $1 AND cliente_id = $2',
+      [pedidoId, req.cliente.id]
+    );
+    if (pedidos.length === 0)
+      return res.status(404).json({ erro: 'Pedido não encontrado' });
+
+    const pedido = pedidos[0];
+
+    // Só permite cancelar se estiver pendente ou pago (não enviado/entregue)
+    if (!['pendente', 'pago'].includes(pedido.status))
+      return res.status(400).json({ erro: 'Este pedido não pode ser cancelado pois já foi enviado ou entregue.' });
+
+    // Restaura o estoque dos itens
+    const [itens] = await conn.query(
+      'SELECT produto_id, quantidade FROM pedido_itens WHERE pedido_id = $1',
+      [pedidoId]
+    );
+    for (const item of itens) {
+      await conn.query(
+        'UPDATE estoque SET quantidade = quantidade + $1 WHERE produto_id = $2',
+        [item.quantidade, item.produto_id]
+      );
+    }
+
+    // Atualiza o status do pedido para cancelado
+    await conn.query(
+      'UPDATE pedidos SET status = $1 WHERE id = $2',
+      ['cancelado', pedidoId]
+    );
+
+    await conn.commit();
+    res.json({ mensagem: 'Pedido cancelado com sucesso.' });
+  } catch (err) {
+    await conn.rollback();
+    res.status(500).json({ erro: err.message || 'Erro ao cancelar pedido' });
+  } finally {
+    conn.release();
+  }
+});
+
 // PUT /api/pedidos/:id/status
 router.put('/:id/status', authAdmin, async (req, res) => {
   const { status } = req.body;

@@ -78,7 +78,7 @@ export default function CheckoutPagamento() {
 
   return (
     <>
-    <div className="container" style={{ padding: '30px 20px', maxWidth: 900 }}>
+    <div className="container" style={{ paddingTop: 'clamp(68px,9vw,84px)', paddingBottom: 40, paddingLeft: 'clamp(12px,4vw,20px)', paddingRight: 'clamp(12px,4vw,20px)', maxWidth: 900, margin: '0 auto' }}>
 
       {/* Stepper */}
       <div style={st.stepper}>

@@ -206,7 +206,7 @@ export default function AdminProdutos() {
       )}
 
       {/* Tabela */}
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+      <div className="card table-scroll" style={{ padding: 0 }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '2px solid #eee', background: '#f8faf5' }}>

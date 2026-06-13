@@ -55,8 +55,11 @@ function RastreioCliente({ status }) {
 }
 
 export default function MeusPedidos() {
-  const [pedidos,   setPedidos]   = useState([]);
-  const [expandido, setExpandido] = useState(null);
+  const [pedidos,      setPedidos]      = useState([]);
+  const [expandido,    setExpandido]    = useState(null);
+  const [cancelando,   setCancelando]   = useState(null);
+  const [confirmando,  setConfirmando]  = useState(null);
+  const [mensagem,     setMensagem]     = useState(null);
   const { state } = useLocation();
   const nav = useNavigate();
 
@@ -68,10 +71,70 @@ export default function MeusPedidos() {
     setExpandido(expandido === id ? null : id);
   }
 
+  async function cancelarPedido(id) {
+    setCancelando(id);
+    try {
+      await api.put(`/pedidos/${id}/cancelar`);
+      setPedidos(prev => prev.map(p => p.id === id ? { ...p, status: 'cancelado' } : p));
+      setMensagem({ tipo: 'sucesso', texto: `Pedido #${id} cancelado com sucesso.` });
+    } catch (err) {
+      setMensagem({ tipo: 'erro', texto: err.response?.data?.erro || 'Erro ao cancelar pedido.' });
+    } finally {
+      setCancelando(null);
+      setConfirmando(null);
+      setTimeout(() => setMensagem(null), 4000);
+    }
+  }
+
   return (
-    <div className="container" style={{ padding: '30px 20px' }}>
+    <div className="container" style={{ paddingTop: 'clamp(68px,9vw,84px)', paddingBottom: 40, paddingLeft: 'clamp(12px,4vw,20px)', paddingRight: 'clamp(12px,4vw,20px)' }}>
       <h1 style={{ marginBottom: 24 }}>Meus Pedidos</h1>
 
+      {mensagem && (
+        <div style={{
+          background: mensagem.tipo === 'sucesso' ? '#d4edda' : '#f8d7da',
+          border: `1px solid ${mensagem.tipo === 'sucesso' ? '#c3e6cb' : '#f5c6cb'}`,
+          borderRadius: 8, padding: '14px 20px', marginBottom: 20,
+          color: mensagem.tipo === 'sucesso' ? '#155724' : '#721c24', fontWeight: 600
+        }}>
+          {mensagem.tipo === 'sucesso' ? '✅' : '❌'} {mensagem.texto}
+        </div>
+      )}
+
+      {/* Modal de confirmação de cancelamento */}
+      {confirmando && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000, padding: 20,
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: 16, padding: 28, maxWidth: 380, width: '100%',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.18)', textAlign: 'center',
+          }}>
+            <p style={{ fontSize: 40, marginBottom: 8 }}>⚠️</p>
+            <p style={{ fontWeight: 700, fontSize: 17, marginBottom: 8 }}>Cancelar pedido #{confirmando}?</p>
+            <p style={{ color: '#666', fontSize: 14, marginBottom: 24 }}>
+              Esta ação não pode ser desfeita. O estoque será restaurado automaticamente.
+            </p>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+              <button
+                onClick={() => setConfirmando(null)}
+                style={{ padding: '10px 24px', borderRadius: 8, border: '1px solid #ccc', background: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 14 }}
+              >
+                Voltar
+              </button>
+              <button
+                onClick={() => cancelarPedido(confirmando)}
+                disabled={cancelando === confirmando}
+                style={{ padding: '10px 24px', borderRadius: 8, border: 'none', background: '#c0392b', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}
+              >
+                {cancelando === confirmando ? 'Cancelando...' : 'Sim, cancelar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {state?.sucesso && (
         <div style={{ background: '#d4edda', border: '1px solid #c3e6cb', borderRadius: 8, padding: '14px 20px', marginBottom: 20, color: '#155724', fontWeight: 600 }}>
           ✅ {state.sucesso}
@@ -102,12 +165,25 @@ export default function MeusPedidos() {
                 <p style={{ fontWeight: 800, fontSize: 18, color: '#3A5D3E' }}>
                   R$ {Number(p.total_final).toFixed(2).replace('.', ',')}
                 </p>
-                <button
-                  onClick={() => toggleExpandir(p.id)}
-                  style={{ marginTop: 8, background: 'none', border: '1px solid #3A5D3E', color: '#3A5D3E', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontSize: 13 }}
-                >
-                  {expandido === p.id ? '▲ Ocultar' : '📍 Ver situação'}
-                </button>
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8, flexWrap: 'wrap' }}>
+                  {['pendente', 'pago'].includes(p.status) && (
+                    <button
+                      onClick={() => setConfirmando(p.id)}
+                      style={{
+                        background: 'none', border: '1px solid #c0392b', color: '#c0392b',
+                        borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, fontWeight: 600,
+                      }}
+                    >
+                      ✕ Cancelar
+                    </button>
+                  )}
+                  <button
+                    onClick={() => toggleExpandir(p.id)}
+                    style={{ background: 'none', border: '1px solid #3A5D3E', color: '#3A5D3E', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontSize: 13 }}
+                  >
+                    {expandido === p.id ? '▲ Ocultar' : '📍 Ver situação'}
+                  </button>
+                </div>
               </div>
             </div>
 
