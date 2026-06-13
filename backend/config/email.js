@@ -5,7 +5,10 @@
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
+  family: 4, // força IPv4 (Render não tem rota IPv6 para o Gmail)
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS, // Senha de app do Google (não a senha normal)
