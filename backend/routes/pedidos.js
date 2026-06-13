@@ -33,6 +33,11 @@ router.post('/', authCliente, async (req, res) => {
       total += produto[0].preco * item.quantidade;
     }
 
+    // Status do pedido conforme a forma de pagamento:
+    // - cartão -> pago imediatamente
+    // - pix/boleto -> pendente, aguardando confirmação de pagamento
+    const status = forma_pagamento === 'cartao' ? 'pago' : 'pendente';
+
     const valorDesconto = (total * desconto) / 100;
     const frete_valor   = frete?.valor  || 0;
     const frete_servico = frete?.nome   || null;
@@ -56,7 +61,7 @@ router.post('/', authCliente, async (req, res) => {
          bairro_entrega, cidade_entrega, estado_entrega)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
        RETURNING id`,
-      [req.cliente.id, total, valorDesconto, total_final, forma_pagamento, cupom_id, 'pago',
+      [req.cliente.id, total, valorDesconto, total_final, forma_pagamento, cupom_id, status,
        frete_valor, frete_servico, frete_prazo,
        cep_entrega, endereco_entrega, numero_entrega, complemento_entrega,
        bairro_entrega, cidade_entrega, estado_entrega]
@@ -85,7 +90,7 @@ router.post('/', authCliente, async (req, res) => {
     enviarEmailConfirmacaoPedido({
       cliente: clienteRows[0],
       pedido: {
-        id: pedido_id, status: 'pago', forma_pagamento,
+        id: pedido_id, status, forma_pagamento,
         total, desconto: valorDesconto, frete_valor, frete_servico, frete_prazo, total_final,
         endereco_entrega, numero_entrega, bairro_entrega, cidade_entrega, estado_entrega, cep_entrega,
       },
