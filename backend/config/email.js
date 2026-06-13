@@ -3,6 +3,11 @@
 // Instale com: npm install nodemailer
 
 const nodemailer = require('nodemailer');
+const dns = require('dns');
+
+// Render não possui rota IPv6 de saída — força resolução DNS para IPv4
+// (corrige ENETUNREACH ao conectar no SMTP do Gmail)
+dns.setDefaultResultOrder('ipv4first');
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
