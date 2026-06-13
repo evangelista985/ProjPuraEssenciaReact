@@ -1,49 +1,29 @@
 // backend/config/email.js
-// Serviço de envio de e-mails usando Nodemailer + Gmail
-// Instale com: npm install nodemailer
+// Serviço de envio de e-mails usando a API HTTP da Brevo (antigo Sendinblue)
+// Instale com: npm install sib-api-v3-sdk
+//
+// Por que Brevo em vez de Nodemailer/SMTP?
+// O Render bloqueia/restringe portas SMTP de saída (465/587), causando
+// ENETUNREACH / Connection timeout. A API da Brevo usa HTTPS (porta 443),
+// que sempre funciona.
+//
+// Configuração necessária no Render (Environment):
+//   BREVO_API_KEY = xkeysib-... (gerada em Settings > SMTP & API > API Keys)
 
-const nodemailer = require('nodemailer');
-const dns = require('dns');
+const SibApiV3Sdk = require('sib-api-v3-sdk');
 
-// Render não possui rota IPv6 de saída — força resolução DNS para IPv4
-// (corrige ENETUNREACH ao conectar no SMTP do Gmail)
-dns.setDefaultResultOrder('ipv4first');
+const defaultClient = SibApiV3Sdk.ApiClient.instance;
+const apiKeyAuth = defaultClient.authentications['api-key'];
+apiKeyAuth.apiKey = process.env.BREVO_API_KEY;
 
-// Cria o transporter resolvendo manualmente o IPv4 do smtp.gmail.com,
-// pois o ENETUNREACH persiste mesmo com ipv4first em alguns ambientes do Render.
-let transporterPromise = null;
+const transactionalApi = new SibApiV3Sdk.TransactionalEmailsApi();
 
-async function getTransporter() {
-  if (transporterPromise) return transporterPromise;
+const REMETENTE = {
+  name: 'Pura Essência',
+  email: process.env.EMAIL_FROM || 'puraessenciaetec@gmail.com',
+};
 
-  transporterPromise = (async () => {
-    let host = 'smtp.gmail.com';
-    try {
-      const { address } = await dns.promises.lookup('smtp.gmail.com', { family: 4 });
-      host = address;
-    } catch (err) {
-      console.error('⚠️  Falha ao resolver IPv4 do smtp.gmail.com, usando hostname padrão:', err.message);
-    }
-
-    return nodemailer.createTransport({
-      host,
-      port: 465,
-      secure: true,
-      family: 4,
-      tls: {
-        servername: 'smtp.gmail.com', // necessário para validar o certificado TLS
-      },
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS, // Senha de app do Google (não a senha normal)
-      },
-    });
-  })();
-
-  return transporterPromise;
-}
-
-// ── Template HTML do e-mail de confirmação ─────────────────
+// ── Template HTML do e-mail de confirmação de pedido ───────
 function templateConfirmacaoPedido({ cliente, pedido, itens }) {
   const linhasItens = itens.map(i => `
     <tr>
@@ -165,29 +145,37 @@ function templateConfirmacaoPedido({ cliente, pedido, itens }) {
 </html>`;
 }
 
-// ── Função principal de envio ──────────────────────────────
+// ── Função genérica de envio via Brevo ─────────────────────
+async function enviarEmail({ to, nome, subject, html }) {
+  const email = new SibApiV3Sdk.SendSmtpEmail();
+  email.sender = REMETENTE;
+  email.to = [{ email: to, name: nome }];
+  email.subject = subject;
+  email.htmlContent = html;
+
+  try {
+    await transactionalApi.sendTransacEmail(email);
+    console.log(`📧 E-mail enviado para ${to} — "${subject}"`);
+    return true;
+  } catch (err) {
+    const detalhe = err.response?.text || err.message;
+    console.error('⚠️  Falha ao enviar e-mail via Brevo:', detalhe);
+    return false;
+  }
+}
+
+// ── Função principal de envio: confirmação de pedido ───────
 async function enviarEmailConfirmacaoPedido({ cliente, pedido, itens }) {
   const subject = pedido.status === 'pendente'
     ? `⏳ Pedido #${pedido.id} recebido — aguardando pagamento`
     : `✅ Pedido #${pedido.id} confirmado — Pura Essência`;
 
-  try {
-    const transporter = await getTransporter();
-    await transporter.sendMail({
-      from:    process.env.EMAIL_FROM || 'Pura Essência <noreply@puraessencia.com.br>',
-      to:      cliente.email,
-      subject,
-      html:    templateConfirmacaoPedido({ cliente, pedido, itens }),
-    });
-    console.log(`📧 E-mail de confirmação enviado para ${cliente.email} (Pedido #${pedido.id})`);
-    return true;
-  } catch (err) {
-    // Reseta o transporter cacheado (o IP do Gmail pode mudar)
-    transporterPromise = null;
-    // Não quebra o fluxo do pedido se o e-mail falhar
-    console.error('⚠️  Falha ao enviar e-mail de confirmação:', err.message);
-    return false;
-  }
+  return enviarEmail({
+    to: cliente.email,
+    nome: cliente.nome,
+    subject,
+    html: templateConfirmacaoPedido({ cliente, pedido, itens }),
+  });
 }
 
-module.exports = { enviarEmailConfirmacaoPedido };
+module.exports = { enviarEmailConfirmacaoPedido, enviarEmail };
