@@ -63,7 +63,7 @@ function AppRoutes() {
         <Route path="/organicos"  element={<LayoutPublico><Organicos /></LayoutPublico>} />
         <Route path="/temperos"   element={<LayoutPublico><Temperos /></LayoutPublico>} />
         <Route path="/cosmeticos" element={<LayoutPublico><Cosmeticos /></LayoutPublico>} />
-        <Route path="/contato" element={<LayoutPublico><Contato /></LayoutPublico>} />
+        <Route path="/contatos" element={<LayoutPublico><Contato /></LayoutPublico>} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
