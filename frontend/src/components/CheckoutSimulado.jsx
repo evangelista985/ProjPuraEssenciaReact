@@ -140,6 +140,7 @@ export default function CheckoutSimulado({ onFinalizar, loading, hideButton = fa
           style={{ ...st.cardOuter, cursor: 'pointer' }}
           onClick={() => setVirado(v => !v)}
           title="Clique no cartão para ver o verso"
+          className="card-flip-outer"
         >
           <div style={{ ...st.cardInner, transform: virado ? 'rotateY(180deg)' : 'rotateY(0deg)' }}>
 
@@ -276,14 +277,17 @@ const st = {
     fontSize: 18, marginBottom: 20, color: '#3A5D3E',
     textAlign: 'center', fontWeight: 700
   },
-  // Flip card — tamanho fixo proporcional a um cartão real (ratio 1.586:1)
+  // Flip card — responsivo para mobile (ratio 1.586:1)
   cardOuter: {
-    perspective: 1000, marginBottom: 6,
-    width: 340, height: 214,
+    perspective: 1000,
+    width: '100%',
+    maxWidth: 340,
     margin: '0 auto 6px auto',
+    position: 'relative',
+    paddingTop: 'min(63%, 214px)', // 214/340 ≈ 63% mantém proporção de cartão
   },
   cardInner: {
-    position: 'relative', width: '100%', height: '100%',
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     transition: 'transform 0.6s', transformStyle: 'preserve-3d'
   },
   cardFace: {
@@ -314,7 +318,7 @@ const st = {
     overflow: 'hidden'
   },
   cardNumber: {
-    fontSize: 20, letterSpacing: 3,
+    fontSize: 'clamp(14px, 4vw, 20px)', letterSpacing: 3,
     fontFamily: 'monospace', textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
   },
   cardLabel: { fontSize: 9, textTransform: 'uppercase', opacity: 0.7, marginBottom: 2 },
