@@ -57,8 +57,8 @@ function templateConfirmacaoPedido({ cliente, pedido, itens }) {
 
         <!-- Cabeçalho -->
         <tr><td style="background:#3A5D3E;padding:32px 40px;text-align:center">
-          <p style="margin:0;color:#D4AF37;font-size:26px;font-weight:700;letter-spacing:1px">🌿 PURA ESSÊNCIA</p>
-          <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px">Produtos Naturais e Orgânicos</p>
+          <img src="https://proj-pura-essencia-react.vercel.app/img/logo_escrito.png" alt="Pura Essência" width="240" style="max-width:240px;height:auto;display:block;margin:0 auto" />
+          <p style="margin:12px 0 0;color:rgba(255,255,255,0.85);font-size:14px">Produtos Naturais e Orgânicos</p>
         </td></tr>
 
         <!-- Mensagem principal -->
