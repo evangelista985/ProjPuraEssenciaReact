@@ -16,7 +16,7 @@ const REDES = [
   { href: 'https://x.com/PuraEssenc91630',              icon: '𝕏',  label: 'Twitter / X' },
 ];
 
-const FALE_CONOSCO = { to: '/contato', icon: '✉', label: 'Fale Conosco' };
+const FALE_CONOSCO = { to: '/contatos', icon: '✉', label: 'Fale Conosco' };
 
 export default function Footer() {
   return (
