@@ -126,6 +126,8 @@ input, select { min-height: 44px; }
 .admin-sidebar nav a:hover,
 .admin-sidebar nav a.active { background: var(--verde-escuro); color: var(--dourado); }
 .admin-main { flex: 1; padding: 32px; background: var(--cinza); overflow: auto; }
+/* Header mobile do admin — oculto no desktop */
+.admin-mobile-header { display: none; }
 
 /* ── Navbar Mobile ── */
 .navbar-mobile-overlay {
@@ -323,6 +325,21 @@ div:hover > .card-overlay { opacity: 1 !important; }
   /* Navbar */
   .navbar-hamburger { display: flex !important; }
 
+  /* Admin mobile header */
+  .admin-mobile-header {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 10px 16px;
+    margin: -16px -16px 16px -16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  }
+
   /* Admin sidebar slide-in */
   .admin-sidebar {
     position: fixed; left: -240px; top: 0; bottom: 0;
@@ -330,7 +347,11 @@ div:hover > .card-overlay { opacity: 1 !important; }
     display: flex !important;
   }
   .admin-sidebar.open { left: 0; }
+  .admin-sidebar-close { display: block !important; }
   .admin-main { padding: 16px; width: 100%; }
+
+  /* Dashboard grids */
+  .admin-grid3 { grid-template-columns: 1fr !important; }
 
   /* Grid produtos */
   .grid-produtos {

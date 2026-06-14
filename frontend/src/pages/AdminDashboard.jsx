@@ -43,7 +43,7 @@ export default function Dashboard() {
         <Card titulo="Ticket Médio"     valor={`R$ ${Number(totais.ticket_medio).toFixed(2).replace('.', ',')}`}       icone="📈" cor="#2c6fa8" />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginTop: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24, marginTop: 24 }}>
 
         {/* Gráfico de Vendas */}
         <div className="card">
@@ -89,12 +89,13 @@ export default function Dashboard() {
       <div className="card" style={{ marginTop: 24 }}>
         <h2 style={{ fontSize: 20, marginBottom: 20 }}>Top 5 Produtos Mais Vendidos</h2>
         {topProdutos.length === 0 ? <p style={{ color: '#888' }}>Sem dados.</p> : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 320 }}>
             <thead>
               <tr style={{ borderBottom: '2px solid #eee' }}>
                 <th style={th}>#</th>
                 <th style={th}>Produto</th>
-                <th style={th}>Qtd Vendida</th>
+                <th style={th}>Qtd</th>
                 <th style={th}>Receita</th>
               </tr>
             </thead>
@@ -109,6 +110,7 @@ export default function Dashboard() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>
@@ -129,6 +131,6 @@ function Card({ titulo, valor, icone, cor }) {
   );
 }
 
-const s  = { grid3: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 } };
+const s  = { grid3: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 20 } };
 const th = { padding: '10px 12px', textAlign: 'left', fontSize: 13, color: '#888', fontWeight: 600 };
 const td = { padding: '10px 12px', fontSize: 14 };

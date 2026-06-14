@@ -47,6 +47,7 @@ export function AdminLogin() {
 export function AdminLayout() {
   const { admin, logout } = useAuth();
   const nav = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (!admin) { nav('/admin/login'); return null; }
 
@@ -56,15 +57,32 @@ export function AdminLayout() {
 
   return (
     <div className="admin-wrapper">
-      <aside className="admin-sidebar">
-        <div className="admin-sidebar-logo"><img src="/img/logonova.png" alt="Pura Essência" style={{ height: '50px', objectFit: 'contain' }} /></div>
+      {/* Overlay para fechar sidebar no mobile */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1040 }}
+        />
+      )}
+
+      <aside className={`admin-sidebar${sidebarOpen ? ' open' : ''}`}>
+        <div className="admin-sidebar-logo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <img src="/img/logonova.png" alt="Pura Essência" style={{ height: '50px', objectFit: 'contain' }} />
+          {/* Botão fechar sidebar no mobile */}
+          <button
+            onClick={() => setSidebarOpen(false)}
+            style={{ background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer', padding: '0 4px', lineHeight: 1, display: 'none' }}
+            className="admin-sidebar-close"
+            aria-label="Fechar menu"
+          >✕</button>
+        </div>
         <div style={{ padding: '14px 20px', borderBottom: '1px solid #2E4D37' }}>
           <p style={{ fontSize: 13, color: '#c8d8c9' }}>{admin.nome}</p>
           <span className={`badge ${badgeCor[admin.nivel] || 'badge-cinza'}`} style={{ fontSize: 10, marginTop: 4, display: 'inline-block' }}>
             {admin.nivel}
           </span>
         </div>
-        <nav>
+        <nav onClick={() => setSidebarOpen(false)}>
           <NavLink to="/admin/dashboard">📊 Dashboard</NavLink>
           <NavLink to="/admin/produtos">🌿 Produtos</NavLink>
           <NavLink to="/admin/pedidos">📦 Pedidos</NavLink>
@@ -83,6 +101,16 @@ export function AdminLayout() {
         </div>
       </aside>
       <main className="admin-main">
+        {/* Header mobile com hamburguer */}
+        <div className="admin-mobile-header">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Abrir menu"
+            style={{ background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#3A5D3E', padding: '4px 8px', lineHeight: 1 }}
+          >☰</button>
+          <img src="/img/logonova.png" alt="Pura Essência" style={{ height: 36, objectFit: 'contain' }} />
+          <div style={{ width: 40 }} />
+        </div>
         <Outlet />
       </main>
     </div>
