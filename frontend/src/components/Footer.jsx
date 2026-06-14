@@ -16,6 +16,8 @@ const REDES = [
   { href: 'https://x.com/PuraEssenc91630',              icon: '𝕏',  label: 'Twitter / X' },
 ];
 
+const FALE_CONOSCO = { to: '/contato', icon: '✉', label: 'Fale Conosco' };
+
 export default function Footer() {
   return (
     <footer id="contato" style={s.footer}>
@@ -84,8 +86,8 @@ export default function Footer() {
             <h4 style={s.colTitulo}>Redes Sociais</h4>
             <div style={s.redesWrap}>
               {REDES.map(r => (
-                <a
-                  key={r.label}
+                
+                 <a key={r.label}
                   href={r.href}
                   target="_blank"
                   rel="noreferrer"
@@ -105,6 +107,24 @@ export default function Footer() {
                   <span style={s.redesLabel}>{r.label}</span>
                 </a>
               ))}
+
+              <Link
+                to={FALE_CONOSCO.to}
+                style={s.redesLink}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'rgba(200,169,110,0.15)';
+                  e.currentTarget.style.borderColor = 'rgba(200,169,110,0.45)';
+                  e.currentTarget.style.color = '#C8A96E';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                  e.currentTarget.style.color = '#9BB89D';
+                }}
+              >
+                <span style={s.redesIcone}>{FALE_CONOSCO.icon}</span>
+                <span style={s.redesLabel}>{FALE_CONOSCO.label}</span>
+              </Link>
             </div>
 
             <div style={s.pagamentos}>

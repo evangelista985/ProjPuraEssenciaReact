@@ -23,6 +23,7 @@ import Organicos from './pages/Organicos';
 import Temperos from './pages/Temperos';
 import Cosmeticos from './pages/Cosmeticos';
 import Produtos from './pages/Produtos';
+import Contato from './pages/Contato';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -62,6 +63,7 @@ function AppRoutes() {
         <Route path="/organicos"  element={<LayoutPublico><Organicos /></LayoutPublico>} />
         <Route path="/temperos"   element={<LayoutPublico><Temperos /></LayoutPublico>} />
         <Route path="/cosmeticos" element={<LayoutPublico><Cosmeticos /></LayoutPublico>} />
+        <Route path="/contato" element={<LayoutPublico><Contato /></LayoutPublico>} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />

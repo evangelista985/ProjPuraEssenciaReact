@@ -17,6 +17,7 @@ app.use('/api/pedidos',  require('./routes/pedidos'));
 app.use('/api/admin',    require('./routes/admin'));
 app.use('/api/correios', require('./routes/correios'));
 app.use('/api/frete',    require('./routes/frete'));
+app.use('/api/contato', require('./routes/contato'));
 const bannersRouter = require('./routes/banners');
 app.use('/api/banners', bannersRouter);
 
