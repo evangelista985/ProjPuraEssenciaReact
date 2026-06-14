@@ -81,7 +81,7 @@ router.post('/esqueci-senha', async (req, res) => {
       html: `
         <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;background:#f5f7f2;padding:32px;border-radius:12px">
           <div style="background:#3A5D3E;padding:24px;border-radius:8px;text-align:center;margin-bottom:24px">
-            <p style="margin:0;color:#D4AF37;font-size:22px;font-weight:700">🌿 PURA ESSÊNCIA</p>
+            <img src="https://proj-pura-essencia-react.vercel.app/img/logo_escrito.png" alt="Pura Essência" width="200" style="max-width:200px;height:auto;display:block;margin:0 auto" />
           </div>
           <h2 style="color:#3A5D3E;margin-bottom:8px">Redefinição de senha</h2>
           <p style="color:#555;margin-bottom:24px">Olá, <strong>${cliente.nome}</strong>! Use o código abaixo para redefinir sua senha.</p>

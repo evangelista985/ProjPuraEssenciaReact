@@ -12,8 +12,8 @@ function templateContatoEmpresa({ nome, email, mensagem }) {
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08)">
         <tr><td style="background:#3A5D3E;padding:28px 40px;text-align:center">
-          <p style="margin:0;color:#D4AF37;font-size:24px;font-weight:700">🌿 PURA ESSÊNCIA</p>
-          <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px">Nova mensagem de contato</p>
+          <img src="https://proj-pura-essencia-react.vercel.app/img/logo_escrito.png" alt="Pura Essência" width="220" style="max-width:220px;height:auto;display:block;margin:0 auto" />
+          <p style="margin:12px 0 0;color:rgba(255,255,255,0.85);font-size:14px">Nova mensagem de contato</p>
         </td></tr>
         <tr><td style="padding:32px 40px">
           <table width="100%" cellpadding="0" cellspacing="0">
@@ -43,8 +43,8 @@ function templateRespostaAutomatica({ nome }) {
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08)">
         <tr><td style="background:#3A5D3E;padding:32px 40px;text-align:center">
-          <p style="margin:0;color:#D4AF37;font-size:26px;font-weight:700;letter-spacing:1px">🌿 PURA ESSÊNCIA</p>
-          <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px">Produtos Naturais e Orgânicos</p>
+          <img src="https://proj-pura-essencia-react.vercel.app/img/logo_escrito.png" alt="Pura Essência" width="240" style="max-width:240px;height:auto;display:block;margin:0 auto" />
+          <p style="margin:12px 0 0;color:rgba(255,255,255,0.85);font-size:14px">Produtos Naturais e Orgânicos</p>
         </td></tr>
         <tr><td style="padding:36px 40px">
           <h1 style="margin:0 0 12px;font-size:22px;color:#3A5D3E">Recebemos sua mensagem!</h1>
