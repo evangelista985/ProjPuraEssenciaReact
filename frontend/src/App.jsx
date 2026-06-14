@@ -23,7 +23,7 @@ import Organicos from './pages/Organicos';
 import Temperos from './pages/Temperos';
 import Cosmeticos from './pages/Cosmeticos';
 import Produtos from './pages/Produtos';
-import Contato from './pages/Contato';
+import Contato from './pages/Contatos';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
