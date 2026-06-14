@@ -538,8 +538,7 @@ export default function Vitrine() {
                       <Link
                         key={idx}
                         to={link.url}
-                        style={{...st.socialLink, borderColor: link.color}}
-                        title={link.label}
+                        style={{...st.socialLink, borderColor: link.color, gridColumn: '1 / -1', justifySelf: 'center', maxWidth: '140px'}}                        title={link.label}
                       >
                         <span style={{fontSize: '1.5rem'}}>{link.icon}</span>
                         <span style={st.socialLinkLabel}>{link.label}</span>
