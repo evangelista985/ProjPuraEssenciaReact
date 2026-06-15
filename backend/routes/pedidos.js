@@ -1,285 +1,256 @@
-import { useState, useEffect } from 'react';
-import api from '../services/api';
-import { useAuth } from '../context/AuthContext';
+const express = require('express');
+const router  = express.Router();
+const db      = require('../config/db');
+const { authCliente, authAdmin } = require('../middleware/auth');
+const { enviarEmailConfirmacaoPedido } = require('../config/email');
 
-const labelOpcao = {
-  pendente: 'pendente', pago: 'preparação', enviado: 'transporte',
-  entregue: 'entregue', cancelado: 'cancelado', finalizado: 'finalizado',
-};
-const statusOpcoes = ['pendente','pago','enviado','entregue','cancelado','finalizado'];
-const statusCor    = {
-  pendente: 'badge-amarelo', pago: 'badge-azul', enviado: 'badge-azul',
-  entregue: 'badge-verde',   cancelado: 'badge-vermelho', finalizado: 'badge-azul',
-};
+// POST /api/pedidos
+router.post('/', authCliente, async (req, res) => {
+  const { itens, forma_pagamento, cupom_codigo, frete, endereco_entrega: endEntrega } = req.body;
+  if (!itens || itens.length === 0) return res.status(400).json({ erro: 'Carrinho vazio' });
+  if (!forma_pagamento) return res.status(400).json({ erro: 'Forma de pagamento obrigatória' });
 
-function etapaRastreio(status) {
-  if (status === 'entregue' || status === 'finalizado') return 3;
-  if (status === 'enviado') return 2;
-  if (status === 'pago')    return 1;
-  return 0;
-}
+  const conn = await db.getConnection();
+  try {
+    await conn.beginTransaction();
 
-function badgeStatus(status) {
-  let exibir = status;
-  if (status === 'finalizado') exibir = 'pago';
-  if (status === 'pago')       exibir = 'preparação';
-  return <span className={`badge ${statusCor[status] || 'badge-cinza'}`}>{exibir}</span>;
-}
+    let total = 0, desconto = 0, cupom_id = null;
 
-const etapas = [
-  { label: 'Preparação', icon: '📦' },
-  { label: 'Transporte', icon: '🚚' },
-  { label: 'Entregue',   icon: '✅' },
-];
-
-function RastreioIcons({ status }) {
-  const etapaAt = etapaRastreio(status);
-  return (
-    <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
-      {etapas.map((e, i) => {
-        const etapaNum = i + 1;
-        const ativo = etapaAt >= etapaNum;
-        const atual = etapaAt === etapaNum;
-        return (
-          <div key={e.label} title={e.label}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: '50%',
-              background: ativo ? '#3A5D3E' : '#e8ede5',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16,
-              boxShadow: atual ? '0 0 0 2px #7ab87e' : 'none',
-            }}>{e.icon}</div>
-            <span style={{ fontSize: 9, color: ativo ? '#3A5D3E' : '#aaa', fontWeight: ativo ? 700 : 400 }}>
-              {e.label}
-            </span>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function RastreioDetalhe({ status }) {
-  const etapaAt = etapaRastreio(status);
-  return (
-    <div style={{ background: '#f8faf5', borderRadius: 10, padding: '12px 16px', marginBottom: 16 }}>
-      <p style={{ fontSize: 13, fontWeight: 700, color: '#3A5D3E', marginBottom: 10 }}>📍 Rastreio do Pedido</p>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        {etapas.map((e, i) => {
-          const etapaNum = i + 1;
-          const ativo = etapaAt >= etapaNum;
-          const atual = etapaAt === etapaNum;
-          return (
-            <div key={e.label} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                <div style={{
-                  width: 40, height: 40, borderRadius: '50%',
-                  background: ativo ? '#3A5D3E' : '#dde5d8',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
-                  boxShadow: atual ? '0 0 0 3px #7ab87e' : 'none',
-                }}>{e.icon}</div>
-                <span style={{ fontSize: 10, fontWeight: ativo ? 700 : 400, color: ativo ? '#3A5D3E' : '#aaa' }}>
-                  {e.label}
-                </span>
-              </div>
-              {i < etapas.length - 1 && (
-                <div style={{
-                  flex: 1, height: 3, margin: '0 4px', marginBottom: 14,
-                  background: etapaAt > etapaNum ? '#3A5D3E' : '#dde5d8', borderRadius: 2,
-                }} />
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ── Endereço usando nomes reais do banco ──
-function EnderecoEntrega({ p }) {
-  const tem = p.endereco_entrega || p.cep_entrega;
-  if (!tem) return (
-    <div style={{ background: '#fff8e1', borderRadius: 8, padding: '10px 14px', marginBottom: 16 }}>
-      <p style={{ fontSize: 12, color: '#e67e22' }}>⚠️ Endereço de entrega não registrado neste pedido</p>
-    </div>
-  );
-  return (
-    <div style={{ background: '#f0f7f0', borderRadius: 10, padding: '12px 16px', marginBottom: 16, border: '1px solid #c8e6c9' }}>
-      <p style={{ fontSize: 13, fontWeight: 700, color: '#3A5D3E', marginBottom: 8 }}>🏠 Endereço de Entrega</p>
-      <p style={{ fontSize: 13, fontWeight: 600, color: '#333' }}>
-        {p.endereco_entrega}{p.numero_entrega ? `, Nº ${p.numero_entrega}` : ''}
-        {p.complemento_entrega ? ` — ${p.complemento_entrega}` : ''}
-      </p>
-      <p style={{ fontSize: 13, color: '#555', marginTop: 2 }}>
-        {p.bairro_entrega}{p.cidade_entrega ? ` — ${p.cidade_entrega}` : ''}{p.estado_entrega ? `/${p.estado_entrega}` : ''}
-      </p>
-      {p.cep_entrega && <p style={{ fontSize: 12, color: '#888', marginTop: 2 }}>CEP: {p.cep_entrega}</p>}
-      {p.frete_servico && (
-        <p style={{ fontSize: 12, color: '#3A5D3E', marginTop: 6, fontWeight: 600 }}>
-          🚚 {p.frete_servico}
-          {p.frete_prazo ? ` — ${p.frete_prazo} dias úteis` : ''}
-          {p.frete_valor > 0 ? ` — R$ ${Number(p.frete_valor).toFixed(2).replace('.', ',')}` : ''}
-        </p>
-      )}
-    </div>
-  );
-}
-
-export default function AdminPedidos() {
-  const { admin }  = useAuth();
-  const [pedidos,  setPedidos] = useState([]);
-  const [detalhe,  setDetalhe] = useState(null);
-
-  useEffect(() => {
-    api.get('/pedidos').then(r => setPedidos(r.data));
-  }, []);
-
-  async function verDetalhe(id) {
-    const { data } = await api.get(`/pedidos/${id}`);
-    setDetalhe(data);
-  }
-
-  async function mudarStatus(id, status) {
-    try {
-      await api.put(`/pedidos/${id}/status`, { status });
-      setPedidos(prev => prev.map(p => p.id === id ? { ...p, status } : p));
-      if (detalhe?.id === id) setDetalhe({ ...detalhe, status });
-    } catch (err) {
-      alert(err.response?.data?.erro || 'Erro ao atualizar status');
+    if (cupom_codigo) {
+      const [cupons] = await conn.query(
+        'SELECT * FROM cupons WHERE codigo = $1 AND ativo = true AND (validade IS NULL OR validade >= CURRENT_DATE)',
+        [cupom_codigo]
+      );
+      if (cupons.length > 0) { cupom_id = cupons[0].id; desconto = cupons[0].desconto_percent; }
     }
+
+    for (const item of itens) {
+      const [produto] = await conn.query('SELECT preco FROM produtos WHERE id = $1 AND ativo = true', [item.produto_id]);
+      if (produto.length === 0) throw new Error(`Produto ${item.produto_id} não encontrado`);
+      const [est] = await conn.query('SELECT quantidade FROM estoque WHERE produto_id = $1', [item.produto_id]);
+      if (est.length === 0 || est[0].quantidade < item.quantidade)
+        throw new Error('Estoque insuficiente para um dos produtos');
+      total += produto[0].preco * item.quantidade;
+    }
+
+    // Status do pedido conforme a forma de pagamento:
+    // - cartão -> pago imediatamente
+    // - pix/boleto -> pendente, aguardando confirmação de pagamento
+    const status = forma_pagamento === 'cartao' ? 'pago' : 'pendente';
+
+    const valorDesconto = (total * desconto) / 100;
+    const frete_valor   = frete?.valor  || 0;
+    const frete_servico = frete?.nome   || null;
+    const frete_prazo   = frete?.prazo  || null;
+    const total_final   = total - valorDesconto + frete_valor;
+
+    const e = endEntrega || {};
+    const cep_entrega         = e.cep          || null;
+    const endereco_entrega    = e.endereco      || null;
+    const numero_entrega      = e.numero        || null;
+    const complemento_entrega = e.complemento   || null;
+    const bairro_entrega      = e.bairro        || null;
+    const cidade_entrega      = e.cidade        || null;
+    const estado_entrega      = e.estado        || null;
+
+    const [pedido] = await conn.query(
+      `INSERT INTO pedidos
+        (cliente_id, total, desconto, total_final, forma_pagamento, cupom_id, status,
+         frete_valor, frete_servico, frete_prazo,
+         cep_entrega, endereco_entrega, numero_entrega, complemento_entrega,
+         bairro_entrega, cidade_entrega, estado_entrega)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+       RETURNING id`,
+      [req.cliente.id, total, valorDesconto, total_final, forma_pagamento, cupom_id, status,
+       frete_valor, frete_servico, frete_prazo,
+       cep_entrega, endereco_entrega, numero_entrega, complemento_entrega,
+       bairro_entrega, cidade_entrega, estado_entrega]
+    );
+
+    const pedido_id = pedido[0].id;
+    const itensSalvos = [];
+
+    for (const item of itens) {
+      const [produto] = await conn.query('SELECT preco, nome FROM produtos WHERE id = $1', [item.produto_id]);
+      await conn.query(
+        'INSERT INTO pedido_itens (pedido_id, produto_id, quantidade, preco_unit) VALUES ($1,$2,$3,$4)',
+        [pedido_id, item.produto_id, item.quantidade, produto[0].preco]
+      );
+      await conn.query(
+        'UPDATE estoque SET quantidade = quantidade - $1 WHERE produto_id = $2',
+        [item.quantidade, item.produto_id]
+      );
+      itensSalvos.push({ nome: produto[0].nome, quantidade: item.quantidade, preco_unit: produto[0].preco });
+    }
+
+    await conn.commit();
+
+    const [clienteRows] = await db.query('SELECT id, nome, email FROM clientes WHERE id = $1', [req.cliente.id]);
+
+    enviarEmailConfirmacaoPedido({
+      cliente: clienteRows[0],
+      pedido: {
+        id: pedido_id, status, forma_pagamento,
+        total, desconto: valorDesconto, frete_valor, frete_servico, frete_prazo, total_final,
+        endereco_entrega, numero_entrega, bairro_entrega, cidade_entrega, estado_entrega, cep_entrega,
+      },
+      itens: itensSalvos,
+    });
+
+    res.status(201).json({ mensagem: 'Pedido realizado!', pedido_id, total_final });
+  } catch (err) {
+    await conn.rollback();
+    res.status(400).json({ erro: err.message || 'Erro ao criar pedido' });
+  } finally {
+    conn.release();
   }
+});
 
-  const statusDisponiveis = admin.nivel === 'vendedor' ? ['finalizado'] : statusOpcoes;
+// GET /api/pedidos/meus
+router.get('/meus', authCliente, async (req, res) => {
+  try {
+    const [pedidos] = await db.query(
+      `SELECT p.*,
+        STRING_AGG(pr.nome || ' x' || pi.quantidade, ' | ') AS itens_desc
+       FROM pedidos p
+       LEFT JOIN pedido_itens pi ON pi.pedido_id = p.id
+       LEFT JOIN produtos pr    ON pr.id = pi.produto_id
+       WHERE p.cliente_id = $1
+       GROUP BY p.id ORDER BY p.criado_em DESC`,
+      [req.cliente.id]
+    );
+    res.json(pedidos);
+  } catch {
+    res.status(500).json({ erro: 'Erro ao buscar pedidos' });
+  }
+});
 
-  return (
-    <div>
-      <h1 style={{ fontSize: 32, marginBottom: 24 }}>Pedidos</h1>
+// GET /api/pedidos (admin)
+router.get('/', authAdmin, async (req, res) => {
+  try {
+    const [pedidos] = await db.query(
+      `SELECT p.*, cl.nome AS cliente_nome, cl.email AS cliente_email
+       FROM pedidos p
+       JOIN clientes cl ON cl.id = p.cliente_id
+       ORDER BY p.criado_em DESC`
+    );
+    res.json(pedidos);
+  } catch {
+    res.status(500).json({ erro: 'Erro ao buscar pedidos' });
+  }
+});
 
-      <div style={{ display: 'flex', gap: 24 }}>
-        <div style={{ flex: 1 }}>
-          <div className="card table-scroll" style={{ padding: 0 }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: '#f8faf5' }}>
-                  <th style={th}>#</th>
-                  <th style={th}>Cliente</th>
-                  <th style={th}>Total</th>
-                  <th style={th}>Status</th>
-                  <th style={th}>Rastreio</th>
-                  <th style={th}>Posição</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pedidos.map(p => (
-                  <tr key={p.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                    <td style={td}><strong>#{p.id}</strong></td>
-                    <td style={td}>
-                      <p style={{ fontWeight: 700 }}>{p.cliente_nome}</p>
-                      <p style={{ fontSize: 12, color: '#888' }}>
-                        {new Date(p.criado_em).toLocaleDateString('pt-BR')}
-                      </p>
-                    </td>
-                    <td style={td}>
-                      <strong style={{ color: '#3A5D3E' }}>
-                        R$ {Number(p.total_final).toFixed(2).replace('.', ',')}
-                      </strong>
-                    </td>
-                    <td style={td}>{badgeStatus(p.status)}</td>
-                    <td style={td}><RastreioIcons status={p.status} /></td>
-                    <td style={td}>
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        <button className="btn-azul btn-sm" onClick={() => verDetalhe(p.id)}>👁️</button>
-                        <select
-                          value={p.status}
-                          onChange={e => mudarStatus(p.id, e.target.value)}
-                          disabled={p.status === 'cancelado'}
-                          title={p.status === 'cancelado' ? 'Pedido cancelado — status não pode ser alterado' : ''}
-                          style={{
-                            padding: '6px 10px', fontSize: 13, borderRadius: 6, border: '1.5px solid #d0d7c4',
-                            opacity: p.status === 'cancelado' ? 0.5 : 1,
-                            cursor: p.status === 'cancelado' ? 'not-allowed' : 'pointer',
-                          }}
-                        >
-                          {statusDisponiveis.map(s => (
-                            <option key={s} value={s}>{labelOpcao[s] ?? s}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {pedidos.length === 0 && (
-              <p style={{ textAlign: 'center', padding: 40, color: '#888' }}>Nenhum pedido encontrado.</p>
-            )}
-          </div>
-        </div>
+// GET /api/pedidos/:id (admin)
+router.get('/:id', authAdmin, async (req, res) => {
+  try {
+    const [pedidos] = await db.query(
+      `SELECT p.*, cl.nome AS cliente_nome, cl.email AS cliente_email
+       FROM pedidos p JOIN clientes cl ON cl.id = p.cliente_id
+       WHERE p.id = $1`, [req.params.id]
+    );
+    if (pedidos.length === 0) return res.status(404).json({ erro: 'Pedido não encontrado' });
+    const [itens] = await db.query(
+      `SELECT pi.*, pr.nome AS produto_nome, pr.imagem FROM pedido_itens pi
+       JOIN produtos pr ON pr.id = pi.produto_id WHERE pi.pedido_id = $1`, [req.params.id]
+    );
+    res.json({ ...pedidos[0], itens });
+  } catch {
+    res.status(500).json({ erro: 'Erro ao buscar pedido' });
+  }
+});
 
-        {detalhe && (
-          <div style={{ width: 360, flexShrink: 0 }}>
-            <div className="card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                <h2 style={{ fontSize: 20 }}>Pedido #{detalhe.id}</h2>
-                <button onClick={() => setDetalhe(null)}
-                  style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#888' }}>✕</button>
-              </div>
+// PUT /api/pedidos/:id/cancelar (cliente cancela o próprio pedido)
+router.put('/:id/cancelar', authCliente, async (req, res) => {
+  const pedidoId = req.params.id;
+  const conn = await db.getConnection();
+  try {
+    await conn.beginTransaction();
 
-              <p style={{ marginBottom: 4 }}><strong>Cliente:</strong> {detalhe.cliente_nome}</p>
-              <p style={{ marginBottom: 4 }}><strong>E-mail:</strong> {detalhe.cliente_email}</p>
-              <p style={{ marginBottom: 4 }}><strong>Pagamento:</strong> {detalhe.forma_pagamento?.toUpperCase()}</p>
-              <p style={{ marginBottom: 4 }}><strong>Status:</strong> {badgeStatus(detalhe.status)}</p>
-              <p style={{ marginBottom: 12 }}>
-                <strong>Data:</strong> {new Date(detalhe.criado_em).toLocaleDateString('pt-BR')}
-              </p>
+    // Busca o pedido e verifica se pertence ao cliente
+    const [pedidos] = await conn.query(
+      'SELECT * FROM pedidos WHERE id = $1 AND cliente_id = $2',
+      [pedidoId, req.cliente.id]
+    );
+    if (pedidos.length === 0)
+      return res.status(404).json({ erro: 'Pedido não encontrado' });
 
-              <RastreioDetalhe status={detalhe.status} />
-              <EnderecoEntrega p={detalhe} />
+    const pedido = pedidos[0];
 
-              <hr style={{ margin: '8px 0 16px', border: 'none', borderTop: '1px solid #eee' }} />
-              <p style={{ fontWeight: 700, marginBottom: 10 }}>Itens:</p>
-              {detalhe.itens?.map(i => (
-                <div key={i.id} style={{ display: 'flex', gap: 10, marginBottom: 10, alignItems: 'center' }}>
-                  <img
-                    src={i.imagem || 'https://via.placeholder.com/44x44/f5f7f2/3A5D3E?text=+'}
-                    style={{ width: 44, height: 44, objectFit: 'cover', background: '#f5f7f2', borderRadius: 6 }}
-                    onError={e => { e.target.src = 'https://via.placeholder.com/44x44/f5f7f2/3A5D3E?text=+'; }}
-                  />
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 13, fontWeight: 700 }}>{i.produto_nome}</p>
-                    <p style={{ fontSize: 12, color: '#888' }}>Qtd: {i.quantidade} × R$ {Number(i.preco_unit).toFixed(2).replace('.', ',')}</p>
-                  </div>
-                  <p style={{ fontSize: 13, fontWeight: 700 }}>
-                    R$ {(i.preco_unit * i.quantidade).toFixed(2).replace('.', ',')}
-                  </p>
-                </div>
-              ))}
+    // Só permite cancelamento automático se o pagamento ainda estiver pendente.
+    // Pedido já pago não pode ser cancelado pelo cliente (evita inconsistência:
+    // estoque devolvido sem o correspondente tratamento do pagamento).
+    if (pedido.status !== 'pendente')
+      return res.status(400).json({ erro: 'Este pedido já está pago ou em outra etapa. Para cancelar, entre em contato com o suporte através da página "Contato".' });
 
-              <hr style={{ margin: '12px 0', border: 'none', borderTop: '1px solid #eee' }} />
-              {detalhe.desconto > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginBottom: 6, color: '#3A5D3E' }}>
-                  <span>Desconto</span>
-                  <span>- R$ {Number(detalhe.desconto).toFixed(2).replace('.', ',')}</span>
-                </div>
-              )}
-              {detalhe.frete_valor > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginBottom: 6, color: '#555' }}>
-                  <span>Frete ({detalhe.frete_servico || '—'})</span>
-                  <span>R$ {Number(detalhe.frete_valor).toFixed(2).replace('.', ',')}</span>
-                </div>
-              )}
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: 17 }}>
-                <span>Total</span>
-                <span style={{ color: '#3A5D3E' }}>R$ {Number(detalhe.total_final).toFixed(2).replace('.', ',')}</span>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+    // Restaura o estoque dos itens
+    const [itens] = await conn.query(
+      'SELECT produto_id, quantidade FROM pedido_itens WHERE pedido_id = $1',
+      [pedidoId]
+    );
+    for (const item of itens) {
+      await conn.query(
+        'UPDATE estoque SET quantidade = quantidade + $1 WHERE produto_id = $2',
+        [item.quantidade, item.produto_id]
+      );
+    }
 
-const th = { padding: '12px 14px', textAlign: 'left', fontSize: 13, color: '#888', fontWeight: 600 };
-const td = { padding: '12px 14px', fontSize: 14 };
+    // Atualiza o status do pedido para cancelado
+    await conn.query(
+      'UPDATE pedidos SET status = $1 WHERE id = $2',
+      ['cancelado', pedidoId]
+    );
+
+    await conn.commit();
+    res.json({ mensagem: 'Pedido cancelado com sucesso.' });
+  } catch (err) {
+    await conn.rollback();
+    res.status(500).json({ erro: err.message || 'Erro ao cancelar pedido' });
+  } finally {
+    conn.release();
+  }
+});
+
+// PUT /api/pedidos/:id/status
+router.put('/:id/status', authAdmin, async (req, res) => {
+  const { status } = req.body;
+  const permitidos = ['pendente','pago','enviado','entregue','cancelado','finalizado'];
+  if (req.admin.nivel === 'vendedor' && status !== 'finalizado')
+    return res.status(403).json({ erro: 'Vendedor só pode finalizar pedidos' });
+  if (!permitidos.includes(status)) return res.status(400).json({ erro: 'Status inválido' });
+  try {
+    const [pedidos] = await db.query('SELECT status FROM pedidos WHERE id = $1', [req.params.id]);
+    if (pedidos.length === 0) return res.status(404).json({ erro: 'Pedido não encontrado' });
+
+    // "cancelado" é estado terminal — não pode ser alterado depois
+    if (pedidos[0].status === 'cancelado')
+      return res.status(400).json({ erro: 'Este pedido já foi cancelado e não pode ter o status alterado.' });
+
+    await db.query('UPDATE pedidos SET status = $1 WHERE id = $2', [status, req.params.id]);
+    res.json({ mensagem: 'Status atualizado!' });
+  } catch {
+    res.status(500).json({ erro: 'Erro ao atualizar status' });
+  }
+});
+
+// PUT /api/pedidos/:id/rastreio
+router.put('/:id/rastreio', authAdmin, async (req, res) => {
+  const { statusRastreio } = req.body;
+  const statusMap = { 0: 'pago', 1: 'enviado', 2: 'entregue' };
+  const status = statusMap[statusRastreio];
+  if (status === undefined) return res.status(400).json({ erro: 'Status inválido' });
+  try {
+    const [pedidos] = await db.query('SELECT status FROM pedidos WHERE id = $1', [req.params.id]);
+    if (pedidos.length === 0) return res.status(404).json({ erro: 'Pedido não encontrado' });
+
+    // Rastreio só pode ser movido se o pagamento já estiver confirmado
+    if (!['pago', 'enviado', 'entregue'].includes(pedidos[0].status))
+      return res.status(400).json({ erro: 'O rastreio só pode ser atualizado para pedidos com pagamento confirmado (status "pago").' });
+
+    await db.query('UPDATE pedidos SET status = $1 WHERE id = $2', [status, req.params.id]);
+    res.json({ mensagem: 'Rastreio atualizado!' });
+  } catch {
+    res.status(500).json({ erro: 'Erro ao atualizar rastreio' });
+  }
+});
+
+module.exports = router;
