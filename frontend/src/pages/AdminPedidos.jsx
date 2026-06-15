@@ -27,36 +27,56 @@ const etapas = [
   { label: 'Entregue',   icon: '✅' },
 ];
 
-// ── Helpers para os dois controles separados: Pagamento e Rastreio ──
-// Mesma coluna `status` no banco, mas exibidos de forma independente
-// para deixar claro para o usuário do admin o que cada ação representa.
+// ── Lógica de pagamento ──────────────────────────────────────────
+// Usa status + forma_pagamento para derivar 3 estados visuais,
+// sem precisar alterar o banco (status continua sendo 'pendente' ou 'pago').
+//
+// Pendente      → cartão ainda não pago (raro, mas possível)
+// Em Processamento → pix ou boleto aguardando confirmação
+// Pago          → pagamento confirmado (cartão automático ou pix/boleto confirmado)
+// Cancelado     → estado terminal
+
+function labelPagamentoVisual(status, forma) {
+  if (status === 'cancelado') return 'Cancelado';
+  if (status !== 'pendente')  return 'Pago'; // pago, enviado, entregue, finalizado
+  const f = (forma || '').toLowerCase();
+  if (f === 'pix' || f === 'boleto') return 'Em Processamento';
+  return 'Pendente';
+}
+
+function corPagamentoVisual(status, forma) {
+  const label = labelPagamentoVisual(status, forma);
+  if (label === 'Pago')              return 'badge-azul';
+  if (label === 'Em Processamento')  return 'badge-amarelo';
+  if (label === 'Cancelado')         return 'badge-vermelho';
+  return 'badge-cinza'; // Pendente (cartão não pago)
+}
+
 function statusPagamento(status) {
   if (status === 'pendente')  return 'pendente';
   if (status === 'cancelado') return 'cancelado';
-  return 'pago'; // pago, enviado, entregue, finalizado -> pagamento já confirmado
-}
-
-const labelPagamento = {
-  pendente: 'Pendente (Processamento)',
-  pago: 'Pago',
-  cancelado: 'Cancelado',
-};
-const corPagamento = { pendente: 'badge-amarelo', pago: 'badge-azul', cancelado: 'badge-vermelho' };
-
-function badgePagamento(status) {
-  const pg = statusPagamento(status);
-  return <span className={`badge ${corPagamento[pg]}`}>{labelPagamento[pg]}</span>;
+  return 'pago';
 }
 
 function opcoesPagamento(status) {
   const pg = statusPagamento(status);
   if (pg === 'pendente') return ['pendente', 'pago', 'cancelado'];
   if (pg === 'pago')     return ['pago', 'cancelado'];
-  return ['cancelado']; // já cancelado: terminal, sem outras opções
+  return ['cancelado'];
 }
 
-const labelRastreio   = { pago: 'Em Preparação', enviado: 'Em Transporte', entregue: 'Entregue', finalizado: 'Finalizado' };
-const opcoesRastreio  = ['pago', 'enviado', 'entregue', 'finalizado'];
+// Rótulos das opções do dropdown (o que o admin seleciona)
+function labelOpcaoPagamento(opcao, forma) {
+  if (opcao === 'cancelado') return 'Cancelado';
+  if (opcao === 'pago')      return 'Pago';
+  // opcao === 'pendente'
+  const f = (forma || '').toLowerCase();
+  if (f === 'pix' || f === 'boleto') return 'Em Processamento';
+  return 'Pendente';
+}
+
+const labelRastreio  = { pago: 'Em Preparação', enviado: 'Em Transporte', entregue: 'Entregue', finalizado: 'Finalizado' };
+const opcoesRastreio = ['pago', 'enviado', 'entregue', 'finalizado'];
 
 function RastreioIcons({ status }) {
   const etapaAt = etapaRastreio(status);
@@ -122,7 +142,6 @@ function RastreioDetalhe({ status }) {
   );
 }
 
-// ── Endereço usando nomes reais do banco ──
 function EnderecoEntrega({ p }) {
   const tem = p.endereco_entrega || p.cep_entrega;
   if (!tem) return (
@@ -180,8 +199,10 @@ export default function AdminPedidos() {
     <div>
       <h1 style={{ fontSize: 32, marginBottom: 24 }}>Pedidos</h1>
 
-      <div style={{ display: 'flex', gap: 24 }}>
-        <div style={{ flex: 1 }}>
+      <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', overflow: 'hidden' }}>
+
+        {/* Tabela */}
+        <div style={{ flex: 1, minWidth: 0, overflow: 'auto' }}>
           <div className="card table-scroll" style={{ padding: 0 }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
@@ -198,7 +219,6 @@ export default function AdminPedidos() {
                 {pedidos.map(p => {
                   const pg = statusPagamento(p.status);
                   const cancelado = p.status === 'cancelado';
-                  const pagamentoTravado = cancelado;
                   const rastreioHabilitado = pg === 'pago';
 
                   return (
@@ -216,33 +236,37 @@ export default function AdminPedidos() {
                         </strong>
                       </td>
 
-                      {/* Coluna Pagamento — dropdown editável (no lugar do antigo badge de Status) */}
+                      {/* Coluna Pagamento — 3 estados visuais */}
                       <td style={td}>
                         {admin.nivel !== 'vendedor' ? (
                           <select
                             value={pg}
                             onChange={e => mudarStatus(p.id, e.target.value)}
-                            disabled={pagamentoTravado}
+                            disabled={cancelado}
                             title={cancelado ? 'Pedido cancelado — não pode ser alterado' : ''}
                             style={{
                               ...selStyle,
-                              opacity: pagamentoTravado ? 0.5 : 1,
-                              cursor: pagamentoTravado ? 'not-allowed' : 'pointer',
+                              opacity: cancelado ? 0.5 : 1,
+                              cursor: cancelado ? 'not-allowed' : 'pointer',
                             }}
                           >
                             {opcoesPagamento(p.status).map(s => (
-                              <option key={s} value={s}>{labelPagamento[s]}</option>
+                              <option key={s} value={s}>
+                                {labelOpcaoPagamento(s, p.forma_pagamento)}
+                              </option>
                             ))}
                           </select>
                         ) : (
-                          badgePagamento(p.status)
+                          <span className={`badge ${corPagamentoVisual(p.status, p.forma_pagamento)}`}>
+                            {labelPagamentoVisual(p.status, p.forma_pagamento)}
+                          </span>
                         )}
                       </td>
 
-                      {/* Coluna Rastreio — ícones, apenas visual */}
+                      {/* Coluna Rastreio — ícones visuais */}
                       <td style={td}><RastreioIcons status={p.status} /></td>
 
-                      {/* Coluna Posição — visualizar + dropdown de Rastreio */}
+                      {/* Coluna Posição — 👁️ + dropdown de rastreio */}
                       <td style={td}>
                         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                           <button className="btn-azul btn-sm" onClick={() => verDetalhe(p.id)}>👁️</button>
@@ -261,7 +285,7 @@ export default function AdminPedidos() {
                             </select>
                           ) : (
                             <select disabled style={{ ...selStyle, opacity: 0.5, cursor: 'not-allowed' }}>
-                              <option>{cancelado ? 'Cancelado' : 'Aguardando pagamento'}</option>
+                              <option>{cancelado ? 'Cancelado' : 'Aguard. pagamento'}</option>
                             </select>
                           )}
                         </div>
@@ -277,8 +301,9 @@ export default function AdminPedidos() {
           </div>
         </div>
 
+        {/* Painel de detalhe */}
         {detalhe && (
-          <div style={{ width: 360, flexShrink: 0 }}>
+          <div style={{ width: 340, flexShrink: 0 }}>
             <div className="card">
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
                 <h2 style={{ fontSize: 20 }}>Pedido #{detalhe.id}</h2>
@@ -288,8 +313,12 @@ export default function AdminPedidos() {
 
               <p style={{ marginBottom: 4 }}><strong>Cliente:</strong> {detalhe.cliente_nome}</p>
               <p style={{ marginBottom: 4 }}><strong>E-mail:</strong> {detalhe.cliente_email}</p>
-              <p style={{ marginBottom: 4 }}><strong>Pagamento:</strong> {detalhe.forma_pagamento?.toUpperCase()}</p>
-              <p style={{ marginBottom: 4 }}><strong>Status:</strong> {badgeStatus(detalhe.status)}</p>
+              <p style={{ marginBottom: 4 }}><strong>Forma pgto:</strong> {detalhe.forma_pagamento?.toUpperCase()}</p>
+              <p style={{ marginBottom: 4 }}><strong>Pagamento:</strong>{' '}
+                <span className={`badge ${corPagamentoVisual(detalhe.status, detalhe.forma_pagamento)}`}>
+                  {labelPagamentoVisual(detalhe.status, detalhe.forma_pagamento)}
+                </span>
+              </p>
               <p style={{ marginBottom: 12 }}>
                 <strong>Data:</strong> {new Date(detalhe.criado_em).toLocaleDateString('pt-BR')}
               </p>
@@ -343,4 +372,4 @@ export default function AdminPedidos() {
 
 const th = { padding: '12px 14px', textAlign: 'left', fontSize: 13, color: '#888', fontWeight: 600 };
 const td = { padding: '12px 14px', fontSize: 14 };
-const selStyle = { padding: '5px 8px', fontSize: 12, borderRadius: 6, border: '1.5px solid #d0d7c4', minWidth: 110 };
+const selStyle = { padding: '5px 8px', fontSize: 12, borderRadius: 6, border: '1.5px solid #d0d7c4', minWidth: 100 };
