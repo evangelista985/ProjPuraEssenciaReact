@@ -73,16 +73,21 @@ export default function MeusPedidos() {
 
   async function cancelarPedido(id) {
     setCancelando(id);
+    let novaMensagem;
     try {
       await api.put(`/pedidos/${id}/cancelar`);
       setPedidos(prev => prev.map(p => p.id === id ? { ...p, status: 'cancelado' } : p));
-      setMensagem({ tipo: 'sucesso', texto: `Pedido #${id} cancelado com sucesso.` });
+      novaMensagem = { tipo: 'sucesso', texto: `Pedido #${id} cancelado com sucesso.` };
     } catch (err) {
-      setMensagem({ tipo: 'erro', texto: err.response?.data?.erro || 'Erro ao cancelar pedido.' });
+      novaMensagem = { tipo: 'erro', texto: err.response?.data?.erro || 'Erro ao cancelar pedido.' };
     } finally {
       setCancelando(null);
       setConfirmando(null);
-      setTimeout(() => setMensagem(null), 4000);
+      setMensagem(novaMensagem);
+      // Mensagens de sucesso somem sozinhas; mensagens de erro ficam até o usuário fechar
+      if (novaMensagem.tipo === 'sucesso') {
+        setTimeout(() => setMensagem(null), 4000);
+      }
     }
   }
 
@@ -95,9 +100,20 @@ export default function MeusPedidos() {
           background: mensagem.tipo === 'sucesso' ? '#d4edda' : '#f8d7da',
           border: `1px solid ${mensagem.tipo === 'sucesso' ? '#c3e6cb' : '#f5c6cb'}`,
           borderRadius: 8, padding: '14px 20px', marginBottom: 20,
-          color: mensagem.tipo === 'sucesso' ? '#155724' : '#721c24', fontWeight: 600
+          color: mensagem.tipo === 'sucesso' ? '#155724' : '#721c24', fontWeight: 600,
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12,
         }}>
-          {mensagem.tipo === 'sucesso' ? '✅' : '❌'} {mensagem.texto}
+          <span>{mensagem.tipo === 'sucesso' ? '✅' : '❌'} {mensagem.texto}</span>
+          <button
+            onClick={() => setMensagem(null)}
+            aria-label="Fechar mensagem"
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: 16, fontWeight: 700, lineHeight: 1, color: 'inherit', flexShrink: 0,
+            }}
+          >
+            ✕
+          </button>
         </div>
       )}
 
