@@ -193,7 +193,13 @@ export default function AdminPedidos() {
                         <select
                           value={p.status}
                           onChange={e => mudarStatus(p.id, e.target.value)}
-                          style={{ padding: '6px 10px', fontSize: 13, borderRadius: 6, border: '1.5px solid #d0d7c4' }}
+                          disabled={p.status === 'cancelado'}
+                          title={p.status === 'cancelado' ? 'Pedido cancelado — status não pode ser alterado' : ''}
+                          style={{
+                            padding: '6px 10px', fontSize: 13, borderRadius: 6, border: '1.5px solid #d0d7c4',
+                            opacity: p.status === 'cancelado' ? 0.5 : 1,
+                            cursor: p.status === 'cancelado' ? 'not-allowed' : 'pointer',
+                          }}
                         >
                           {statusDisponiveis.map(s => (
                             <option key={s} value={s}>{labelOpcao[s] ?? s}</option>
