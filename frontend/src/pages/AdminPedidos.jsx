@@ -36,7 +36,17 @@ function statusPagamento(status) {
   return 'pago'; // pago, enviado, entregue, finalizado -> pagamento já confirmado
 }
 
-const labelPagamento = { pendente: 'Pendente', pago: 'Pago', cancelado: 'Cancelado' };
+const labelPagamento = {
+  pendente: 'Pendente (Processamento)',
+  pago: 'Pago',
+  cancelado: 'Cancelado',
+};
+const corPagamento = { pendente: 'badge-amarelo', pago: 'badge-azul', cancelado: 'badge-vermelho' };
+
+function badgePagamento(status) {
+  const pg = statusPagamento(status);
+  return <span className={`badge ${corPagamento[pg]}`}>{labelPagamento[pg]}</span>;
+}
 
 function opcoesPagamento(status) {
   const pg = statusPagamento(status);
@@ -179,9 +189,9 @@ export default function AdminPedidos() {
                   <th style={th}>#</th>
                   <th style={th}>Cliente</th>
                   <th style={th}>Total</th>
-                  <th style={th}>Status</th>
+                  <th style={th}>Pagamento</th>
                   <th style={th}>Rastreio</th>
-                  <th style={th}>Pagamento / Rastreio</th>
+                  <th style={th}>Posição</th>
                 </tr>
               </thead>
               <tbody>
@@ -205,60 +215,55 @@ export default function AdminPedidos() {
                           R$ {Number(p.total_final).toFixed(2).replace('.', ',')}
                         </strong>
                       </td>
-                      <td style={td}>{badgeStatus(p.status)}</td>
-                      <td style={td}><RastreioIcons status={p.status} /></td>
+
+                      {/* Coluna Pagamento — dropdown editável (no lugar do antigo badge de Status) */}
                       <td style={td}>
-                        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                        {admin.nivel !== 'vendedor' ? (
+                          <select
+                            value={pg}
+                            onChange={e => mudarStatus(p.id, e.target.value)}
+                            disabled={pagamentoTravado}
+                            title={cancelado ? 'Pedido cancelado — não pode ser alterado' : ''}
+                            style={{
+                              ...selStyle,
+                              opacity: pagamentoTravado ? 0.5 : 1,
+                              cursor: pagamentoTravado ? 'not-allowed' : 'pointer',
+                            }}
+                          >
+                            {opcoesPagamento(p.status).map(s => (
+                              <option key={s} value={s}>{labelPagamento[s]}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          badgePagamento(p.status)
+                        )}
+                      </td>
+
+                      {/* Coluna Rastreio — ícones, apenas visual */}
+                      <td style={td}><RastreioIcons status={p.status} /></td>
+
+                      {/* Coluna Posição — visualizar + dropdown de Rastreio */}
+                      <td style={td}>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                           <button className="btn-azul btn-sm" onClick={() => verDetalhe(p.id)}>👁️</button>
-
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 150 }}>
-
-                            {/* Dropdown de Pagamento — oculto para vendedor (sem permissão de alterar) */}
-                            {admin.nivel !== 'vendedor' && (
-                              <div>
-                                <label style={selLabel}>Pagamento</label>
-                                <select
-                                  value={pg}
-                                  onChange={e => mudarStatus(p.id, e.target.value)}
-                                  disabled={pagamentoTravado}
-                                  title={cancelado ? 'Pedido cancelado — não pode ser alterado' : ''}
-                                  style={{
-                                    ...selStyle,
-                                    opacity: pagamentoTravado ? 0.5 : 1,
-                                    cursor: pagamentoTravado ? 'not-allowed' : 'pointer',
-                                  }}
-                                >
-                                  {opcoesPagamento(p.status).map(s => (
-                                    <option key={s} value={s}>{labelPagamento[s]}</option>
-                                  ))}
-                                </select>
-                              </div>
-                            )}
-
-                            {/* Dropdown de Rastreio — só habilitado quando o pagamento já está confirmado */}
-                            <div>
-                              <label style={selLabel}>Rastreio</label>
-                              {rastreioHabilitado ? (
-                                <select
-                                  value={p.status}
-                                  onChange={e => mudarStatus(p.id, e.target.value)}
-                                  style={selStyle}
-                                >
-                                  {(admin.nivel === 'vendedor'
-                                    ? [...new Set([p.status, 'finalizado'])]
-                                    : opcoesRastreio
-                                  ).map(s => (
-                                    <option key={s} value={s}>{labelRastreio[s] ?? s}</option>
-                                  ))}
-                                </select>
-                              ) : (
-                                <select disabled style={{ ...selStyle, opacity: 0.5, cursor: 'not-allowed' }}>
-                                  <option>{cancelado ? 'Cancelado' : 'Aguardando pagamento'}</option>
-                                </select>
-                              )}
-                            </div>
-
-                          </div>
+                          {rastreioHabilitado ? (
+                            <select
+                              value={p.status}
+                              onChange={e => mudarStatus(p.id, e.target.value)}
+                              style={selStyle}
+                            >
+                              {(admin.nivel === 'vendedor'
+                                ? [...new Set([p.status, 'finalizado'])]
+                                : opcoesRastreio
+                              ).map(s => (
+                                <option key={s} value={s}>{labelRastreio[s] ?? s}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <select disabled style={{ ...selStyle, opacity: 0.5, cursor: 'not-allowed' }}>
+                              <option>{cancelado ? 'Cancelado' : 'Aguardando pagamento'}</option>
+                            </select>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -338,5 +343,4 @@ export default function AdminPedidos() {
 
 const th = { padding: '12px 14px', textAlign: 'left', fontSize: 13, color: '#888', fontWeight: 600 };
 const td = { padding: '12px 14px', fontSize: 14 };
-const selStyle = { padding: '5px 8px', fontSize: 12, borderRadius: 6, border: '1.5px solid #d0d7c4', width: '100%' };
-const selLabel = { fontSize: 9, color: '#999', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 2 };
+const selStyle = { padding: '5px 8px', fontSize: 12, borderRadius: 6, border: '1.5px solid #d0d7c4', minWidth: 110 };
