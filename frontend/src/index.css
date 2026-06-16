@@ -129,6 +129,9 @@ input, select { min-height: 44px; }
 /* Header mobile do admin — oculto no desktop */
 .admin-mobile-header { display: none; }
 
+/* ── Admin Mobile Nav (barra de navegação rápida) — oculto no desktop ── */
+.admin-mobile-nav { display: none; }
+
 /* ── Navbar Mobile ── */
 .navbar-mobile-overlay {
   display: none; position: fixed; inset: 0;
@@ -349,6 +352,81 @@ div:hover > .card-overlay { opacity: 1 !important; }
   .admin-sidebar.open { left: 0; }
   .admin-sidebar-close { display: block !important; }
   .admin-main { padding: 16px; width: 100%; }
+
+  /* ── Admin Mobile Nav ── */
+  .admin-mobile-nav {
+    display: block !important;
+    background: var(--verde);
+    margin: -16px -16px 16px -16px;
+    border-bottom: 2px solid #2E4D37;
+  }
+  .admin-mobile-nav-inner {
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+    padding: 0 8px;
+    gap: 4px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .admin-mobile-nav-inner::-webkit-scrollbar { display: none; }
+  .admin-mobile-nav-user {
+    display: flex;
+    align-items: center;
+    padding: 10px 10px 10px 8px;
+    border-right: 1px solid #2E4D37;
+    margin-right: 4px;
+    flex-shrink: 0;
+    font-size: 12px;
+    color: #c8d8c9;
+    font-family: Montserrat, sans-serif;
+  }
+  .admin-mobile-nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 8px 10px;
+    text-decoration: none;
+    color: #c8d8c9;
+    font-size: 10px;
+    font-family: Montserrat, sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    border-radius: 6px;
+    flex-shrink: 0;
+    transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
+  }
+  .admin-mobile-nav-link:hover,
+  .admin-mobile-nav-link.active {
+    background: var(--verde-escuro);
+    color: var(--dourado);
+  }
+  .admin-mobile-nav-icon { font-size: 18px; line-height: 1; }
+  .admin-mobile-nav-label { font-size: 9px; }
+  .admin-mobile-nav-sair {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 8px 10px;
+    background: none;
+    border: 1px solid #c8d8c9;
+    border-radius: 6px;
+    color: #c8d8c9;
+    font-size: 9px;
+    font-family: Montserrat, sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-left: auto;
+    transition: background 0.2s, color 0.2s;
+  }
+  .admin-mobile-nav-sair:hover { background: rgba(255,255,255,0.1); }
 
   /* Dashboard grids */
   .admin-grid3 { grid-template-columns: 1fr !important; }

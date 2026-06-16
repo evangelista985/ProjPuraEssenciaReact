@@ -55,6 +55,16 @@ export function AdminLayout() {
 
   const badgeCor = { admin: 'badge-vermelho', gerente: 'badge-azul', vendedor: 'badge-verde' };
 
+  const navLinks = [
+    { to: '/admin/dashboard', icon: '📊', label: 'Dashboard' },
+    { to: '/admin/produtos',  icon: '🌿', label: 'Produtos' },
+    { to: '/admin/pedidos',   icon: '📦', label: 'Pedidos' },
+    ...(admin.nivel !== 'vendedor' ? [
+      { to: '/admin/usuarios', icon: '👥', label: 'Usuários' },
+      { to: '/admin/cupons',   icon: '🏷️', label: 'Cupons' },
+    ] : []),
+  ];
+
   return (
     <div className="admin-wrapper">
       {/* Overlay para fechar sidebar no mobile */}
@@ -65,10 +75,10 @@ export function AdminLayout() {
         />
       )}
 
+      {/* ── Sidebar (desktop) ── */}
       <aside className={`admin-sidebar${sidebarOpen ? ' open' : ''}`}>
         <div className="admin-sidebar-logo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <img src="/img/logonova.png" alt="Pura Essência" style={{ height: '50px', objectFit: 'contain' }} />
-          {/* Botão fechar sidebar no mobile */}
           <button
             onClick={() => setSidebarOpen(false)}
             style={{ background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer', padding: '0 4px', lineHeight: 1, display: 'none' }}
@@ -83,15 +93,9 @@ export function AdminLayout() {
           </span>
         </div>
         <nav onClick={() => setSidebarOpen(false)}>
-          <NavLink to="/admin/dashboard">📊 Dashboard</NavLink>
-          <NavLink to="/admin/produtos">🌿 Produtos</NavLink>
-          <NavLink to="/admin/pedidos">📦 Pedidos</NavLink>
-          {admin.nivel !== 'vendedor' && (
-            <>
-              <NavLink to="/admin/usuarios">👥 Usuários</NavLink>
-              <NavLink to="/admin/cupons">🏷️ Cupons</NavLink>
-            </>
-          )}
+          {navLinks.map(({ to, icon, label }) => (
+            <NavLink key={to} to={to}>{icon} {label}</NavLink>
+          ))}
         </nav>
         <div style={{ position: 'absolute', bottom: 20, left: 20, right: 20 }}>
           <button onClick={handleLogout}
@@ -100,17 +104,43 @@ export function AdminLayout() {
           </button>
         </div>
       </aside>
+
       <main className="admin-main">
-        {/* Header mobile com hamburguer */}
+        {/* ── Header mobile com logo + hamburguer ── */}
         <div className="admin-mobile-header">
           <button
-            onClick={() => setSidebarOpen(true)}
+            onClick={() => setSidebarOpen(v => !v)}
             aria-label="Abrir menu"
             style={{ background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#3A5D3E', padding: '4px 8px', lineHeight: 1 }}
           >☰</button>
           <img src="/img/logonova.png" alt="Pura Essência" style={{ height: 36, objectFit: 'contain' }} />
           <div style={{ width: 40 }} />
         </div>
+
+        {/* ── Navbar de navegação rápida mobile ── */}
+        <div className="admin-mobile-nav">
+          <div className="admin-mobile-nav-inner">
+            {/* Info do admin */}
+            <div className="admin-mobile-nav-user">
+              <span style={{ fontSize: 12, color: '#c8d8c9' }}>{admin.nome.split(' ')[0]}</span>
+              <span className={`badge ${badgeCor[admin.nivel] || 'badge-cinza'}`} style={{ fontSize: 9, marginLeft: 6 }}>
+                {admin.nivel}
+              </span>
+            </div>
+            {/* Links de navegação */}
+            {navLinks.map(({ to, icon, label }) => (
+              <NavLink key={to} to={to} className="admin-mobile-nav-link">
+                <span className="admin-mobile-nav-icon">{icon}</span>
+                <span className="admin-mobile-nav-label">{label}</span>
+              </NavLink>
+            ))}
+            {/* Botão sair */}
+            <button onClick={handleLogout} className="admin-mobile-nav-sair">
+              Sair
+            </button>
+          </div>
+        </div>
+
         <Outlet />
       </main>
     </div>
