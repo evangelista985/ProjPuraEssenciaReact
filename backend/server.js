@@ -28,12 +28,18 @@ app.use('/img', express.static(path.join(__dirname, 'img')));
 app.post('/api/cupons/verificar', async (req, res) => {
   const { codigo } = req.body;
   try {
-    const [rows] = await db.query(
-      'SELECT * FROM cupons WHERE codigo = $1 AND ativo = true AND (validade IS NULL OR validade >= CURRENT_DATE)',
+    const result = await db.query(
+      `SELECT * FROM cupons
+       WHERE codigo = $1
+         AND ativo = true
+         AND (excluido = false OR excluido IS NULL)
+         AND (validade IS NULL OR validade >= CURRENT_DATE)`,
       [codigo]
     );
-    if (rows.length === 0) return res.status(404).json({ erro: 'Cupom inválido ou expirado' });
-    res.json({ desconto: rows[0].desconto_percent, codigo: rows[0].codigo });
+    if (result.rows.length === 0) {
+      return res.status(404).json({ erro: 'Cupom inválido ou expirado' });
+    }
+    res.json({ desconto: result.rows[0].desconto_percent, codigo: result.rows[0].codigo });
   } catch (error) {
     console.error('Erro ao verificar cupom:', error);
     res.status(500).json({ erro: 'Erro interno ao processar cupom' });
