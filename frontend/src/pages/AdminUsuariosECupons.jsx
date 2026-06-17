@@ -191,6 +191,7 @@ export function AdminCupons() {
               <th style={th}>Validade</th>
               <th style={th}>Status</th>
               <th style={th}>Ações</th>
+              <th style={th}>Excluir</th>
             </tr>
           </thead>
           <tbody>
@@ -209,27 +210,27 @@ export function AdminCupons() {
                   </span>
                 </td>
                 <td style={td}>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button
-                      onClick={() => toggleAtivo(c.id, c.ativo)}
-                      style={{
-                        background: c.ativo ? '#dc3545' : '#3A5D3E',
-                        color: '#fff', padding: '6px 14px', borderRadius: 6,
-                        fontSize: 13, border: 'none', cursor: 'pointer', fontWeight: 700,
-                      }}
-                    >
-                      {c.ativo ? 'Desativar' : 'Ativar'}
-                    </button>
-                    <button
-                      onClick={() => excluirCupom(c.id, c.codigo)}
-                      style={{
-                        background: '#eee', color: '#666', padding: '6px 14px', borderRadius: 6,
-                        fontSize: 13, border: 'none', cursor: 'pointer', fontWeight: 700,
-                      }}
-                    >
-                      🗑️ Excluir
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => toggleAtivo(c.id, c.ativo)}
+                    style={{
+                      background: c.ativo ? '#dc3545' : '#3A5D3E',
+                      color: '#fff', padding: '6px 14px', borderRadius: 6,
+                      fontSize: 13, border: 'none', cursor: 'pointer', fontWeight: 700,
+                    }}
+                  >
+                    {c.ativo ? 'Desativar' : 'Ativar'}
+                  </button>
+                </td>
+                <td style={td}>
+                  <button
+                    onClick={() => excluirCupom(c.id, c.codigo)}
+                    style={{
+                      background: '#eee', color: '#666', padding: '6px 14px', borderRadius: 6,
+                      fontSize: 13, border: 'none', cursor: 'pointer', fontWeight: 700,
+                    }}
+                  >
+                    🗑️ Excluir
+                  </button>
                 </td>
               </tr>
             ))}
