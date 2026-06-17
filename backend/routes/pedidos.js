@@ -17,19 +17,28 @@ router.post('/', authCliente, async (req, res) => {
     let total = 0, desconto = 0, cupom_id = null;
 
     if (cupom_codigo) {
-      const [cupons] = await conn.query(
-        'SELECT * FROM cupons WHERE codigo = $1 AND ativo = true AND (validade IS NULL OR validade >= CURRENT_DATE)',
+      const cuponsResult = await conn.query(
+        `SELECT * FROM cupons
+         WHERE codigo = $1
+           AND ativo = true
+           AND (excluido = false OR excluido IS NULL)
+           AND (validade IS NULL OR validade >= CURRENT_DATE)`,
         [cupom_codigo]
       );
+      const cupons = cuponsResult.rows;
       if (cupons.length > 0) { cupom_id = cupons[0].id; desconto = cupons[0].desconto_percent; }
     }
 
     for (const item of itens) {
-      const [produto] = await conn.query('SELECT preco FROM produtos WHERE id = $1 AND ativo = true', [item.produto_id]);
+      const produtoResult = await conn.query('SELECT preco FROM produtos WHERE id = $1 AND ativo = true', [item.produto_id]);
+      const produto = produtoResult.rows;
       if (produto.length === 0) throw new Error(`Produto ${item.produto_id} não encontrado`);
-      const [est] = await conn.query('SELECT quantidade FROM estoque WHERE produto_id = $1', [item.produto_id]);
+
+      const estResult = await conn.query('SELECT quantidade FROM estoque WHERE produto_id = $1', [item.produto_id]);
+      const est = estResult.rows;
       if (est.length === 0 || est[0].quantidade < item.quantidade)
         throw new Error('Estoque insuficiente para um dos produtos');
+
       total += produto[0].preco * item.quantidade;
     }
 
@@ -53,7 +62,7 @@ router.post('/', authCliente, async (req, res) => {
     const cidade_entrega      = e.cidade        || null;
     const estado_entrega      = e.estado        || null;
 
-    const [pedido] = await conn.query(
+    const pedidoResult = await conn.query(
       `INSERT INTO pedidos
         (cliente_id, total, desconto, total_final, forma_pagamento, cupom_id, status,
          frete_valor, frete_servico, frete_prazo,
@@ -67,11 +76,13 @@ router.post('/', authCliente, async (req, res) => {
        bairro_entrega, cidade_entrega, estado_entrega]
     );
 
-    const pedido_id = pedido[0].id;
+    const pedido_id = pedidoResult.rows[0].id;
     const itensSalvos = [];
 
     for (const item of itens) {
-      const [produto] = await conn.query('SELECT preco, nome FROM produtos WHERE id = $1', [item.produto_id]);
+      const produtoResult = await conn.query('SELECT preco, nome FROM produtos WHERE id = $1', [item.produto_id]);
+      const produto = produtoResult.rows;
+
       await conn.query(
         'INSERT INTO pedido_itens (pedido_id, produto_id, quantidade, preco_unit) VALUES ($1,$2,$3,$4)',
         [pedido_id, item.produto_id, item.quantidade, produto[0].preco]
@@ -85,7 +96,8 @@ router.post('/', authCliente, async (req, res) => {
 
     await conn.commit();
 
-    const [clienteRows] = await db.query('SELECT id, nome, email FROM clientes WHERE id = $1', [req.cliente.id]);
+    const clienteResult = await db.query('SELECT id, nome, email FROM clientes WHERE id = $1', [req.cliente.id]);
+    const clienteRows = clienteResult.rows;
 
     enviarEmailConfirmacaoPedido({
       cliente: clienteRows[0],
@@ -109,7 +121,7 @@ router.post('/', authCliente, async (req, res) => {
 // GET /api/pedidos/meus
 router.get('/meus', authCliente, async (req, res) => {
   try {
-    const [pedidos] = await db.query(
+    const result = await db.query(
       `SELECT p.*,
         STRING_AGG(pr.nome || ' x' || pi.quantidade, ' | ') AS itens_desc
        FROM pedidos p
@@ -119,7 +131,7 @@ router.get('/meus', authCliente, async (req, res) => {
        GROUP BY p.id ORDER BY p.criado_em DESC`,
       [req.cliente.id]
     );
-    res.json(pedidos);
+    res.json(result.rows);
   } catch {
     res.status(500).json({ erro: 'Erro ao buscar pedidos' });
   }
@@ -128,13 +140,13 @@ router.get('/meus', authCliente, async (req, res) => {
 // GET /api/pedidos (admin)
 router.get('/', authAdmin, async (req, res) => {
   try {
-    const [pedidos] = await db.query(
+    const result = await db.query(
       `SELECT p.*, cl.nome AS cliente_nome, cl.email AS cliente_email
        FROM pedidos p
        JOIN clientes cl ON cl.id = p.cliente_id
        ORDER BY p.criado_em DESC`
     );
-    res.json(pedidos);
+    res.json(result.rows);
   } catch {
     res.status(500).json({ erro: 'Erro ao buscar pedidos' });
   }
@@ -143,17 +155,19 @@ router.get('/', authAdmin, async (req, res) => {
 // GET /api/pedidos/:id (admin)
 router.get('/:id', authAdmin, async (req, res) => {
   try {
-    const [pedidos] = await db.query(
+    const pedidosResult = await db.query(
       `SELECT p.*, cl.nome AS cliente_nome, cl.email AS cliente_email
        FROM pedidos p JOIN clientes cl ON cl.id = p.cliente_id
        WHERE p.id = $1`, [req.params.id]
     );
+    const pedidos = pedidosResult.rows;
     if (pedidos.length === 0) return res.status(404).json({ erro: 'Pedido não encontrado' });
-    const [itens] = await db.query(
+
+    const itensResult = await db.query(
       `SELECT pi.*, pr.nome AS produto_nome, pr.imagem FROM pedido_itens pi
        JOIN produtos pr ON pr.id = pi.produto_id WHERE pi.pedido_id = $1`, [req.params.id]
     );
-    res.json({ ...pedidos[0], itens });
+    res.json({ ...pedidos[0], itens: itensResult.rows });
   } catch {
     res.status(500).json({ erro: 'Erro ao buscar pedido' });
   }
@@ -167,10 +181,11 @@ router.put('/:id/cancelar', authCliente, async (req, res) => {
     await conn.beginTransaction();
 
     // Busca o pedido e verifica se pertence ao cliente
-    const [pedidos] = await conn.query(
+    const pedidosResult = await conn.query(
       'SELECT * FROM pedidos WHERE id = $1 AND cliente_id = $2',
       [pedidoId, req.cliente.id]
     );
+    const pedidos = pedidosResult.rows;
     if (pedidos.length === 0)
       return res.status(404).json({ erro: 'Pedido não encontrado' });
 
@@ -183,10 +198,11 @@ router.put('/:id/cancelar', authCliente, async (req, res) => {
       return res.status(400).json({ erro: 'Este pedido já está pago ou em outra etapa. Para cancelar, entre em contato com o suporte através da página "Contato".' });
 
     // Restaura o estoque dos itens
-    const [itens] = await conn.query(
+    const itensResult = await conn.query(
       'SELECT produto_id, quantidade FROM pedido_itens WHERE pedido_id = $1',
       [pedidoId]
     );
+    const itens = itensResult.rows;
     for (const item of itens) {
       await conn.query(
         'UPDATE estoque SET quantidade = quantidade + $1 WHERE produto_id = $2',
@@ -218,7 +234,8 @@ router.put('/:id/status', authAdmin, async (req, res) => {
     return res.status(403).json({ erro: 'Vendedor só pode finalizar pedidos' });
   if (!permitidos.includes(status)) return res.status(400).json({ erro: 'Status inválido' });
   try {
-    const [pedidos] = await db.query('SELECT status FROM pedidos WHERE id = $1', [req.params.id]);
+    const pedidosResult = await db.query('SELECT status FROM pedidos WHERE id = $1', [req.params.id]);
+    const pedidos = pedidosResult.rows;
     if (pedidos.length === 0) return res.status(404).json({ erro: 'Pedido não encontrado' });
 
     // "cancelado" é estado terminal — não pode ser alterado depois
@@ -239,7 +256,8 @@ router.put('/:id/rastreio', authAdmin, async (req, res) => {
   const status = statusMap[statusRastreio];
   if (status === undefined) return res.status(400).json({ erro: 'Status inválido' });
   try {
-    const [pedidos] = await db.query('SELECT status FROM pedidos WHERE id = $1', [req.params.id]);
+    const pedidosResult = await db.query('SELECT status FROM pedidos WHERE id = $1', [req.params.id]);
+    const pedidos = pedidosResult.rows;
     if (pedidos.length === 0) return res.status(404).json({ erro: 'Pedido não encontrado' });
 
     // Rastreio só pode ser movido se o pagamento já estiver confirmado
