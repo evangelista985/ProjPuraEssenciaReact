@@ -7,6 +7,7 @@ const { enviarEmailConfirmacaoPedido } = require('../config/email');
 // POST /api/pedidos
 router.post('/', authCliente, async (req, res) => {
   const { itens, forma_pagamento, cupom_codigo, frete, endereco_entrega: endEntrega } = req.body;
+  console.log('DEBUG PEDIDO - cupom_codigo recebido:', JSON.stringify(cupom_codigo), 'tipo:', typeof cupom_codigo);
   if (!itens || itens.length === 0) return res.status(400).json({ erro: 'Carrinho vazio' });
   if (!forma_pagamento) return res.status(400).json({ erro: 'Forma de pagamento obrigatória' });
 
@@ -25,7 +26,10 @@ router.post('/', authCliente, async (req, res) => {
            AND (validade IS NULL OR validade >= CURRENT_DATE)`,
         [cupom_codigo]
       );
+      console.log('DEBUG PEDIDO - cupons encontrados:', cupons.length, cupons);
       if (cupons.length > 0) { cupom_id = cupons[0].id; desconto = cupons[0].desconto_percent; }
+    } else {
+      console.log('DEBUG PEDIDO - cupom_codigo é falsy, pulou a busca');
     }
 
     for (const item of itens) {
