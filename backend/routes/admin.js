@@ -21,7 +21,8 @@ router.post('/login', async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRES }
     );
     res.json({ token, usuario: { id: rows[0].id, nome: rows[0].nome, nivel: rows[0].nivel } });
-  } catch {
+  } catch (err) {
+    console.error('ERRO NO LOGIN ADMIN:', err);
     res.status(500).json({ erro: 'Erro no servidor' });
   }
 });
