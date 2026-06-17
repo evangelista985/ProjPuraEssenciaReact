@@ -74,7 +74,8 @@ export default function Vitrine() {
     { icon: '📷', label: 'Instagram', url: 'https://www.instagram.com/pura_essencia.official/', color: '#E4405F' },
     { icon: '💬', label: 'WhatsApp', url: 'https://wa.me', color: '#25D366' },
     { icon: '𝕏', label: 'Twitter', url: 'https://x.com/PuraEssenc91630', color: '#000000' },
-    { icon: '✉', label: 'Fale Conosco', url: '/contatos', color: '#D4AF37' },  ];
+    { icon: '✉️', label: 'Email', url: 'mailto:puraessenciaetec@gmail.com', color: '#D4AF37' },
+  ];
 
   useEffect(() => { carregarProdutos(); }, []);
 
@@ -532,18 +533,39 @@ export default function Vitrine() {
             {showSocialMenu && (
               <div style={st.socialBoxContent}>
                 <p style={st.socialBoxText}>Siga-nos nas redes sociais e fique por dentro das novidades:</p>
-                <div style={st.socialLinksGrid}>
-                  {SOCIAL_LINKS.map((link, idx) => (
-                    link.url.startsWith('/') ? (
-                      <Link
-                        key={idx}
-                        to={link.url}
-                        style={{...st.socialLink, borderColor: link.color, gridColumn: '1 / -1', justifySelf: 'center', maxWidth: '140px'}}                        title={link.label}
+                {isMobile ? (
+                  <>
+                    <div style={{...st.socialLinksGrid, gridTemplateColumns: 'repeat(2, 1fr)'}}>
+                      {SOCIAL_LINKS.slice(0, 4).map((link, idx) => (
+                        <a
+                          key={idx}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{...st.socialLink, borderColor: link.color}}
+                          title={link.label}
+                        >
+                          <span style={{fontSize: '1.5rem'}}>{link.icon}</span>
+                          <span style={st.socialLinkLabel}>{link.label}</span>
+                        </a>
+                      ))}
+                    </div>
+                    <div style={{display:'flex', justifyContent:'center', marginTop:'1rem'}}>
+                      <a
+                        href={SOCIAL_LINKS[4].url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{...st.socialLink, borderColor: SOCIAL_LINKS[4].color, width:'calc(50% - 0.5rem)'}}
+                        title={SOCIAL_LINKS[4].label}
                       >
-                        <span style={{fontSize: '1.5rem'}}>{link.icon}</span>
-                        <span style={st.socialLinkLabel}>{link.label}</span>
-                      </Link>
-                    ) : (
+                        <span style={{fontSize: '1.5rem'}}>{SOCIAL_LINKS[4].icon}</span>
+                        <span style={st.socialLinkLabel}>{SOCIAL_LINKS[4].label}</span>
+                      </a>
+                    </div>
+                  </>
+                ) : (
+                  <div style={st.socialLinksGrid}>
+                    {SOCIAL_LINKS.map((link, idx) => (
                       <a
                         key={idx}
                         href={link.url}
@@ -555,9 +577,9 @@ export default function Vitrine() {
                         <span style={{fontSize: '1.5rem'}}>{link.icon}</span>
                         <span style={st.socialLinkLabel}>{link.label}</span>
                       </a>
-                    )
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1176,7 +1198,7 @@ const st = {
   },
   socialLinksGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
+    gridTemplateColumns: 'repeat(5, 1fr)',
     gap: '1rem',
   },
   socialLink: {

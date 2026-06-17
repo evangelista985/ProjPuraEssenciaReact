@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import { useNavigate, Outlet, NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useState } from 'react';
 import api from '../services/api';
 
 export function AdminLogin() {
@@ -47,7 +47,6 @@ export function AdminLogin() {
 export function AdminLayout() {
   const { admin, logout } = useAuth();
   const nav = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (!admin) { nav('/admin/login'); return null; }
 
@@ -55,26 +54,25 @@ export function AdminLayout() {
 
   const badgeCor = { admin: 'badge-vermelho', gerente: 'badge-azul', vendedor: 'badge-verde' };
 
+  const navLinks = [
+    { to: '/admin/dashboard', icon: '📊', label: 'Dashboard' },
+    { to: '/admin/produtos',  icon: '🌿', label: 'Produtos' },
+    { to: '/admin/pedidos',   icon: '📦', label: 'Pedidos' },
+    ...(admin.nivel !== 'vendedor' ? [
+      { to: '/admin/usuarios', icon: '👥', label: 'Usuários' },
+      { to: '/admin/cupons',   icon: '🏷️', label: 'Cupons' },
+    ] : []),
+  ];
+
   return (
     <div className="admin-wrapper">
-      {/* Overlay para fechar sidebar no mobile */}
-      {sidebarOpen && (
-        <div
-          onClick={() => setSidebarOpen(false)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1040 }}
-        />
-      )}
 
-      <aside className={`admin-sidebar${sidebarOpen ? ' open' : ''}`}>
-        <div className="admin-sidebar-logo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* ════════════════════════════════
+          SIDEBAR — visível só no desktop
+          ════════════════════════════════ */}
+      <aside className="admin-sidebar">
+        <div className="admin-sidebar-logo">
           <img src="/img/logonova.png" alt="Pura Essência" style={{ height: '50px', objectFit: 'contain' }} />
-          {/* Botão fechar sidebar no mobile */}
-          <button
-            onClick={() => setSidebarOpen(false)}
-            style={{ background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer', padding: '0 4px', lineHeight: 1, display: 'none' }}
-            className="admin-sidebar-close"
-            aria-label="Fechar menu"
-          >✕</button>
         </div>
         <div style={{ padding: '14px 20px', borderBottom: '1px solid #2E4D37' }}>
           <p style={{ fontSize: 13, color: '#c8d8c9' }}>{admin.nome}</p>
@@ -82,16 +80,10 @@ export function AdminLayout() {
             {admin.nivel}
           </span>
         </div>
-        <nav onClick={() => setSidebarOpen(false)}>
-          <NavLink to="/admin/dashboard">📊 Dashboard</NavLink>
-          <NavLink to="/admin/produtos">🌿 Produtos</NavLink>
-          <NavLink to="/admin/pedidos">📦 Pedidos</NavLink>
-          {admin.nivel !== 'vendedor' && (
-            <>
-              <NavLink to="/admin/usuarios">👥 Usuários</NavLink>
-              <NavLink to="/admin/cupons">🏷️ Cupons</NavLink>
-            </>
-          )}
+        <nav>
+          {navLinks.map(({ to, icon, label }) => (
+            <NavLink key={to} to={to}>{icon} {label}</NavLink>
+          ))}
         </nav>
         <div style={{ position: 'absolute', bottom: 20, left: 20, right: 20 }}>
           <button onClick={handleLogout}
@@ -100,18 +92,37 @@ export function AdminLayout() {
           </button>
         </div>
       </aside>
+
+      {/* ════════════════════════════════
+          CONTEÚDO PRINCIPAL
+          ════════════════════════════════ */}
       <main className="admin-main">
-        {/* Header mobile com hamburguer */}
+
+        {/* ── Topbar mobile (logo + nome admin) ── */}
         <div className="admin-mobile-header">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Abrir menu"
-            style={{ background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#3A5D3E', padding: '4px 8px', lineHeight: 1 }}
-          >☰</button>
           <img src="/img/logonova.png" alt="Pura Essência" style={{ height: 36, objectFit: 'contain' }} />
-          <div style={{ width: 40 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 12, color: '#3A5D3E', fontWeight: 600 }}>{admin.nome.split(' ')[0]}</span>
+            <span className={`badge ${badgeCor[admin.nivel] || 'badge-cinza'}`} style={{ fontSize: 9 }}>{admin.nivel}</span>
+          </div>
         </div>
-        <Outlet />
+
+        {/* ── Navbar de navegação mobile (horizontal com scroll) ── */}
+        <nav className="admin-mobile-nav">
+          {navLinks.map(({ to, icon, label }) => (
+            <NavLink key={to} to={to} className="admin-mobile-nav-link">
+              <span className="admin-mobile-nav-icon">{icon}</span>
+              <span className="admin-mobile-nav-label">{label}</span>
+            </NavLink>
+          ))}
+          <button onClick={handleLogout} className="admin-mobile-nav-sair">
+            🚪 Sair
+          </button>
+        </nav>
+
+        <div className="admin-content-area">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

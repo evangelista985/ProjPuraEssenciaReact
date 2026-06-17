@@ -129,6 +129,9 @@ input, select { min-height: 44px; }
 /* Header mobile do admin — oculto no desktop */
 .admin-mobile-header { display: none; }
 
+/* ── Admin Mobile Nav (barra de navegação rápida) — oculto no desktop ── */
+.admin-mobile-nav { display: none; }
+
 /* ── Navbar Mobile ── */
 .navbar-mobile-overlay {
   display: none; position: fixed; inset: 0;
@@ -340,15 +343,88 @@ div:hover > .card-overlay { opacity: 1 !important; }
     box-shadow: 0 1px 4px rgba(0,0,0,0.07);
   }
 
-  /* Admin sidebar slide-in */
-  .admin-sidebar {
-    position: fixed; left: -240px; top: 0; bottom: 0;
-    z-index: 1050; transition: left 0.3s ease;
+  /* Sidebar: OCULTA no mobile */
+  .admin-sidebar { display: none !important; }
+  .admin-main { padding: 0; width: 100%; background: var(--cinza); }
+
+  /* ── Topbar mobile ── */
+  .admin-mobile-header {
     display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 10px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
   }
-  .admin-sidebar.open { left: 0; }
-  .admin-sidebar-close { display: block !important; }
-  .admin-main { padding: 16px; width: 100%; }
+
+  /* ── Admin Mobile Nav (barra horizontal de ícones) ── */
+  .admin-mobile-nav {
+    display: flex !important;
+    align-items: center;
+    overflow-x: auto;
+    background: var(--verde);
+    padding: 4px 8px;
+    gap: 2px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    position: sticky;
+    top: 57px;
+    z-index: 99;
+    border-bottom: 2px solid #2E4D37;
+  }
+  .admin-mobile-nav::-webkit-scrollbar { display: none; }
+
+  .admin-mobile-nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 12px;
+    text-decoration: none;
+    color: #c8d8c9;
+    font-family: Montserrat, sans-serif;
+    font-weight: 600;
+    border-radius: 6px;
+    flex-shrink: 0;
+    transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
+  }
+  .admin-mobile-nav-link:hover,
+  .admin-mobile-nav-link.active {
+    background: var(--verde-escuro);
+    color: var(--dourado);
+  }
+  .admin-mobile-nav-icon { font-size: 20px; line-height: 1; }
+  .admin-mobile-nav-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  .admin-mobile-nav-sair {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 12px;
+    background: none;
+    border: none;
+    color: #c8d8c9;
+    font-family: Montserrat, sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-left: auto;
+    border-radius: 6px;
+    transition: background 0.2s;
+  }
+  .admin-mobile-nav-sair:hover { background: rgba(255,255,255,0.1); }
+
+  /* Padding interno do conteúdo */
+  .admin-content-area { padding: 16px; }
 
   /* Dashboard grids */
   .admin-grid3 { grid-template-columns: 1fr !important; }
