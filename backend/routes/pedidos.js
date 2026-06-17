@@ -17,25 +17,22 @@ router.post('/', authCliente, async (req, res) => {
     let total = 0, desconto = 0, cupom_id = null;
 
     if (cupom_codigo) {
-      const cuponsResult = await conn.query(
+      const [cupons] = await conn.query(
         `SELECT * FROM cupons
-         WHERE codigo = $1
+         WHERE codigo = ?
            AND ativo = true
            AND (excluido = false OR excluido IS NULL)
            AND (validade IS NULL OR validade >= CURRENT_DATE)`,
         [cupom_codigo]
       );
-      const cupons = cuponsResult.rows;
       if (cupons.length > 0) { cupom_id = cupons[0].id; desconto = cupons[0].desconto_percent; }
     }
 
     for (const item of itens) {
-      const produtoResult = await conn.query('SELECT preco FROM produtos WHERE id = $1 AND ativo = true', [item.produto_id]);
-      const produto = produtoResult.rows;
+      const [produto] = await conn.query('SELECT preco FROM produtos WHERE id = ? AND ativo = true', [item.produto_id]);
       if (produto.length === 0) throw new Error(`Produto ${item.produto_id} não encontrado`);
 
-      const estResult = await conn.query('SELECT quantidade FROM estoque WHERE produto_id = $1', [item.produto_id]);
-      const est = estResult.rows;
+      const [est] = await conn.query('SELECT quantidade FROM estoque WHERE produto_id = ?', [item.produto_id]);
       if (est.length === 0 || est[0].quantidade < item.quantidade)
         throw new Error('Estoque insuficiente para um dos produtos');
 
@@ -62,13 +59,13 @@ router.post('/', authCliente, async (req, res) => {
     const cidade_entrega      = e.cidade        || null;
     const estado_entrega      = e.estado        || null;
 
-    const pedidoResult = await conn.query(
+    const [pedido] = await conn.query(
       `INSERT INTO pedidos
         (cliente_id, total, desconto, total_final, forma_pagamento, cupom_id, status,
          frete_valor, frete_servico, frete_prazo,
          cep_entrega, endereco_entrega, numero_entrega, complemento_entrega,
          bairro_entrega, cidade_entrega, estado_entrega)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
        RETURNING id`,
       [req.cliente.id, total, valorDesconto, total_final, forma_pagamento, cupom_id, status,
        frete_valor, frete_servico, frete_prazo,
@@ -76,19 +73,18 @@ router.post('/', authCliente, async (req, res) => {
        bairro_entrega, cidade_entrega, estado_entrega]
     );
 
-    const pedido_id = pedidoResult.rows[0].id;
+    const pedido_id = pedido[0].id;
     const itensSalvos = [];
 
     for (const item of itens) {
-      const produtoResult = await conn.query('SELECT preco, nome FROM produtos WHERE id = $1', [item.produto_id]);
-      const produto = produtoResult.rows;
+      const [produto] = await conn.query('SELECT preco, nome FROM produtos WHERE id = ?', [item.produto_id]);
 
       await conn.query(
-        'INSERT INTO pedido_itens (pedido_id, produto_id, quantidade, preco_unit) VALUES ($1,$2,$3,$4)',
+        'INSERT INTO pedido_itens (pedido_id, produto_id, quantidade, preco_unit) VALUES (?,?,?,?)',
         [pedido_id, item.produto_id, item.quantidade, produto[0].preco]
       );
       await conn.query(
-        'UPDATE estoque SET quantidade = quantidade - $1 WHERE produto_id = $2',
+        'UPDATE estoque SET quantidade = quantidade - ? WHERE produto_id = ?',
         [item.quantidade, item.produto_id]
       );
       itensSalvos.push({ nome: produto[0].nome, quantidade: item.quantidade, preco_unit: produto[0].preco });
@@ -96,8 +92,7 @@ router.post('/', authCliente, async (req, res) => {
 
     await conn.commit();
 
-    const clienteResult = await db.query('SELECT id, nome, email FROM clientes WHERE id = $1', [req.cliente.id]);
-    const clienteRows = clienteResult.rows;
+    const [clienteRows] = await db.query('SELECT id, nome, email FROM clientes WHERE id = ?', [req.cliente.id]);
 
     enviarEmailConfirmacaoPedido({
       cliente: clienteRows[0],
@@ -121,17 +116,17 @@ router.post('/', authCliente, async (req, res) => {
 // GET /api/pedidos/meus
 router.get('/meus', authCliente, async (req, res) => {
   try {
-    const result = await db.query(
+    const [pedidos] = await db.query(
       `SELECT p.*,
         STRING_AGG(pr.nome || ' x' || pi.quantidade, ' | ') AS itens_desc
        FROM pedidos p
        LEFT JOIN pedido_itens pi ON pi.pedido_id = p.id
        LEFT JOIN produtos pr    ON pr.id = pi.produto_id
-       WHERE p.cliente_id = $1
+       WHERE p.cliente_id = ?
        GROUP BY p.id ORDER BY p.criado_em DESC`,
       [req.cliente.id]
     );
-    res.json(result.rows);
+    res.json(pedidos);
   } catch {
     res.status(500).json({ erro: 'Erro ao buscar pedidos' });
   }
@@ -140,13 +135,13 @@ router.get('/meus', authCliente, async (req, res) => {
 // GET /api/pedidos (admin)
 router.get('/', authAdmin, async (req, res) => {
   try {
-    const result = await db.query(
+    const [pedidos] = await db.query(
       `SELECT p.*, cl.nome AS cliente_nome, cl.email AS cliente_email
        FROM pedidos p
        JOIN clientes cl ON cl.id = p.cliente_id
        ORDER BY p.criado_em DESC`
     );
-    res.json(result.rows);
+    res.json(pedidos);
   } catch {
     res.status(500).json({ erro: 'Erro ao buscar pedidos' });
   }
@@ -155,19 +150,18 @@ router.get('/', authAdmin, async (req, res) => {
 // GET /api/pedidos/:id (admin)
 router.get('/:id', authAdmin, async (req, res) => {
   try {
-    const pedidosResult = await db.query(
+    const [pedidos] = await db.query(
       `SELECT p.*, cl.nome AS cliente_nome, cl.email AS cliente_email
        FROM pedidos p JOIN clientes cl ON cl.id = p.cliente_id
-       WHERE p.id = $1`, [req.params.id]
+       WHERE p.id = ?`, [req.params.id]
     );
-    const pedidos = pedidosResult.rows;
     if (pedidos.length === 0) return res.status(404).json({ erro: 'Pedido não encontrado' });
 
-    const itensResult = await db.query(
+    const [itens] = await db.query(
       `SELECT pi.*, pr.nome AS produto_nome, pr.imagem FROM pedido_itens pi
-       JOIN produtos pr ON pr.id = pi.produto_id WHERE pi.pedido_id = $1`, [req.params.id]
+       JOIN produtos pr ON pr.id = pi.produto_id WHERE pi.pedido_id = ?`, [req.params.id]
     );
-    res.json({ ...pedidos[0], itens: itensResult.rows });
+    res.json({ ...pedidos[0], itens });
   } catch {
     res.status(500).json({ erro: 'Erro ao buscar pedido' });
   }
@@ -181,11 +175,10 @@ router.put('/:id/cancelar', authCliente, async (req, res) => {
     await conn.beginTransaction();
 
     // Busca o pedido e verifica se pertence ao cliente
-    const pedidosResult = await conn.query(
-      'SELECT * FROM pedidos WHERE id = $1 AND cliente_id = $2',
+    const [pedidos] = await conn.query(
+      'SELECT * FROM pedidos WHERE id = ? AND cliente_id = ?',
       [pedidoId, req.cliente.id]
     );
-    const pedidos = pedidosResult.rows;
     if (pedidos.length === 0)
       return res.status(404).json({ erro: 'Pedido não encontrado' });
 
@@ -198,21 +191,20 @@ router.put('/:id/cancelar', authCliente, async (req, res) => {
       return res.status(400).json({ erro: 'Este pedido já está pago ou em outra etapa. Para cancelar, entre em contato com o suporte através da página "Contato".' });
 
     // Restaura o estoque dos itens
-    const itensResult = await conn.query(
-      'SELECT produto_id, quantidade FROM pedido_itens WHERE pedido_id = $1',
+    const [itens] = await conn.query(
+      'SELECT produto_id, quantidade FROM pedido_itens WHERE pedido_id = ?',
       [pedidoId]
     );
-    const itens = itensResult.rows;
     for (const item of itens) {
       await conn.query(
-        'UPDATE estoque SET quantidade = quantidade + $1 WHERE produto_id = $2',
+        'UPDATE estoque SET quantidade = quantidade + ? WHERE produto_id = ?',
         [item.quantidade, item.produto_id]
       );
     }
 
     // Atualiza o status do pedido para cancelado
     await conn.query(
-      'UPDATE pedidos SET status = $1 WHERE id = $2',
+      'UPDATE pedidos SET status = ? WHERE id = ?',
       ['cancelado', pedidoId]
     );
 
@@ -234,15 +226,14 @@ router.put('/:id/status', authAdmin, async (req, res) => {
     return res.status(403).json({ erro: 'Vendedor só pode finalizar pedidos' });
   if (!permitidos.includes(status)) return res.status(400).json({ erro: 'Status inválido' });
   try {
-    const pedidosResult = await db.query('SELECT status FROM pedidos WHERE id = $1', [req.params.id]);
-    const pedidos = pedidosResult.rows;
+    const [pedidos] = await db.query('SELECT status FROM pedidos WHERE id = ?', [req.params.id]);
     if (pedidos.length === 0) return res.status(404).json({ erro: 'Pedido não encontrado' });
 
     // "cancelado" é estado terminal — não pode ser alterado depois
     if (pedidos[0].status === 'cancelado')
       return res.status(400).json({ erro: 'Este pedido já foi cancelado e não pode ter o status alterado.' });
 
-    await db.query('UPDATE pedidos SET status = $1 WHERE id = $2', [status, req.params.id]);
+    await db.query('UPDATE pedidos SET status = ? WHERE id = ?', [status, req.params.id]);
     res.json({ mensagem: 'Status atualizado!' });
   } catch {
     res.status(500).json({ erro: 'Erro ao atualizar status' });
@@ -256,15 +247,14 @@ router.put('/:id/rastreio', authAdmin, async (req, res) => {
   const status = statusMap[statusRastreio];
   if (status === undefined) return res.status(400).json({ erro: 'Status inválido' });
   try {
-    const pedidosResult = await db.query('SELECT status FROM pedidos WHERE id = $1', [req.params.id]);
-    const pedidos = pedidosResult.rows;
+    const [pedidos] = await db.query('SELECT status FROM pedidos WHERE id = ?', [req.params.id]);
     if (pedidos.length === 0) return res.status(404).json({ erro: 'Pedido não encontrado' });
 
     // Rastreio só pode ser movido se o pagamento já estiver confirmado
     if (!['pago', 'enviado', 'entregue'].includes(pedidos[0].status))
       return res.status(400).json({ erro: 'O rastreio só pode ser atualizado para pedidos com pagamento confirmado (status "pago").' });
 
-    await db.query('UPDATE pedidos SET status = $1 WHERE id = $2', [status, req.params.id]);
+    await db.query('UPDATE pedidos SET status = ? WHERE id = ?', [status, req.params.id]);
     res.json({ mensagem: 'Rastreio atualizado!' });
   } catch {
     res.status(500).json({ erro: 'Erro ao atualizar rastreio' });
