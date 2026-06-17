@@ -190,8 +190,8 @@ export function AdminCupons() {
                 <td style={td}><strong style={{ color: '#3A5D3E' }}>{c.desconto_percent}%</strong></td>
                 <td style={td}>
                   {c.validade
-                    ? new Date(c.validade + 'T12:00:00').toLocaleDateString('pt-BR')
-                    : 'Sem vencimento'}
+                    ? new Date(c.validade).toLocaleDateString('pt-BR', { timeZone: 'UTC' })
+                      : 'Sem vencimento'}
                 </td>
                 <td style={td}>
                   <span className={`badge ${c.ativo ? 'badge-verde' : 'badge-cinza'}`}>
