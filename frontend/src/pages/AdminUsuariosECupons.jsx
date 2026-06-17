@@ -141,6 +141,16 @@ export function AdminCupons() {
     carregar();
   }
 
+  async function excluirCupom(id, codigo) {
+    if (!confirm(`Tem certeza que deseja excluir o cupom "${codigo}"? Esta ação não pode ser desfeita.`)) return;
+    try {
+      await api.put(`/admin/cupons/${id}/excluir`);
+      carregar();
+    } catch (err) {
+      setMsg(err.response?.data?.erro || 'Erro ao excluir cupom');
+    }
+  }
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
@@ -191,7 +201,7 @@ export function AdminCupons() {
                 <td style={td}>
                   {c.validade
                     ? new Date(c.validade).toLocaleDateString('pt-BR', { timeZone: 'UTC' })
-                      : 'Sem vencimento'}
+                    : 'Sem vencimento'}
                 </td>
                 <td style={td}>
                   <span className={`badge ${c.ativo ? 'badge-verde' : 'badge-cinza'}`}>
@@ -199,16 +209,27 @@ export function AdminCupons() {
                   </span>
                 </td>
                 <td style={td}>
-                  <button
-                    onClick={() => toggleAtivo(c.id, c.ativo)}
-                    style={{
-                      background: c.ativo ? '#dc3545' : '#3A5D3E',
-                      color: '#fff', padding: '6px 14px', borderRadius: 6,
-                      fontSize: 13, border: 'none', cursor: 'pointer', fontWeight: 700,
-                    }}
-                  >
-                    {c.ativo ? 'Desativar' : 'Ativar'}
-                  </button>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      onClick={() => toggleAtivo(c.id, c.ativo)}
+                      style={{
+                        background: c.ativo ? '#dc3545' : '#3A5D3E',
+                        color: '#fff', padding: '6px 14px', borderRadius: 6,
+                        fontSize: 13, border: 'none', cursor: 'pointer', fontWeight: 700,
+                      }}
+                    >
+                      {c.ativo ? 'Desativar' : 'Ativar'}
+                    </button>
+                    <button
+                      onClick={() => excluirCupom(c.id, c.codigo)}
+                      style={{
+                        background: '#eee', color: '#666', padding: '6px 14px', borderRadius: 6,
+                        fontSize: 13, border: 'none', cursor: 'pointer', fontWeight: 700,
+                      }}
+                    >
+                      🗑️ Excluir
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
