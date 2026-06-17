@@ -10,7 +10,8 @@ router.post('/login', async (req, res) => {
   const { email, senha } = req.body;
   if (!email || !senha) return res.status(400).json({ erro: 'Campos obrigatórios' });
   try {
-    const [rows] = await db.query('SELECT * FROM admin_usuarios WHERE email = $1', [email]);
+    const result = await db.query('SELECT * FROM admin_usuarios WHERE email = $1', [email]);
+    const rows = result.rows;
     if (rows.length === 0) return res.status(401).json({ erro: 'Credenciais inválidas' });
     const ok = await bcrypt.compare(senha, rows[0].senha);
     if (!ok) return res.status(401).json({ erro: 'Credenciais inválidas' });
@@ -27,8 +28,8 @@ router.post('/login', async (req, res) => {
 
 // ===== USUÁRIOS =====
 router.get('/usuarios', authAdmin, nivelMinimo('gerente'), async (req, res) => {
-  const [rows] = await db.query('SELECT id, nome, email, nivel, criado_em FROM admin_usuarios ORDER BY criado_em DESC');
-  res.json(rows);
+  const result = await db.query('SELECT id, nome, email, nivel, criado_em FROM admin_usuarios ORDER BY criado_em DESC');
+  res.json(result.rows);
 });
 
 router.post('/usuarios', authAdmin, async (req, res) => {
@@ -37,8 +38,8 @@ router.post('/usuarios', authAdmin, async (req, res) => {
   if (!permitidos[req.admin.nivel]?.includes(nivel))
     return res.status(403).json({ erro: 'Sem permissão para criar este nível' });
   try {
-    const [existe] = await db.query('SELECT id FROM admin_usuarios WHERE email = $1', [email]);
-    if (existe.length > 0) return res.status(400).json({ erro: 'E-mail já cadastrado' });
+    const existeResult = await db.query('SELECT id FROM admin_usuarios WHERE email = $1', [email]);
+    if (existeResult.rows.length > 0) return res.status(400).json({ erro: 'E-mail já cadastrado' });
     const hash = await bcrypt.hash(senha, 10);
     await db.query('INSERT INTO admin_usuarios (nome, email, senha, nivel) VALUES ($1,$2,$3,$4)', [nome, email, hash, nivel]);
     res.status(201).json({ mensagem: 'Usuário criado!' });
@@ -54,8 +55,10 @@ router.delete('/usuarios/:id', authAdmin, nivelMinimo('admin'), async (req, res)
 
 // ===== CUPONS =====
 router.get('/cupons', authAdmin, nivelMinimo('gerente'), async (req, res) => {
-  const [rows] = await db.query('SELECT * FROM cupons ORDER BY criado_em DESC');
-  res.json(rows);
+  const result = await db.query(
+    `SELECT * FROM cupons WHERE excluido = false OR excluido IS NULL ORDER BY criado_em DESC`
+  );
+  res.json(result.rows);
 });
 
 router.post('/cupons', authAdmin, nivelMinimo('gerente'), async (req, res) => {
@@ -75,6 +78,16 @@ router.put('/cupons/:id', authAdmin, nivelMinimo('gerente'), async (req, res) =>
   res.json({ mensagem: 'Cupom atualizado!' });
 });
 
+// PUT /api/admin/cupons/:id/excluir — soft delete (mantém histórico)
+router.put('/cupons/:id/excluir', authAdmin, nivelMinimo('gerente'), async (req, res) => {
+  try {
+    await db.query('UPDATE cupons SET excluido = true WHERE id = $1', [req.params.id]);
+    res.json({ mensagem: 'Cupom excluído!' });
+  } catch {
+    res.status(400).json({ erro: 'Erro ao excluir cupom' });
+  }
+});
+
 // ===== DASHBOARD =====
 router.get('/dashboard', authAdmin, async (req, res) => {
   const { periodo } = req.query;
@@ -86,19 +99,19 @@ router.get('/dashboard', authAdmin, async (req, res) => {
   };
   const w = filtros[periodo] || filtros['mes'];
   try {
-    const [totaisRows] = await db.query(`
+    const totaisResult = await db.query(`
       SELECT COUNT(*) AS total_pedidos,
         COALESCE(SUM(p.total_final),0) AS receita_total,
         COALESCE(AVG(p.total_final),0) AS ticket_medio
       FROM pedidos p WHERE ${w} AND p.status != 'cancelado'
     `);
-    const totais = totaisRows[0];
+    const totais = totaisResult.rows[0];
 
-    const [porStatus] = await db.query(`
+    const porStatusResult = await db.query(`
       SELECT p.status, COUNT(*) AS qtd FROM pedidos p WHERE ${w} GROUP BY p.status
     `);
 
-    const [topProdutos] = await db.query(`
+    const topProdutosResult = await db.query(`
       SELECT pr.nome, SUM(pi.quantidade) AS total_vendido, SUM(pi.quantidade*pi.preco_unit) AS receita
       FROM pedido_itens pi
       JOIN pedidos  p  ON p.id  = pi.pedido_id
@@ -107,14 +120,19 @@ router.get('/dashboard', authAdmin, async (req, res) => {
       GROUP BY pr.id, pr.nome ORDER BY total_vendido DESC LIMIT 5
     `);
 
-    const [vendasDia] = await db.query(`
+    const vendasDiaResult = await db.query(`
       SELECT DATE(p.criado_em) AS dia, COUNT(*) AS pedidos, COALESCE(SUM(p.total_final),0) AS receita
       FROM pedidos p
       WHERE p.criado_em >= CURRENT_DATE - INTERVAL '7 days' AND p.status != 'cancelado'
       GROUP BY DATE(p.criado_em) ORDER BY dia
     `);
 
-    res.json({ totais, porStatus, topProdutos, vendasDia });
+    res.json({
+      totais,
+      porStatus: porStatusResult.rows,
+      topProdutos: topProdutosResult.rows,
+      vendasDia: vendasDiaResult.rows,
+    });
   } catch (err) {
     res.status(500).json({ erro: 'Erro ao carregar dashboard' });
   }
