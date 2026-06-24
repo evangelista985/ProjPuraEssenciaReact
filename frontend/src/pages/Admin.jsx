@@ -1,6 +1,6 @@
-import { useNavigate, Outlet, NavLink } from 'react-router-dom';
+import { useNavigate, Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../services/api';
 
 export function AdminLogin() {
@@ -47,10 +47,19 @@ export function AdminLogin() {
 export function AdminLayout() {
   const { admin, logout } = useAuth();
   const nav = useNavigate();
+  const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   if (!admin) { nav('/admin/login'); return null; }
 
   function handleLogout() { logout(); nav('/admin/login'); }
+
+  useEffect(() => { setMobileMenuOpen(false); }, [location.pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileMenuOpen]);
 
   const badgeCor = { admin: 'badge-vermelho', gerente: 'badge-azul', vendedor: 'badge-verde' };
 
@@ -98,27 +107,48 @@ export function AdminLayout() {
           ════════════════════════════════ */}
       <main className="admin-main">
 
-        {/* ── Topbar mobile (logo + nome admin) ── */}
+        {/* ── Topbar mobile (logo + hamburguer) ── */}
         <div className="admin-mobile-header">
           <img src="/img/logonova.png" alt="Pura Essência" style={{ height: 36, objectFit: 'contain' }} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 12, color: '#3A5D3E', fontWeight: 600 }}>{admin.nome.split(' ')[0]}</span>
-            <span className={`badge ${badgeCor[admin.nivel] || 'badge-cinza'}`} style={{ fontSize: 9 }}>{admin.nivel}</span>
-          </div>
+          <button className="admin-hamburger" onClick={() => setMobileMenuOpen(true)} aria-label="Abrir menu">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
         </div>
 
-        {/* ── Navbar de navegação mobile (horizontal com scroll) ── */}
-        <nav className="admin-mobile-nav">
-          {navLinks.map(({ to, icon, label }) => (
-            <NavLink key={to} to={to} className="admin-mobile-nav-link">
-              <span className="admin-mobile-nav-icon">{icon}</span>
-              <span className="admin-mobile-nav-label">{label}</span>
-            </NavLink>
-          ))}
-          <button onClick={handleLogout} className="admin-mobile-nav-sair">
-            🚪 Sair
-          </button>
-        </nav>
+        {/* ── Overlay + Drawer lateral mobile ── */}
+        <div className={`admin-mobile-overlay ${mobileMenuOpen ? 'open' : ''}`} onClick={() => setMobileMenuOpen(false)} />
+        <div className={`admin-mobile-drawer ${mobileMenuOpen ? 'open' : ''}`}>
+          <div className="admin-mobile-drawer-header">
+            <img src="/img/logonova.png" alt="Pura Essência" style={{ height: 32, objectFit: 'contain' }} />
+            <button className="admin-mobile-drawer-close" onClick={() => setMobileMenuOpen(false)} aria-label="Fechar menu">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <div style={{ padding: '14px 20px', borderBottom: '1px solid #2E4D37' }}>
+            <p style={{ fontSize: 13, color: '#c8d8c9' }}>{admin.nome}</p>
+            <span className={`badge ${badgeCor[admin.nivel] || 'badge-cinza'}`} style={{ fontSize: 10, marginTop: 4, display: 'inline-block' }}>
+              {admin.nivel}
+            </span>
+          </div>
+
+          <nav className="admin-mobile-drawer-nav">
+            {navLinks.map(({ to, icon, label }) => (
+              <NavLink key={to} to={to} className="admin-mobile-drawer-link">
+                <span>{icon}</span> {label}
+              </NavLink>
+            ))}
+          </nav>
+
+          <div style={{ padding: 20 }}>
+            <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
+              style={{ background: 'transparent', border: '1px solid #c8d8c9', color: '#c8d8c9', padding: '10px 0', borderRadius: 8, fontSize: 13, width: '100%' }}>
+              🚪 Sair
+            </button>
+          </div>
+        </div>
 
         <div className="admin-content-area">
           <Outlet />
